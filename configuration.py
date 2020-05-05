@@ -123,6 +123,7 @@ class IbugConf:
 
     '''server_config'''
     # train_images_dir = '/media/data2/alip/fala/train_images_pts_dir/'
+    # normalized_points_npy_dir = '/media/data2/alip/fala/normalized_points_npy_dir/'
     # train_hm_dir = '/media/data2/alip/fala/train_hm_dir/'
     # train_hm_dir_85 = '/media/data2/alip/fala/train_hm_dir_85/'
     # train_hm_dir_90 = '/media/data2/alip/fala/train_hm_dir_90/'
@@ -130,6 +131,7 @@ class IbugConf:
 
     '''local'''
     train_images_dir = '/media/ali/data/train_before_heatmap/'
+    normalized_points_npy_dir = '/media/ali/data/train_before_heatmap/'
     train_hm_dir = '/media/ali/data/train_before_heatmap_npy/'
     train_hm_dir_85 = '/media/ali/data/train_hm_dir_85/'
     train_hm_dir_90 = '/media/ali/data/train_hm_dir_90/'

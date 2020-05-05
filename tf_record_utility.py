@@ -466,6 +466,40 @@ class TFRecordUtility:
 
         return arr_err
 
+    def normalize_points_and_save(self, dataset_name):
+        if dataset_name == DatasetName.ibug:
+            images_dir = IbugConf.train_images_dir
+            normalized_points_npy_dir = IbugConf.normalized_points_npy_dir
+
+        counter = 1
+        for file in tqdm(os.listdir(images_dir)):
+            if file.endswith(".pts"):
+                points_arr = []
+                file_name = os.path.join(images_dir, file)
+                file_name_save = str(file)[:-3] + "npy"
+                with open(file_name) as fp:
+                    line = fp.readline()
+                    cnt = 1
+                    while line:
+                        if 3 < cnt < 72:
+                            x_y_pnt = line.strip()
+                            x = float(x_y_pnt.split(" ")[0])
+                            y = float(x_y_pnt.split(" ")[1])
+                            points_arr.append(x)
+                            points_arr.append(y)
+                        line = fp.readline()
+                        cnt += 1
+
+                normalized_points = self.generate_normalized_points(np.array(points_arr))
+                np_path = normalized_points_npy_dir + file_name_save
+
+                # imgpr.print_image_arr_heat(counter, hm, print_single=True)
+
+                save(np_path, normalized_points)
+                counter += 1
+        print('normalize_points_and_save COMPLETED!!!')
+
+
     def generate_hm_and_save(self, dataset_name, pca_percentage=100):
         pca_util = PCAUtility()
 

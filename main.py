@@ -19,6 +19,9 @@ if __name__ == '__main__':
 
     # tf_record_util.create_adv_att_img_hm()
 
+    '''normalize the points and save'''
+    tf_record_util.normalize_points_and_save(dataset_name=DatasetName.ibug)
+
     '''create and save PCA objects'''
     # pca_utility.create_pca_from_points(DatasetName.ibug, 85)
     # pca_utility.create_pca_from_points(DatasetName.ibug, 90)
