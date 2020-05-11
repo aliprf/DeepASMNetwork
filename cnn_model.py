@@ -6,14 +6,14 @@ import tensorflow as tf
 import keras
 from skimage.transform import resize
 
-from keras.regularizers import l2
+from keras.regularizers import l2, l1
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 from keras.models import Model
 from keras.applications import mobilenet_v2, mobilenet, resnet50, densenet
 from keras.layers import Dense, MaxPooling2D, Conv2D, Flatten, \
     BatchNormalization, Activation, GlobalAveragePooling2D, DepthwiseConv2D, Dropout, ReLU, Concatenate, \
-    Deconvolution2D, Input
+    Deconvolution2D, Input, GlobalMaxPool2D
 
 from keras.callbacks import ModelCheckpoint
 from keras import backend as K
@@ -35,20 +35,101 @@ import scipy.io as sio
 
 class CNNModel:
     def get_model(self, train_images, arch, num_output_layers):
-        if arch == 'asmnet':
-            model = self.create_asmnet(inp_shape=[224, 224, 3], num_branches=num_output_layers)
-        elif arch == 'mb_mn':
-            model = self.create_multi_branch_mn(inp_shape=[224, 224, 3], num_branches=num_output_layers)
-            # model = cnn.create_multi_branch_mn_one_input(inp_shape=[224, 224, 3], num_branches=self.num_output_layers)
-        elif arch == 'mn_asm_0':
-            model = self.mn_asm_v0(train_images)
-        elif arch == 'mn_asm_1':
-            model = self.mn_asm_v1(train_images)
-        elif arch == 'hg':
-            model = self.hour_glass_network(num_stacks=num_output_layers)
-        elif arch == 'mn_r':
-            model = self.mnv2_hm(tensor=train_images)
+
+        if arch == 'ASMNet':
+            model = self.create_ASMNet(inp_shape=[224, 224, 3])
+        elif arch == 'mobileNetV2':
+            model = self.create_MobileNet(inp_shape=[224, 224, 3])
+
         return model
+
+    def create_MobileNet(self, inp_shape):
+        mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=inp_shape,
+                                                   alpha=1.0,
+                                                   include_top=True,
+                                                   weights=None,
+                                                   input_tensor=None,
+                                                   pooling=None)
+        # model_json = mobilenet_model.to_json()
+        #
+        # with open("mobileNet_v2_main.json", "w") as json_file:
+        #     json_file.write(model_json)
+        #
+        # return mobilenet_model
+
+        mobilenet_model.layers.pop()
+
+        x = mobilenet_model.get_layer('global_average_pooling2d_1').output  # 1280
+        out_landmarks = Dense(LearningConfig.landmark_len, name='O_L')(x)
+        out_poses = Dense(LearningConfig.pose_len, name='O_P')(x)
+
+        inp = mobilenet_model.input
+
+        revised_model = Model(inp, [out_landmarks, out_poses])
+
+        revised_model.summary()
+        # plot_model(revised_model, to_file='mobileNet_v2_main.png', show_shapes=True, show_layer_names=True)
+        model_json = revised_model.to_json()
+
+        with open("mobileNet_v2_main_multi_out.json", "w") as json_file:
+            json_file.write(model_json)
+
+        return revised_model
+
+
+    def create_ASMNet(self, inp_shape):
+        mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=inp_shape,
+                                                   alpha=1.0,
+                                                   include_top=True,
+                                                   weights=None,
+                                                   input_tensor=None,
+                                                   pooling=None)
+        mobilenet_model.layers.pop()
+        inp = mobilenet_model.input
+
+        '''heatmap can not be generated from activation layers, so we use out_relu'''
+        block_1_project_BN = mobilenet_model.get_layer('block_1_project_BN').output  # 56*56*24
+        block_1_project_BN_mpool = GlobalAveragePooling2D()(block_1_project_BN)
+
+        block_3_project_BN = mobilenet_model.get_layer('block_3_project_BN').output  # 28*28*32
+        block_3_project_BN_mpool = GlobalAveragePooling2D()(block_3_project_BN)
+
+        block_6_project_BN = mobilenet_model.get_layer('block_6_project_BN').output  # 14*14*64
+        block_6_project_BN_mpool = GlobalAveragePooling2D()(block_6_project_BN)
+
+        block_10_project_BN = mobilenet_model.get_layer('block_10_project_BN').output  # 14*14*96
+        block_10_project_BN_mpool = GlobalAveragePooling2D()(block_10_project_BN)
+
+        block_13_project_BN = mobilenet_model.get_layer('block_13_project_BN').output  # 7*7*160
+        block_13_project_BN_mpool = GlobalAveragePooling2D()(block_13_project_BN)
+
+        block_15_add = mobilenet_model.get_layer('block_15_add').output  # 7*7*160
+        block_15_add_mpool = GlobalAveragePooling2D()(block_15_add)
+
+        x = keras.layers.Concatenate()([block_1_project_BN_mpool, block_3_project_BN_mpool, block_6_project_BN_mpool,
+                                        block_10_project_BN_mpool, block_13_project_BN_mpool, block_15_add_mpool])
+        x = keras.layers.Dropout(rate=0.3)(x)
+        ''''''
+        out_landmarks = Dense(LearningConfig.landmark_len,
+                              kernel_regularizer=l2(0.01),
+                              # activity_regularizer=l1(0.01),
+                              bias_regularizer=l2(0.01),
+                              name='O_L')(x)
+        out_poses = Dense(LearningConfig.pose_len,
+                          kernel_regularizer=l2(0.01),
+                          # activity_regularizer=l1(0.01),
+                          bias_regularizer=l2(0.01),
+                          name='O_P')(x)
+
+        revised_model = Model(inp, [out_landmarks, out_poses])
+
+        revised_model.summary()
+        model_json = revised_model.to_json()
+
+        with open("mobileNet_v2_main_multi_out.json", "w") as json_file:
+            json_file.write(model_json)
+
+        return revised_model
 
     def hour_glass_network(self, num_classes=68, num_stacks=10, num_filters=256,
                            in_shape=(224, 224), out_shape=(56, 56)):

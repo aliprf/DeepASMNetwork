@@ -24,12 +24,85 @@ import img_printer as imgpr
 
 class Custom_losses:
 
-    def asm_assisted_loss(self, hmp_85, hmp_90, hmp_95):
-        def loss(y_true, y_pred):
-            return K.mean(K.square(y_pred - y_true))
+    def asm_assisted_loss(self, yTrue, yPred):
+        # l_1 = mse(yTrue, yPre)
+        # yPre_asm = ASM (yPred)
+        # l_2 = mse(yPre_asm, yPre)
+        # L = l_1 + (a * l_2)
 
-        # Return a function
-        return loss
+        pca_utility = PCAUtility()
+        image_utility = ImageUtility()
+        tf_record_utility = TFRecordUtility()
+
+        eigenvalues, eigenvectors, meanvector = pca_utility.load_pca_obj(DatasetName.ibug)
+
+        # yTrue = tf.constant([[1.0, 2.0, 3.0], [5.0, 4.0, 7.0]])
+        # yPred = tf.constant([[9.0, 1.0, 2.0], [7.0, 3.0, 8.0]])
+        # session = K.get_session()
+
+        tensor_mean_square_error = K.mean(K.square(yPred - yTrue), axis=-1)
+        # tensor_mean_square_error = keras.losses.mean_squared_error(yPred, yTrue)
+        mse = K.eval(tensor_mean_square_error)
+
+        yPred_arr = K.eval(yPred)
+        yTrue_arr = K.eval(yTrue)
+
+        loss_array = []
+
+        for i in range(LearningConfig.batch_size):
+            asm_loss = 0
+
+            truth_vector = yTrue_arr[i]
+            predicted_vector = yPred_arr[i]
+
+            b_vector_p = self.calculate_b_vector(predicted_vector, True, eigenvalues, eigenvectors, meanvector)
+            y_pre_asm = meanvector + np.dot(eigenvectors, b_vector_p)
+
+            """in order to test the results after PCA, you can use these lines of code"""
+            # landmark_arr_xy, landmark_arr_x, landmark_arr_y = image_utility.create_landmarks_from_normalized(truth_vector, 224, 224, 112, 112)
+            # image_utility.print_image_arr(i, np.ones([224, 224]), landmark_arr_x, landmark_arr_y)
+            #
+            # landmark_arr_xy_new, landmark_arr_x_new, landmark_arr_y_new= image_utility.create_landmarks_from_normalized(y_pre_asm, 224, 224, 112, 112)
+            # image_utility.print_image_arr(i*100, np.ones([224, 224]), landmark_arr_x_new, landmark_arr_y_new)
+
+            for j in range(len(y_pre_asm)):
+                asm_loss += (truth_vector[j] - y_pre_asm[j]) ** 2
+            asm_loss /= len(y_pre_asm)
+
+
+            # asm_loss *= mse[i]
+            # asm_loss *= LearningConfig.regularization_term
+
+            loss_array.append(asm_loss)
+
+            print('mse[i]' + str(mse[i]))
+            print('asm_loss[i]' + str(asm_loss))
+            print('============' )
+
+        loss_array = np.array(loss_array)
+        tensor_asm_loss = K.variable(loss_array)
+
+        # sum_loss_tensor = tf.add(tensor_mean_square_error, tensor_asm_loss)
+        tensor_total_loss = tf.reduce_mean([tensor_mean_square_error, tensor_asm_loss], axis=0)
+
+        # sum_loss = np.array(K.eval(tensor_asm_loss))
+        # print(mse)
+        # print(K.eval(tensor_mean_square_error))
+        # print(K.eval(tensor_asm_loss))
+        # print('asm_loss  ' + str(loss_array[0]))
+        # print('mse_loss  ' + str(mse[0]))
+        # print('sum_loss  ' + str(sum_loss[0]))
+        # print('total_loss  ' + str(total_loss[0]))
+        # print('      ')
+        return tensor_total_loss
+
+
+    # def asm_assisted_loss(self, hmp_85, hmp_90, hmp_95):
+    #     def loss(y_true, y_pred):
+    #         return K.mean(K.square(y_pred - y_true))
+    #
+    #     # Return a function
+    #     return loss
 
     def _calculate_mse(self, y_p, y_t):
         mse = (np.square(y_p - y_t)).mean(axis=None)
@@ -280,73 +353,6 @@ class Custom_losses:
         tensor_asm_loss = K.variable(loss_array)
         tensor_total_loss = tf.reduce_mean([tensor_mean_square_error, tensor_asm_loss], axis=0)
 
-        return tensor_total_loss
-
-    def __customLoss_base(self, yTrue, yPred):
-        pca_utility = PCAUtility()
-        image_utility = ImageUtility()
-        tf_record_utility = TFRecordUtility()
-
-        eigenvalues, eigenvectors, meanvector = pca_utility.load_pca_obj(DatasetName.ibug)
-
-        # yTrue = tf.constant([[1.0, 2.0, 3.0], [5.0, 4.0, 7.0]])
-        # yPred = tf.constant([[9.0, 1.0, 2.0], [7.0, 3.0, 8.0]])
-        # session = K.get_session()
-
-        tensor_mean_square_error = K.mean(K.square(yPred - yTrue), axis=-1)
-        # tensor_mean_square_error = keras.losses.mean_squared_error(yPred, yTrue)
-        mse = K.eval(tensor_mean_square_error)
-
-        yPred_arr = K.eval(yPred)
-        yTrue_arr = K.eval(yTrue)
-
-        loss_array = []
-
-        for i in range(LearningConfig.batch_size):
-            asm_loss = 0
-
-            truth_vector = yTrue_arr[i]
-            predicted_vector = yPred_arr[i]
-
-            b_vector_p = self.calculate_b_vector(predicted_vector, True, eigenvalues, eigenvectors, meanvector)
-            y_pre_asm = meanvector + np.dot(eigenvectors, b_vector_p)
-
-            """in order to test the results after PCA, you can use these lines of code"""
-            # landmark_arr_xy, landmark_arr_x, landmark_arr_y = image_utility.create_landmarks_from_normalized(truth_vector, 224, 224, 112, 112)
-            # image_utility.print_image_arr(i, np.ones([224, 224]), landmark_arr_x, landmark_arr_y)
-            #
-            # landmark_arr_xy_new, landmark_arr_x_new, landmark_arr_y_new= image_utility.create_landmarks_from_normalized(y_pre_asm, 224, 224, 112, 112)
-            # image_utility.print_image_arr(i*100, np.ones([224, 224]), landmark_arr_x_new, landmark_arr_y_new)
-
-            for j in range(len(y_pre_asm)):
-                asm_loss += (truth_vector[j] - y_pre_asm[j]) ** 2
-            asm_loss /= len(y_pre_asm)
-
-
-            # asm_loss *= mse[i]
-            # asm_loss *= LearningConfig.regularization_term
-
-            loss_array.append(asm_loss)
-
-            print('mse[i]' + str(mse[i]))
-            print('asm_loss[i]' + str(asm_loss))
-            print('============' )
-
-        loss_array = np.array(loss_array)
-        tensor_asm_loss = K.variable(loss_array)
-
-        # sum_loss_tensor = tf.add(tensor_mean_square_error, tensor_asm_loss)
-        tensor_total_loss = tf.reduce_mean([tensor_mean_square_error, tensor_asm_loss], axis=0)
-
-        # sum_loss = np.array(K.eval(tensor_asm_loss))
-        # print(mse)
-        # print(K.eval(tensor_mean_square_error))
-        # print(K.eval(tensor_asm_loss))
-        # print('asm_loss  ' + str(loss_array[0]))
-        # print('mse_loss  ' + str(mse[0]))
-        # print('sum_loss  ' + str(sum_loss[0]))
-        # print('total_loss  ' + str(total_loss[0]))
-        # print('      ')
         return tensor_total_loss
 
     def init_tensors(self, test):

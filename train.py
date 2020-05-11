@@ -47,7 +47,7 @@ class Train:
         self.EPOCHS = LearningConfig.epochs
 
         if custom_loss:
-            self.loss = c_loss.custom_loss_hm
+            self.loss = c_loss.asm_assisted_loss
         else:
             self.loss = losses.mean_squared_error
 
@@ -147,6 +147,10 @@ class Train:
         """define optimizers"""
         optimizer = self._get_optimizer()
 
+        '''creating model'''
+        cnn = CNNModel()
+        model = cnn.get_model(None, self.arch, self.num_output_layers)
+
         '''create train, validation, test data iterator'''
         x_train_filenames, x_val_filenames, y_train_filenames, y_val_filenames = self._create_generators()
 
@@ -158,10 +162,6 @@ class Train:
                                                              self.BATCH_SIZE, self.num_output_layers, self.accuracy)
         my_validation_batch_generator = CustomHeatmapGenerator(is_single, x_val_filenames, y_val_filenames,
                                                                self.BATCH_SIZE, self.num_output_layers, self.accuracy)
-
-        '''creating model'''
-        cnn = CNNModel()
-        model = cnn.get_model(None, self.arch, self.num_output_layers)
 
         '''loading weights'''
         if self.weight is not None:

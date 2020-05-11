@@ -25,6 +25,7 @@ from numpy import save, load, asarray
 import img_printer as imgpr
 from tqdm import tqdm
 from pca_utility import PCAUtility
+from pose_detection.code.PoseDetector import PoseDetector
 
 class TFRecordUtility:
 
@@ -466,6 +467,37 @@ class TFRecordUtility:
 
         return arr_err
 
+    def detect_pose_and_save(self, dataset_name):
+        pose_detector = PoseDetector()
+
+        if dataset_name == DatasetName.ibug:
+            images_dir = IbugConf.train_images_dir
+            pose_npy_dir = IbugConf.normalized_pose_npy_dir
+        else:
+            images_dir = ''
+            pose_npy_dir = ''
+
+        counter = 1
+        for file in tqdm(os.listdir(images_dir)):
+            if file.endswith(".png") or file.endswith(".jpg"):
+                file_name = os.path.join(images_dir, file)
+                file_name_save = str(file)[:-3] + "npy"
+
+                img = np.array(Image.open(file_name)) / 255.0
+                yaw_predicted, pitch_predicted, roll_predicted = pose_detector.detect(img, isFile=False, show=False)
+                '''normalize pose -1 -> +1 '''
+                min_degree = -65
+                max_degree = 65
+                yaw_normalized = 2 * ((yaw_predicted - min_degree) / (max_degree - min_degree)) - 1
+                pitch_normalized = 2 * ((pitch_predicted - min_degree) / (max_degree - min_degree)) - 1
+                roll_normalized = 2 * ((roll_predicted - min_degree) / (max_degree - min_degree)) - 1
+
+                pose_array = np.array([yaw_normalized, pitch_normalized, roll_normalized])
+
+                np_path = pose_npy_dir + file_name_save
+                save(np_path, pose_array)
+                counter += 1
+
     def normalize_points_and_save(self, dataset_name):
 
         if dataset_name == DatasetName.ibug:
@@ -500,15 +532,15 @@ class TFRecordUtility:
                 np_path = normalized_points_npy_dir + file_name_save
 
                 '''these are for test'''
-                image_utility = ImageUtility()
-                landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = image_utility.\
-                    create_landmarks_from_normalized(normalized_points,
-                                                     InputDataSize.image_input_size,
-                                                     InputDataSize.image_input_size,
-                                                     InputDataSize.image_input_size/2,
-                                                     InputDataSize.image_input_size/2
-                                                     )
-                imgpr.print_image_arr(counter+1, np.zeros([224, 224]), landmark_arr_x_n, landmark_arr_y_n)
+                # image_utility = ImageUtility()
+                # landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = image_utility.\
+                #     create_landmarks_from_normalized(normalized_points,
+                #                                      InputDataSize.image_input_size,
+                #                                      InputDataSize.image_input_size,
+                #                                      InputDataSize.image_input_size/2,
+                #                                      InputDataSize.image_input_size/2
+                #                                      )
+                # imgpr.print_image_arr(counter+1, np.zeros([224, 224]), landmark_arr_x_n, landmark_arr_y_n)
                 ''''''
                 save(np_path, normalized_points)
                 counter += 1

@@ -60,6 +60,7 @@ class LearningConfig:
     epochs = 200
     landmark_len = 136
     point_len = 68
+    pose_len = 3
 
     reg_term_face = 1.0  # 0.9
     reg_term_mouth = 10.0  # 0.9
@@ -122,20 +123,23 @@ class W300Conf:
 class IbugConf:
 
     '''server_config'''
-    # train_images_dir = '/media/data2/alip/fala/train_images_pts_dir/'
-    # normalized_points_npy_dir = '/media/data2/alip/fala/normalized_points_npy_dir/'
-    # train_hm_dir = '/media/data2/alip/fala/train_hm_dir/'
-    # train_hm_dir_85 = '/media/data2/alip/fala/train_hm_dir_85/'
-    # train_hm_dir_90 = '/media/data2/alip/fala/train_hm_dir_90/'
-    # train_hm_dir_97 = '/media/data2/alip/fala/train_hm_dir_97/'
+    train_images_dir = '/media/data2/alip/fala/train_images_pts_dir/'
+    normalized_points_npy_dir = '/media/data2/alip/fala/normalized_points_npy_dir/'
+    normalized_pose_npy_dir = '/media/data2/alip/fala/normalized_pose_npy_dir/'
+    pose_npy_dir = '/media/data2/alip/fala/pose_npy_dir/'
+    train_hm_dir = '/media/data2/alip/fala/train_hm_dir/'
+    train_hm_dir_85 = '/media/data2/alip/fala/train_hm_dir_85/'
+    train_hm_dir_90 = '/media/data2/alip/fala/train_hm_dir_90/'
+    train_hm_dir_97 = '/media/data2/alip/fala/train_hm_dir_97/'
 
     '''local'''
-    train_images_dir = '/media/ali/data/train_before_heatmap/'
-    normalized_points_npy_dir = '/media/ali/data/train_before_heatmap/'
-    train_hm_dir = '/media/ali/data/train_before_heatmap_npy/'
-    train_hm_dir_85 = '/media/ali/data/train_hm_dir_85/'
-    train_hm_dir_90 = '/media/ali/data/train_hm_dir_90/'
-    train_hm_dir_97 = '/media/ali/data/train_hm_dir_97/'
+    # train_images_dir = '/media/ali/data/train_before_heatmap/'
+    # normalized_points_npy_dir = '/media/ali/data/train_before_heatmap/'
+    # pose_npy_dir = '/media/ali/data/train_before_heatmap/'
+    # train_hm_dir = '/media/ali/data/train_before_heatmap_npy/'
+    # train_hm_dir_85 = '/media/ali/data/train_hm_dir_85/'
+    # train_hm_dir_90 = '/media/ali/data/train_hm_dir_90/'
+    # train_hm_dir_97 = '/media/ali/data/train_hm_dir_97/'
 
 
     # images_dir = '/media/ali/extradata/facial_landmark_ds/from_ibug/train_set/train_before_heatmap/'
