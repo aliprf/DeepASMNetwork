@@ -100,7 +100,7 @@ class TFRecordUtility:
         plain[under_th_indices] = 0
         return plain * (plain == maximum_filter(plain, footprint=np.ones((windowSize, windowSize))))
 
-    def create_tf_record(self, dataset_name, dataset_type, thread_number, number_of_threads, heatmap):
+    def create_tf_record(self, dataset_name, dataset_type, heatmap):
         if dataset_name == DatasetName.affectnet:
             self.__create_tfrecord_affectnet(dataset_type, need_augmentation=True)
         elif dataset_name == DatasetName.w300:
@@ -111,7 +111,10 @@ class TFRecordUtility:
                 self.__create_tfrecord_ibug_all_heatmap()
                 # self.__create_tfrecord_ibug_all_heatmap_rotaate()
             else:
-                self.__create_tfrecord_ibug_all()
+                '''when we wannat create it from npy'''
+                self._create_tfrecord_ibug_all_from_npy()
+                '''when we wanna start from scratch'''
+                # self.__create_tfrecord_ibug_all_main()
 
         elif dataset_name == DatasetName.aflw:
             self.__create_tfrecord_aflw()
@@ -1186,22 +1189,73 @@ class TFRecordUtility:
 
         return number_of_samples
 
-    def __create_tfrecord_ibug_all(self):
+    def _create_tfrecord_ibug_all_from_npy(self):
+        '''we use this function when we have already created and nrmalzed both landmarks and poses'''
+        img_dir = IbugConf.train_images_dir
+        landmarks_dir = IbugConf.normalized_points_npy_dir
+        pose_dir = IbugConf.pose_npy_dir
+
+        num_all_samples = 10  #
+        num_train_samples = 9  # 95%
+        num_eval_samples = 1  # 5%
+        counter =0
+
+        writer_train = tf.python_io.TFRecordWriter(IbugConf.tf_train_path)
+        writer_evaluate = tf.python_io.TFRecordWriter(IbugConf.tf_evaluation_path)
+
+        for file in os.listdir(img_dir):  #
+            if file.endswith(".jpg") or file.endswith(".png"):
+                img_file_name = os.path.join(IbugConf.train_images_dir, file)
+
+                '''load img and normalize it'''
+                img = Image.open(img_file_name)
+                img = np.array(img) / 255.0
+
+                '''load landmark npy, (has been augmented already)'''
+                landmark_file_name = os.path.join(landmarks_dir, file)
+                landmark = load(landmark_file_name)
+                '''load pose npy'''
+                pose_file_name = os.path.join(pose_dir, file)
+                pose = load(pose_file_name)
+
+                '''create tf_record:'''
+                writable_img = np.reshape(img, [InputDataSize.image_input_size * InputDataSize.image_input_size * 3])
+
+                feature = {'landmarks': self.__float_feature(landmark),
+                           'pose': self.__float_feature(pose),
+                           'image_raw': self.__float_feature(writable_img)}
+                example = tf.train.Example(features=tf.train.Features(feature=feature))
+
+                if counter <= num_train_samples:
+                    writer_train.write(example.SerializeToString())
+                    msg = 'train --> \033[92m' + " sample number " + str(counter + 1) + \
+                          " created." + '\033[94m' + "remains " + str(num_train_samples - counter - 1)
+                    sys.stdout.write('\r' + msg)
+
+                else:
+                    writer_evaluate.write(example.SerializeToString())
+                    msg = 'eval --> \033[92m' + " sample number " + str(counter + 1) + \
+                          " created." + '\033[94m' + "remains " + str(num_train_samples - counter - 1)
+                    sys.stdout.write('\r' + msg)
+
+        writer_train.close()
+        writer_evaluate.close()
+
+    def __create_tfrecord_ibug_all_main(self):
         # try:
         fileDir = os.path.dirname(os.path.realpath('__file__'))
         pst_file_arr = []
         png_file_arr = []
-        for file in os.listdir(IbugConf.img_path_prefix):
+        for file in os.listdir(IbugConf.train_images_dir):  # both pts file and images are in one directory
             if file.endswith(".jpg") or file.endswith(".png"):
-                png_file_arr.append(os.path.join(IbugConf.img_path_prefix, file))
+                png_file_arr.append(os.path.join(IbugConf.train_images_dir, file))
 
         writer_train = tf.python_io.TFRecordWriter(IbugConf.tf_train_path)
-        # writer_test = tf.python_io.TFRecordWriter(IbugConf.tf_test_path)
         writer_evaluate = tf.python_io.TFRecordWriter(IbugConf.tf_evaluation_path)
 
-        number_of_samples = IbugConf.origin_number_of_all_sample
-        number_of_train = IbugConf.origin_number_of_train_sample
-        number_of_evaluation = IbugConf.origin_number_of_evaluation_sample
+        number_of_samples = 100  # 100% after augmentation
+        number_of_train = 95  # 95 % after augmentation
+        number_of_evaluation = 5   # 5 % after augmentation
 
         image_utility = ImageUtility()
 
@@ -1233,10 +1287,6 @@ class TFRecordUtility:
                                                                            scale_factor_x=1, scale_factor_y=1)
             img_arr, points_arr = image_utility.cropImg(img_arr, x_points, y_points)
 
-            # __, x_s, y_s = image_utility.create_landmarks(landmarks=points_arr, scale_factor_x=1, scale_factor_y=1)
-            # imgpr.print_image_arr(i, img_arr, x_s, y_s)
-            # continue
-
             '''resize image to 224*224'''
             resized_img = resize(img_arr,
                                  (InputDataSize.image_input_size, InputDataSize.image_input_size, 3),
@@ -1252,10 +1302,6 @@ class TFRecordUtility:
                 image_utility.create_landmarks(landmarks=points_arr,
                                                scale_factor_x=scale_factor_x,
                                                scale_factor_y=scale_factor_y)
-
-            # imgpr.print_image_arr(i, resized_img, landmark_arr_x, landmark_arr_y)
-            # continue
-            # -----
 
             '''augment the images, then normalize the landmarks based on the hyperface method'''
             for k in range(IbugConf.augmentation_factor):

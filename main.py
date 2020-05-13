@@ -18,17 +18,16 @@ if __name__ == '__main__':
     # tf_record_util.test_hm_accuracy()
 
     # tf_record_util.create_adv_att_img_hm()
+    tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=False)
 
     '''normalize the points and save'''
-    tf_record_util.normalize_points_and_save(dataset_name=DatasetName.ibug)
+    # tf_record_util.normalize_points_and_save(dataset_name=DatasetName.ibug)
 
     '''generate pose using hopeNet'''
-    tf_record_util.detect_pose_and_save(dataset_name=DatasetName.ibug)
+    # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.ibug)
 
     '''create and save PCA objects'''
-    # pca_utility.create_pca_from_points(DatasetName.ibug, 85)
-    # pca_utility.create_pca_from_points(DatasetName.ibug, 90)
-    # pca_utility.create_pca_from_points(DatasetName.ibug, 97)
+    # pca_utility.create_pca_from_points(DatasetName.ibug, 95)
 
     '''generate heatmap with different accuracy'''
 
@@ -42,7 +41,7 @@ if __name__ == '__main__':
 
     # test = Test(arch='mn_asm_0', num_output_layers=1, weight_fname='weights-61-0.00010.h5')
 
-    # trainer = Train(use_tf_record=False,
+    # trainer = Train(use_tf_record=True,
     #                 dataset_name=DatasetName.ibug,
     #                 custom_loss=True,
     #                 arch='ASMNet',

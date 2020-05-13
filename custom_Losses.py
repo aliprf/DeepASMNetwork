@@ -20,7 +20,7 @@ from keras.utils.vis_utils import plot_model
 from scipy.spatial import distance
 import scipy.io as sio
 import img_printer as imgpr
-
+from numpy import load,save
 
 class Custom_losses:
 
@@ -30,30 +30,38 @@ class Custom_losses:
         # l_2 = mse(yPre_asm, yPre)
         # L = l_1 + (a * l_2)
 
-        pca_utility = PCAUtility()
+        pca_util = PCAUtility()
         image_utility = ImageUtility()
         tf_record_utility = TFRecordUtility()
+        dataset_name = DatasetName.ibug
+        pca_percentage = 90
 
-        eigenvalues, eigenvectors, meanvector = pca_utility.load_pca_obj(DatasetName.ibug)
+        eigenvalues = load('pca_obj/' + dataset_name + pca_util.eigenvalues_prefix + str(pca_percentage) + ".npy")
+        eigenvectors = load('pca_obj/' + dataset_name + pca_util.eigenvectors_prefix + str(pca_percentage) + ".npy")
+        meanvector = load('pca_obj/' + dataset_name + pca_util.meanvector_prefix + str(pca_percentage) + ".npy")
+
+        eigenvalues_T = K.variable(eigenvalues)
+        eigenvectors_T = K.variable(eigenvectors)
+        meanvector_T = K.variable(meanvector)
 
         # yTrue = tf.constant([[1.0, 2.0, 3.0], [5.0, 4.0, 7.0]])
         # yPred = tf.constant([[9.0, 1.0, 2.0], [7.0, 3.0, 8.0]])
         # session = K.get_session()
 
         tensor_mean_square_error = K.mean(K.square(yPred - yTrue), axis=-1)
-        # tensor_mean_square_error = keras.losses.mean_squared_error(yPred, yTrue)
-        mse = K.eval(tensor_mean_square_error)
+        # mse = K.eval(tensor_mean_square_error)
+        # yPred_arr = K.eval(yPred)
+        # yTrue_arr = K.eval(yTrue)
 
-        yPred_arr = K.eval(yPred)
-        yTrue_arr = K.eval(yTrue)
+        tensor_b_vector_ = self.calculate_b_vector_tensor(yPred, True, eigenvalues_T, eigenvectors_T, meanvector_T)
 
         loss_array = []
 
         for i in range(LearningConfig.batch_size):
             asm_loss = 0
 
-            truth_vector = yTrue_arr[i]
-            predicted_vector = yPred_arr[i]
+            truth_vector = yTrue[i]
+            predicted_vector = yPred[i]
 
             b_vector_p = self.calculate_b_vector(predicted_vector, True, eigenvalues, eigenvectors, meanvector)
             y_pre_asm = meanvector + np.dot(eigenvectors, b_vector_p)
