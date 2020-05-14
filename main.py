@@ -18,13 +18,16 @@ if __name__ == '__main__':
     # tf_record_util.test_hm_accuracy()
 
     # tf_record_util.create_adv_att_img_hm()
-    tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=False)
 
     '''normalize the points and save'''
     # tf_record_util.normalize_points_and_save(dataset_name=DatasetName.ibug)
-
     '''generate pose using hopeNet'''
     # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.ibug)
+    '''create tfRecord:'''
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=False)
+    '''retrive and test tfRecords'''
+    # tf_record_util.test_tf_record()
+
 
     '''create and save PCA objects'''
     # pca_utility.create_pca_from_points(DatasetName.ibug, 95)

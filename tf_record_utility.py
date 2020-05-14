@@ -1,4 +1,4 @@
-from configuration import DatasetName, DatasetType, AffectnetConf, IbugConf, W300Conf, InputDataSize,LearningConfig
+from configuration import DatasetName, DatasetType, AffectnetConf, IbugConf, W300Conf, InputDataSize, LearningConfig
 from image_utility import ImageUtility
 
 import tensorflow as tf
@@ -26,6 +26,7 @@ import img_printer as imgpr
 from tqdm import tqdm
 from pca_utility import PCAUtility
 from pose_detection.code.PoseDetector import PoseDetector
+
 
 class TFRecordUtility:
 
@@ -119,10 +120,22 @@ class TFRecordUtility:
         elif dataset_name == DatasetName.aflw:
             self.__create_tfrecord_aflw()
 
-    def retrieve_tf_record(self, tfrecord_filename, number_of_records, only_label=True, only_pose=True):
+    def test_tf_record(self, ):
+        image_utility = ImageUtility()
+        lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(IbugConf.tf_train_path,
+                                                             number_of_records=30, only_label=False)
+        counter = 0
+        for lbl in lbl_arr:
+            landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = \
+                image_utility.create_landmarks_from_normalized(lbl_arr[counter], 224, 224, 112, 112)
+
+            imgpr.print_image_arr(str(counter), img_arr[counter], landmark_arr_x_n, landmark_arr_y_n)
+            counter += 1
+
+    def retrieve_tf_record(self, tfrecord_filename, number_of_records, only_label=True):
         with tf.Session() as sess:
             filename_queue = tf.train.string_input_producer([tfrecord_filename])
-            image_raw, landmarks, face, eyes, nose, mouth, pose, heatmap = self.__read_and_decode(filename_queue)
+            image_raw, landmarks, pose = self.__read_and_decode(filename_queue)
 
             init_op = tf.initialize_all_variables()
             sess.run(init_op)
@@ -131,27 +144,23 @@ class TFRecordUtility:
 
             img_arr = []
             lbl_arr = []
-            heatmap_arr = []
             pose_arr = []
 
             for i in range(number_of_records):
-                _image_raw, _landmarks, _face, _eyes, _nose, _mouth, _pose, _heatmap = sess.run(
-                    [image_raw, landmarks, face, eyes, nose, mouth, pose, heatmap])
+                _image_raw, _landmarks, _pose = sess.run([image_raw, landmarks, pose])
+
                 if not only_label:
                     img = np.array(_image_raw)
                     img = img.reshape(InputDataSize.image_input_size, InputDataSize.image_input_size, 3)
                     img_arr.append(img)
 
                 lbl_arr.append(_landmarks)
-                heatmap_arr.append(_heatmap)
-
-                if only_pose:
-                    pose_arr.append(_pose)
+                pose_arr.append(_pose)
 
             coord.request_stop()
             coord.join(threads)
             """ the output image is x y x y array"""
-            return lbl_arr, img_arr, pose_arr, heatmap
+            return lbl_arr, img_arr, pose_arr
 
     def create_adv_att_img_hm(self):
         png_file_arr = []
@@ -265,7 +274,6 @@ class TFRecordUtility:
 
         return number_of_samples
 
-
     def retrieve_tf_record_test_set(self, tfrecord_filename, number_of_records, only_label=True):
         with tf.Session() as sess:
             filename_queue = tf.train.string_input_producer([tfrecord_filename])
@@ -344,10 +352,10 @@ class TFRecordUtility:
         x_indices = tf.cast(indices[:, 0], tf.float32)
         y_indices = tf.cast(indices[:, 1], tf.float32)
         '''weighted average over x and y'''
-        w_avg_x = tf.scalar_mul(1/tf.reduce_sum(weights), tf.reduce_sum([tf.multiply(x_indices, weights)]))
-        w_avg_x = tf.scalar_mul(1/56, w_avg_x)
+        w_avg_x = tf.scalar_mul(1 / tf.reduce_sum(weights), tf.reduce_sum([tf.multiply(x_indices, weights)]))
+        w_avg_x = tf.scalar_mul(1 / 56, w_avg_x)
 
-        w_avg_y = tf.scalar_mul(1/tf.reduce_sum(weights), tf.reduce_sum([tf.multiply(y_indices, weights)]))
+        w_avg_y = tf.scalar_mul(1 / tf.reduce_sum(weights), tf.reduce_sum([tf.multiply(y_indices, weights)]))
         w_avg_y = tf.scalar_mul(1 / 56, w_avg_y)
 
         return tf.stack([w_avg_x, w_avg_y])
@@ -475,7 +483,7 @@ class TFRecordUtility:
 
         if dataset_name == DatasetName.ibug:
             images_dir = IbugConf.train_images_dir
-            pose_npy_dir = IbugConf.normalized_pose_npy_dir
+            pose_npy_dir = IbugConf.pose_npy_dir
         else:
             images_dir = ''
             pose_npy_dir = ''
@@ -870,7 +878,8 @@ class TFRecordUtility:
                                 image_utility.random_augmentation(landmark_arr_flat, resized_img)
                             resized_img_aug = resize(img_aug,
                                                      (
-                                                     InputDataSize.image_input_size, InputDataSize.image_input_size, 3),
+                                                         InputDataSize.image_input_size, InputDataSize.image_input_size,
+                                                         3),
                                                      anti_aliasing=True)
                             dims = img_aug.shape
                             height = dims[0]
@@ -1195,31 +1204,38 @@ class TFRecordUtility:
         landmarks_dir = IbugConf.normalized_points_npy_dir
         pose_dir = IbugConf.pose_npy_dir
 
-        num_all_samples = 10  #
-        num_train_samples = 9  # 95%
-        num_eval_samples = 1  # 5%
-        counter =0
+        num_all_samples = 100  #
+        num_train_samples = 95  # 95%
+        num_eval_samples = 5  # 5%
+        counter = 0
 
         writer_train = tf.python_io.TFRecordWriter(IbugConf.tf_train_path)
         writer_evaluate = tf.python_io.TFRecordWriter(IbugConf.tf_evaluation_path)
 
         for file in os.listdir(img_dir):  #
             if file.endswith(".jpg") or file.endswith(".png"):
-                img_file_name = os.path.join(IbugConf.train_images_dir, file)
+
+                img_file_name = os.path.join(img_dir, file)
 
                 '''load img and normalize it'''
                 img = Image.open(img_file_name)
                 img = np.array(img) / 255.0
 
                 '''load landmark npy, (has been augmented already)'''
-                landmark_file_name = os.path.join(landmarks_dir, file)
+                landmark_file_name = os.path.join(landmarks_dir, file[:-3] + "npy")
+                if not os.path.exists(landmark_file_name):
+                    continue
                 landmark = load(landmark_file_name)
+
                 '''load pose npy'''
-                pose_file_name = os.path.join(pose_dir, file)
+                pose_file_name = os.path.join(pose_dir, file[:-3] + "npy")
+                if not os.path.exists(pose_file_name):
+                    continue
                 pose = load(pose_file_name)
 
                 '''create tf_record:'''
-                writable_img = np.reshape(img, [InputDataSize.image_input_size * InputDataSize.image_input_size * 3])
+                writable_img = np.reshape(img,
+                                          [InputDataSize.image_input_size * InputDataSize.image_input_size * 3])
 
                 feature = {'landmarks': self.__float_feature(landmark),
                            'pose': self.__float_feature(pose),
@@ -1237,6 +1253,7 @@ class TFRecordUtility:
                     msg = 'eval --> \033[92m' + " sample number " + str(counter + 1) + \
                           " created." + '\033[94m' + "remains " + str(num_train_samples - counter - 1)
                     sys.stdout.write('\r' + msg)
+                counter += 1
 
         writer_train.close()
         writer_evaluate.close()
@@ -1255,7 +1272,7 @@ class TFRecordUtility:
 
         number_of_samples = 100  # 100% after augmentation
         number_of_train = 95  # 95 % after augmentation
-        number_of_evaluation = 5   # 5 % after augmentation
+        number_of_evaluation = 5  # 5 % after augmentation
 
         image_utility = ImageUtility()
 
@@ -1424,28 +1441,15 @@ class TFRecordUtility:
                                            features={
                                                'landmarks': tf.FixedLenFeature([InputDataSize.landmark_len],
                                                                                tf.float32),
-                                               'face': tf.FixedLenFeature([InputDataSize.landmark_face_len],
-                                                                          tf.float32),
-                                               'eyes': tf.FixedLenFeature([InputDataSize.landmark_eys_len], tf.float32),
-                                               'nose': tf.FixedLenFeature([InputDataSize.landmark_nose_len],
-                                                                          tf.float32),
-                                               'mouth': tf.FixedLenFeature([InputDataSize.landmark_mouth_len],
-                                                                           tf.float32),
                                                'pose': tf.FixedLenFeature([InputDataSize.pose_len], tf.float32),
-                                               'heatmap': tf.FixedLenFeature([56 * 56 * 68], tf.float32),
                                                'image_raw': tf.FixedLenFeature(
                                                    [InputDataSize.image_input_size *
                                                     InputDataSize.image_input_size * 3]
                                                    , tf.float32)})
         landmarks = features['landmarks']
-        face = features['face']
-        eyes = features['eyes']
-        nose = features['nose']
-        mouth = features['mouth']
         pose = features['pose']
-        heatmap = features['heatmap']
         image_raw = features['image_raw']
-        return image_raw, landmarks, face, eyes, nose, mouth, pose, heatmap
+        return image_raw, landmarks, pose
 
     def __read_and_decode_test_set(self, filename_queue):
         reader = tf.TFRecordReader()
@@ -1465,8 +1469,8 @@ class TFRecordUtility:
 
     def test_tf_records_validity(self):
         image_utility = ImageUtility()
-        lbl_arr, img_arr = self.retrieve_tf_record(
-            tfrecord_filename=IbugConf.tf_train_path, number_of_records=30, only_label=False)
+        lbl_arr, img_arr = self.retrieve_tf_record(tfrecord_filename=IbugConf.tf_train_path,
+                                                   number_of_records=30, only_label=False, only_pose=False)
         for i in range(30):
             landmark_arr_xy, landmark_arr_x, landmark_arr_y = image_utility.create_landmarks(landmarks=lbl_arr[i],
                                                                                              scale_factor_x=1,

@@ -137,8 +137,8 @@ class IbugConf:
 
     '''local'''
     train_images_dir = '/media/ali/data/train_before_heatmap/'
-    normalized_points_npy_dir = '/media/ali/data/train_before_heatmap/'
-    pose_npy_dir = '/media/ali/data/train_before_heatmap/'
+    normalized_points_npy_dir = '/media/ali/data/train_before_heatmap_lbl/'
+    pose_npy_dir = '/media/ali/data/train_before_heatmap_pose/'
     train_hm_dir = '/media/ali/data/train_before_heatmap_npy/'
     train_hm_dir_85 = '/media/ali/data/train_hm_dir_85/'
     train_hm_dir_90 = '/media/ali/data/train_hm_dir_90/'
