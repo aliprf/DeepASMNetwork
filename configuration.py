@@ -147,9 +147,6 @@ class IbugConf:
     tf_test_path = '/media/ali/data/test.tfrecords'
     tf_evaluation_path = '/media/ali/data/evaluation.tfrecords'
 
-    tf_train_path_heatmap = '/media/ali/extradata/facial_landmark_ds/from_ibug/train_set/train_heatmap.tfrecords'
-    tf_test_path_heatmap = '/media/ali/extradata/facial_landmark_ds/from_ibug/train_set/test_heatmap.tfrecords'
-    tf_evaluation_path_heatmap = '/media/ali/extradata/facial_landmark_ds/from_ibug/train_set/evaluation_heatmap.tfrecords'
 
     # origin_number_of_all_sample = 3148  # afw, train_helen, train_lfpw
     # origin_number_of_train_sample = 2834  # 95 % for train

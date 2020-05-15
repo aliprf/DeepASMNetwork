@@ -37,7 +37,7 @@ class CNNModel:
     def get_model(self, train_images, arch, num_output_layers):
 
         if arch == 'ASMNet':
-            model = self.create_ASMNet(inp_shape=[224, 224, 3])
+            model = self.create_ASMNet(inp_tensor=train_images, inp_shape=None)
         elif arch == 'mobileNetV2':
             model = self.create_MobileNet(inp_shape=[224, 224, 3])
 
@@ -77,12 +77,12 @@ class CNNModel:
         return revised_model
 
 
-    def create_ASMNet(self, inp_shape):
+    def create_ASMNet(self, inp_tensor=None, inp_shape=None):
         mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=inp_shape,
                                                    alpha=1.0,
                                                    include_top=True,
                                                    weights=None,
-                                                   input_tensor=None,
+                                                   input_tensor=inp_tensor,
                                                    pooling=None)
         mobilenet_model.layers.pop()
         inp = mobilenet_model.input

@@ -2,7 +2,7 @@ torch
 torchvision
 bottleneck
 keras
-tensorflow==1.15.2
+tensorflow==1.14
 numpy
 matplotlib
 opencv-python

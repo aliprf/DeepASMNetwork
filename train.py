@@ -197,12 +197,12 @@ class Train:
         optimizer = self._get_optimizer()
 
         '''create train, validation, test data iterator'''
-        train_images, _, _, _, _, _, _, train_heatmap, _ = \
-            tf_record_util.create_training_tensor(tfrecord_filename=IbugConf.tf_train_path_heatmap,
-                                                  batch_size=self.BATCH_SIZE, reduced=True)
-        validation_images, _, _, _, _, _, _, validation_heatmap, _ = \
-            tf_record_util.create_training_tensor(tfrecord_filename=IbugConf.tf_evaluation_path_heatmap,
-                                                  batch_size=self.BATCH_SIZE, reduced=True)
+        train_images, train_landmarks, train_poses = \
+            tf_record_util.create_training_tensor(tfrecord_filename=IbugConf.tf_train_path,
+                                                  batch_size=self.BATCH_SIZE)
+        validation_images, validation_landmarks, validation_poses = \
+            tf_record_util.create_training_tensor(tfrecord_filename=IbugConf.tf_evaluation_path,
+                                                  batch_size=self.BATCH_SIZE)
 
         '''creating model'''
         cnn = CNNModel()
@@ -215,23 +215,17 @@ class Train:
         model.compile(loss=self._generate_loss(),
                       optimizer=optimizer,
                       metrics=['mse', 'mae'],
-                      target_tensors=self._generate_target_tensors(train_heatmap),
+                      target_tensors=[train_landmarks, train_poses],
                       loss_weights=self._generate_loss_weights()
                       )
 
         '''train Model '''
         print('< ========== Start Training ============= >')
-
-        history = model.fit(train_images,
-                            train_heatmap,
-                            epochs=self.EPOCHS,
-                            steps_per_epoch=self.STEPS_PER_EPOCH,
-                            validation_data=(validation_images, validation_heatmap),
+        history = model.fit(train_images, train_landmarks,
+                            epochs=self.EPOCHS, steps_per_epoch=self.STEPS_PER_EPOCH,
+                            validation_data=(validation_images, validation_landmarks),
                             validation_steps=self.STEPS_PER_VALIDATION_EPOCH,
-                            verbose=1, callbacks=callbacks_list,
-                            use_multiprocessing=True,
-                            workers=16,
-                            max_queue_size=32
+                            verbose=1, callbacks=callbacks_list
                             )
 
     def _generate_loss(self):
