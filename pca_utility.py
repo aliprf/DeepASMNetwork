@@ -46,7 +46,6 @@ class PCAUtility:
         save('pca_obj/' + dataset_name + self.eigenvectors_prefix + str(pca_postfix), eigenvectors)
         save('pca_obj/' + dataset_name + self.meanvector_prefix + str(pca_postfix), mean_lbl_arr)
 
-
     def create_pca_from_points(self, dataset_name, pca_postfix):
         lbl_arr = []
         path = None

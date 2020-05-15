@@ -25,10 +25,12 @@ from numpy import load,save
 class Custom_losses:
 
     def asm_assisted_loss(self, yTrue, yPred):
-        # l_1 = mse(yTrue, yPre)
-        # yPre_asm = ASM (yPred)
-        # l_2 = mse(yPre_asm, yPre)
-        # L = l_1 + (a * l_2)
+        '''def::
+             l_1 = mse(yTrue, yPre)
+             yPre_asm = ASM (yPred)
+             l_2 = mse(yPre_asm, yPre)
+             L = l_1 + (a * l_2)
+        '''
 
         pca_util = PCAUtility()
         image_utility = ImageUtility()
@@ -40,28 +42,22 @@ class Custom_losses:
         eigenvectors = load('pca_obj/' + dataset_name + pca_util.eigenvectors_prefix + str(pca_percentage) + ".npy")
         meanvector = load('pca_obj/' + dataset_name + pca_util.meanvector_prefix + str(pca_percentage) + ".npy")
 
-        eigenvalues_T = K.variable(eigenvalues)
-        eigenvectors_T = K.variable(eigenvectors)
-        meanvector_T = K.variable(meanvector)
-
         # yTrue = tf.constant([[1.0, 2.0, 3.0], [5.0, 4.0, 7.0]])
         # yPred = tf.constant([[9.0, 1.0, 2.0], [7.0, 3.0, 8.0]])
         # session = K.get_session()
 
         tensor_mean_square_error = K.mean(K.square(yPred - yTrue), axis=-1)
-        # mse = K.eval(tensor_mean_square_error)
-        # yPred_arr = K.eval(yPred)
-        # yTrue_arr = K.eval(yTrue)
-
-        tensor_b_vector_ = self.calculate_b_vector_tensor(yPred, True, eigenvalues_T, eigenvectors_T, meanvector_T)
+        mse = K.eval(tensor_mean_square_error)
+        yPred_arr = K.eval(yPred)
+        yTrue_arr = K.eval(yTrue)
 
         loss_array = []
 
         for i in range(LearningConfig.batch_size):
             asm_loss = 0
 
-            truth_vector = yTrue[i]
-            predicted_vector = yPred[i]
+            truth_vector = yTrue_arr[i]
+            predicted_vector = yPred_arr[i]
 
             b_vector_p = self.calculate_b_vector(predicted_vector, True, eigenvalues, eigenvectors, meanvector)
             y_pre_asm = meanvector + np.dot(eigenvectors, b_vector_p)
@@ -73,25 +69,24 @@ class Custom_losses:
             # landmark_arr_xy_new, landmark_arr_x_new, landmark_arr_y_new= image_utility.create_landmarks_from_normalized(y_pre_asm, 224, 224, 112, 112)
             # image_utility.print_image_arr(i*100, np.ones([224, 224]), landmark_arr_x_new, landmark_arr_y_new)
 
+            '''calculate asm loss:   MSE(Y_p_asm , Y_p) '''
             for j in range(len(y_pre_asm)):
-                asm_loss += (truth_vector[j] - y_pre_asm[j]) ** 2
+                asm_loss += (predicted_vector[j] - y_pre_asm[j]) ** 2
             asm_loss /= len(y_pre_asm)
 
-
-            # asm_loss *= mse[i]
-            # asm_loss *= LearningConfig.regularization_term
+            asm_loss *= LearningConfig.reg_term_ASM
 
             loss_array.append(asm_loss)
 
-            print('mse[i]' + str(mse[i]))
-            print('asm_loss[i]' + str(asm_loss))
-            print('============' )
+            # print('mse[i]' + str(mse[i]))
+            # print('asm_loss[i]' + str(asm_loss))
+            # print('============')
 
         loss_array = np.array(loss_array)
         tensor_asm_loss = K.variable(loss_array)
 
-        # sum_loss_tensor = tf.add(tensor_mean_square_error, tensor_asm_loss)
-        tensor_total_loss = tf.reduce_mean([tensor_mean_square_error, tensor_asm_loss], axis=0)
+        tensor_total_loss = tf.add(tensor_mean_square_error, tensor_asm_loss)
+        # tensor_total_loss = tf.reduce_mean([tensor_mean_square_error, tensor_asm_loss], axis=0)
 
         # sum_loss = np.array(K.eval(tensor_asm_loss))
         # print(mse)

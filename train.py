@@ -229,10 +229,11 @@ class Train:
                             )
 
     def _generate_loss(self):
-        loss = []
-        for i in range(self.num_output_layers):
-            loss.append(self.loss)
-        return loss
+        return [self.loss, 'mse']
+        # loss = []
+        # for i in range(self.num_output_layers):
+        #     loss.append(self.loss)
+        # return loss
 
     def _generate_target_tensors(self, target_tensor):
         tensors = []

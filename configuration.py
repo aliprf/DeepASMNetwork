@@ -62,11 +62,7 @@ class LearningConfig:
     point_len = 68
     pose_len = 3
 
-    reg_term_face = 1.0  # 0.9
-    reg_term_mouth = 10.0  # 0.9
-    reg_term_nose = 10.0  # 0.9
-    reg_term_leye = 10.0  # 0.9
-    reg_term_reye = 10.0  # 0.9
+    reg_term_ASM = 0.8
 
 
 

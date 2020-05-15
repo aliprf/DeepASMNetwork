@@ -28,9 +28,9 @@ if __name__ == '__main__':
     '''retrive and test tfRecords'''
     # tf_record_util.test_tf_record()
 
-
     '''create and save PCA objects'''
     # pca_utility.create_pca_from_points(DatasetName.ibug, 95)
+    # pca_utility.create_pca_from_npy(DatasetName.ibug, 90)
 
     '''generate heatmap with different accuracy'''
 
@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
     trainer = Train(use_tf_record=True,
                     dataset_name=DatasetName.ibug,
-                    custom_loss=False,
+                    custom_loss=True,
                     arch='ASMNet',
                     # arch='mobileNetV2',
                     inception_mode=False,
