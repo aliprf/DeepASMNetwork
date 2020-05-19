@@ -7,7 +7,7 @@ import numpy as np
 from train import Train
 from test import Test
 
-from Train_Gan import TrainGan
+# from Train_Gan import TrainGan
 
 if __name__ == '__main__':
     tf_record_util = TFRecordUtility()
