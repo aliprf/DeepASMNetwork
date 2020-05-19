@@ -20,7 +20,7 @@ if __name__ == '__main__':
     # tf_record_util.create_adv_att_img_hm()
 
     '''augment, normalize, and save pts'''
-    tf_record_util.rotaate_and_save()
+    # tf_record_util.rotaate_and_save()
     # tf_record_util.random_augment_from_rotated()
 
     '''normalize the points and save'''
@@ -48,16 +48,16 @@ if __name__ == '__main__':
 
     # test = Test(arch='mn_asm_0', num_output_layers=1, weight_fname='weights-61-0.00010.h5')
 
-    trainer = Train(use_tf_record=True,
-                    dataset_name=DatasetName.ibug,
-                    custom_loss=True,
-                    arch='ASMNet',
-                    # arch='mobileNetV2',
-                    inception_mode=False,
-                    num_output_layers=2,
-                    weight=None,
-                    train_on_batch=False,
-                    accuracy=100)
+    # trainer = Train(use_tf_record=True,
+    #                 dataset_name=DatasetName.ibug,
+    #                 custom_loss=True,
+    #                 arch='ASMNet',
+    #                 # arch='mobileNetV2',
+    #                 inception_mode=False,
+    #                 num_output_layers=2,
+    #                 weight=None,
+    #                 train_on_batch=False,
+    #                 accuracy=100)
 
 
 

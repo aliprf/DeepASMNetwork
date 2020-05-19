@@ -25,7 +25,8 @@ from numpy import save, load, asarray
 import img_printer as imgpr
 from tqdm import tqdm
 from pca_utility import PCAUtility
-# from pose_detection.code.PoseDetector import PoseDetector
+
+from pose_detection.code.PoseDetector import PoseDetector
 
 
 class TFRecordUtility:
