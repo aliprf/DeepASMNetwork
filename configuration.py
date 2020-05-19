@@ -119,48 +119,50 @@ class W300Conf:
 class IbugConf:
 
     '''server_config'''
-    # train_images_dir = '/media/data2/alip/fala/ibug/train_images_pts_dir/'
-    # normalized_points_npy_dir = '/media/data2/alip/fala/ibug/normalized_points_npy_dir/'
-    # normalized_pose_npy_dir = '/media/data2/alip/fala/ibug/normalized_pose_npy_dir/'
-    # pose_npy_dir = '/media/data2/alip/fala/ibug/pose_npy_dir/'
+    Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
+    # _Ibug_prefix_path = '/media/data2/alip/fala/ibug/'  # --> Atlas
+
+    img_path_prefix = Ibug_prefix_path + 'all/'
+    rotated_img_path_prefix = Ibug_prefix_path + '0_rotated/'
+    train_images_dir = Ibug_prefix_path + '1_train_images_pts_dir/'
+    normalized_points_npy_dir = Ibug_prefix_path + '2_normalized_npy_dir/'
+    normalized_pose_npy_dir = Ibug_prefix_path + '3_normalized_pose_npy_dir/'
+    pose_npy_dir = Ibug_prefix_path + '4_pose_npy_dir/'
+    tf_train_path = Ibug_prefix_path + 'train.tfrecords'
+    tf_test_path = Ibug_prefix_path + 'test.tfrecords'
+    tf_evaluation_path = Ibug_prefix_path + 'evaluation.tfrecords'
+
     # train_hm_dir = '/media/data2/alip/fala/ibug/train_hm_dir/'
     # train_hm_dir_85 = '/media/data2/alip/fala/ibug/train_hm_dir_85/'
     # train_hm_dir_90 = '/media/data2/alip/fala/ibug/train_hm_dir_90/'
     # train_hm_dir_97 = '/media/data2/alip/fala/ibug/train_hm_dir_97/'
-    # tf_train_path = '/media/data2/alip/fala/ibug/train.tfrecords'
-    # tf_test_path = '/media/data2/alip/fala/ibug/test.tfrecords'
-    # tf_evaluation_path = '/media/data2/alip/fala/ibug/evaluation.tfrecords'
 
     '''local'''
-    train_images_dir = '/media/ali/data/train_before_heatmap/'
-    normalized_points_npy_dir = '/media/ali/data/train_before_heatmap_lbl/'
-    pose_npy_dir = '/media/ali/data/train_before_heatmap_pose/'
-    train_hm_dir = '/media/ali/data/train_before_heatmap_npy/'
-    train_hm_dir_85 = '/media/ali/data/train_hm_dir_85/'
-    train_hm_dir_90 = '/media/ali/data/train_hm_dir_90/'
-    train_hm_dir_97 = '/media/ali/data/train_hm_dir_97/'
-    tf_train_path = '/media/ali/data/train.tfrecords'
-    tf_test_path = '/media/ali/data/test.tfrecords'
-    tf_evaluation_path = '/media/ali/data/evaluation.tfrecords'
+    # img_path_prefix = '/media/ali/data/train_set/'
+    # rotated_img_path_prefix = '/media/ali/data/rotated/'
+    # train_images_dir = '/media/ali/data/train_images_dir/'
+    # normalized_points_npy_dir = '/media/ali/data/normalized_points_npy_dir/'
+    # pose_npy_dir = '/media/ali/data/train_before_heatmap_pose/'
+    # train_hm_dir = '/media/ali/data/train_before_heatmap_npy/'
+    # train_hm_dir_85 = '/media/ali/data/train_hm_dir_85/'
+    # train_hm_dir_90 = '/media/ali/data/train_hm_dir_90/'
+    # train_hm_dir_97 = '/media/ali/data/train_hm_dir_97/'
+    # tf_train_path = '/media/ali/data/train.tfrecords'
+    # tf_test_path = '/media/ali/data/test.tfrecords'
+    # tf_evaluation_path = '/media/ali/data/evaluation.tfrecords'
 
 
     # origin_number_of_all_sample = 3148  # afw, train_helen, train_lfpw
     # origin_number_of_train_sample = 2834  # 95 % for train
     # origin_number_of_evaluation_sample = 314  # 5% for evaluation
 
-    origin_number_of_all_sample = 33672  # afw, train_helen, train_lfpw
-    origin_number_of_train_sample = 31989  # 95 % for train
-    origin_number_of_evaluation_sample = 1683  # 5% for evaluation
+    origin_number_of_samples_after_rotate = 33672  # afw, train_helen, train_lfpw
+    origin_number_of_all_sample = 6296   # afw, train_helen, train_lfpw
+    origin_number_of_train_sample = origin_number_of_all_sample - origin_number_of_all_sample* 0.5  # 95 % for train
+    origin_number_of_evaluation_sample = origin_number_of_all_sample - origin_number_of_train_sample # 5% for evaluation
 
-    augmentation_factor = 3  # create . image from 1
+    augmentation_factor = 4  # create . image from 1
     augmentation_factor_rotate = 20  # create . image from 1
 
     sum_of_train_samples = origin_number_of_train_sample * augmentation_factor
     sum_of_validation_samples = origin_number_of_evaluation_sample * augmentation_factor
-
-    img_path_prefix = '/media/ali/extradata/facial_landmark_ds/from_ibug/train_set/all/'
-
-    rotated_img_path_prefix = '/media/data2/alip/fala/train_rotated/'
-    # rotated_img_path_prefix = '/media/ali/data/train_before_heatmap/'
-
-    before_heatmap_img_path_prefix = '/media/ali/extradata/facial_landmark_ds/from_ibug/train_set/train_before_heatmap/'

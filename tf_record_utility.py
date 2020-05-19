@@ -1007,8 +1007,8 @@ class TFRecordUtility:
 
         return number_of_samples
 
-    def __create_tfrecord_ibug_all_heatmap_rotaate(self):
-        import random
+    def rotaate_and_save(self):
+        '''rotate image and save it in pts'''
 
         png_file_arr = []
 
@@ -1020,7 +1020,7 @@ class TFRecordUtility:
 
         image_utility = ImageUtility()
 
-        for i in range(number_of_samples):
+        for i in tqdm(range(number_of_samples)):
             img_file = png_file_arr[i]
             pts_file = png_file_arr[i][:-3] + "pts"
 
@@ -1053,25 +1053,19 @@ class TFRecordUtility:
                                             IbugConf.rotated_img_path_prefix + str(10000 * (i + 1) + j),
                                             str(10000 * (i + 1) + j))
 
-    def __create_tfrecord_ibug_all_heatmap(self):
+    def random_augment_from_rotated(self):
+        '''we use this function to augment images after rotation'''
         # try:
-        fileDir = os.path.dirname(os.path.realpath('__file__'))
-        pst_file_arr = []
         png_file_arr = []
         for file in os.listdir(IbugConf.rotated_img_path_prefix):
             if file.endswith(".jpg") or file.endswith(".png"):
                 png_file_arr.append(os.path.join(IbugConf.rotated_img_path_prefix, file))
 
-        writer_train = tf.python_io.TFRecordWriter(IbugConf.tf_train_path_heatmap)
-        writer_evaluate = tf.python_io.TFRecordWriter(IbugConf.tf_evaluation_path_heatmap)
-
-        number_of_samples = IbugConf.origin_number_of_all_sample
-        number_of_train = IbugConf.origin_number_of_train_sample
-        number_of_evaluation = IbugConf.origin_number_of_evaluation_sample
+        number_of_samples = IbugConf.origin_number_of_samples_after_rotate
 
         image_utility = ImageUtility()
 
-        for i in range(number_of_samples):
+        for i in tqdm(range(number_of_samples)):
             img_file = png_file_arr[i]
             pts_file = png_file_arr[i][:-3] + "pts"
 
@@ -1098,7 +1092,6 @@ class TFRecordUtility:
             landmark_arr_xy, landmark_arr_x, landmark_arr_y = image_utility.create_landmarks(landmarks=points_arr,
                                                                                              scale_factor_x=1,
                                                                                              scale_factor_y=1)
-
             '''augment the images, then normalize the landmarks based on the hyperface method'''
             for k in range(IbugConf.augmentation_factor):
                 '''save the origin image as well'''
@@ -1152,14 +1145,14 @@ class TFRecordUtility:
                 #     create_landmarks_from_normalized(landmark_arr_flat_normalized, 224, 224, 112, 112)
                 # imgpr.print_image_arr((i*100)+(k+1), resized_img_new, landmark_arr_x_n, landmark_arr_y_n)
 
-                heatmap_landmark = self.generate_hm(56, 56, landmark_arr_flat_normalized, s=1.0)
+                # heatmap_landmark = self.generate_hm(56, 56, landmark_arr_flat_normalized, s=1.0)
 
                 # imgpr.print_image_arr_heat((i + 1) * (k + 1), heatmap_landmark)
                 # imgpr.print_image_arr((i * 100) + (k + 1), heatmap_landmark_all, [], [])
 
                 '''save image'''
                 im = Image.fromarray((resized_img_new * 255).astype(np.uint8))
-                file_name = IbugConf.before_heatmap_img_path_prefix + str(10000 * (i + 1) + k)
+                file_name = IbugConf.train_images_dir + str(10000 * (i + 1) + k)
                 im.save(str(file_name) + '.jpg')
 
                 pnt_file = open(str(file_name) + ".pts", "w")
@@ -1172,9 +1165,6 @@ class TFRecordUtility:
                 pnt_file.writelines(points_txt)
                 pnt_file.write("} \n")
                 pnt_file.close()
-
-        writer_train.close()
-        writer_evaluate.close()
 
         return number_of_samples
 
