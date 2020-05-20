@@ -16,85 +16,87 @@ import random
 class ImageUtility:
 
     def random_rotate(self, _image, _label, file_name, fn):
+        try:
 
-        xy_points, x_points, y_points = self.create_landmarks(landmarks=_label,
-                                                              scale_factor_x=1, scale_factor_y=1)
-        _image, _label = self.cropImg_2time(_image, x_points, y_points)
+            xy_points, x_points, y_points = self.create_landmarks(landmarks=_label,
+                                                                  scale_factor_x=1, scale_factor_y=1)
+            _image, _label = self.cropImg_2time(_image, x_points, y_points)
 
-        scale = (np.random.uniform(0.7, 1.3), np.random.uniform(0.7, 1.3))
-        # scale = (1, 1)
+            scale = (np.random.uniform(0.7, 1.3), np.random.uniform(0.7, 1.3))
+            # scale = (1, 1)
 
-        rot = np.random.uniform(-1 * 0.55, 0.55)
-        translation = (0, 0)
-        shear = 0
+            rot = np.random.uniform(-1 * 0.55, 0.55)
+            translation = (0, 0)
+            shear = 0
 
-        tform = AffineTransform(
-            scale=scale,  # ,
-            rotation=rot,
-            translation=translation,
-            shear=np.deg2rad(shear)
-        )
+            tform = AffineTransform(
+                scale=scale,  # ,
+                rotation=rot,
+                translation=translation,
+                shear=np.deg2rad(shear)
+            )
 
-        output_img = transform.warp(_image, tform.inverse, mode='symmetric')
+            output_img = transform.warp(_image, tform.inverse, mode='symmetric')
 
-        sx, sy = scale
-        t_matrix = np.array([
-            [sx * math.cos(rot), -sy * math.sin(rot + shear), 0],
-            [sx * math.sin(rot), sy * math.cos(rot + shear), 0],
-            [0, 0, 1]
-        ])
-        landmark_arr_xy, landmark_arr_x, landmark_arr_y = self.create_landmarks(_label, 1, 1)
-        label = np.array(landmark_arr_x + landmark_arr_y).reshape([2, 68])
-        marging = np.ones([1, 68])
-        label = np.concatenate((label, marging), axis=0)
+            sx, sy = scale
+            t_matrix = np.array([
+                [sx * math.cos(rot), -sy * math.sin(rot + shear), 0],
+                [sx * math.sin(rot), sy * math.cos(rot + shear), 0],
+                [0, 0, 1]
+            ])
+            landmark_arr_xy, landmark_arr_x, landmark_arr_y = self.create_landmarks(_label, 1, 1)
+            label = np.array(landmark_arr_x + landmark_arr_y).reshape([2, 68])
+            marging = np.ones([1, 68])
+            label = np.concatenate((label, marging), axis=0)
 
-        label_t = np.dot(t_matrix, label)
-        lbl_flat = np.delete(label_t, 2, axis=0).reshape([136])
+            label_t = np.dot(t_matrix, label)
+            lbl_flat = np.delete(label_t, 2, axis=0).reshape([136])
 
-        t_label = self.__reorder(lbl_flat)
+            t_label = self.__reorder(lbl_flat)
 
-        '''crop data: we add a small margin to the images'''
-        xy_points, x_points, y_points = self.create_landmarks(landmarks=t_label,
-                                                              scale_factor_x=1, scale_factor_y=1)
-        img_arr, points_arr = self.cropImg(output_img, x_points, y_points, no_padding=False)
-        # img_arr = output_img
-        # points_arr = t_label
-        '''resize image to 224*224'''
-        resized_img = resize(img_arr,
-                             (224, 224, 3),
-                             anti_aliasing=True)
-        dims = img_arr.shape
-        height = dims[0]
-        width = dims[1]
-        scale_factor_y = 224 / height
-        scale_factor_x = 224 / width
+            '''crop data: we add a small margin to the images'''
+            xy_points, x_points, y_points = self.create_landmarks(landmarks=t_label,
+                                                                  scale_factor_x=1, scale_factor_y=1)
+            img_arr, points_arr = self.cropImg(output_img, x_points, y_points, no_padding=False)
+            # img_arr = output_img
+            # points_arr = t_label
+            '''resize image to 224*224'''
+            resized_img = resize(img_arr,
+                                 (224, 224, 3),
+                                 anti_aliasing=True)
+            dims = img_arr.shape
+            height = dims[0]
+            width = dims[1]
+            scale_factor_y = 224 / height
+            scale_factor_x = 224 / width
 
-        '''rescale and retrieve landmarks'''
-        landmark_arr_xy, landmark_arr_x, landmark_arr_y = \
-            self.create_landmarks(landmarks=points_arr,
-                                  scale_factor_x=scale_factor_x,
-                                  scale_factor_y=scale_factor_y)
+            '''rescale and retrieve landmarks'''
+            landmark_arr_xy, landmark_arr_x, landmark_arr_y = \
+                self.create_landmarks(landmarks=points_arr,
+                                      scale_factor_x=scale_factor_x,
+                                      scale_factor_y=scale_factor_y)
 
-        if not(min(landmark_arr_x) < 0.0 or min(landmark_arr_y) < 0.0 or max(landmark_arr_x) > 224 or max(landmark_arr_y) > 224):
+            if not(min(landmark_arr_x) < 0.0 or min(landmark_arr_y) < 0.0 or max(landmark_arr_x) > 224 or max(landmark_arr_y) > 224):
 
-            # self.print_image_arr(fn, resized_img, landmark_arr_x, landmark_arr_y)
+                # self.print_image_arr(fn, resized_img, landmark_arr_x, landmark_arr_y)
 
-            im = Image.fromarray((resized_img * 255).astype(np.uint8))
-            im.save(str(file_name) + '.jpg')
+                im = Image.fromarray((resized_img * 255).astype(np.uint8))
+                im.save(str(file_name) + '.jpg')
 
-            pnt_file = open(str(file_name) + ".pts", "w")
-            pre_txt = ["version: 1 \n", "n_points: 68 \n", "{ \n"]
-            pnt_file.writelines(pre_txt)
-            points_txt = ""
-            for i in range(0, len(landmark_arr_xy), 2):
-                points_txt += str(landmark_arr_xy[i]) + " " + str(landmark_arr_xy[i + 1]) + "\n"
+                pnt_file = open(str(file_name) + ".pts", "w")
+                pre_txt = ["version: 1 \n", "n_points: 68 \n", "{ \n"]
+                pnt_file.writelines(pre_txt)
+                points_txt = ""
+                for i in range(0, len(landmark_arr_xy), 2):
+                    points_txt += str(landmark_arr_xy[i]) + " " + str(landmark_arr_xy[i + 1]) + "\n"
 
-            pnt_file.writelines(points_txt)
-            pnt_file.write("} \n")
-            pnt_file.close()
+                pnt_file.writelines(points_txt)
+                pnt_file.write("} \n")
+                pnt_file.close()
 
-        return t_label, output_img
-
+            return t_label, output_img
+        except:
+            return None, None
 
 
     def random_rotate_m(self, _image, _label_img, file_name):
