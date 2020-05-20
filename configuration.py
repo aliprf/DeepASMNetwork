@@ -156,13 +156,10 @@ class IbugConf:
     # origin_number_of_train_sample = 2834  # 95 % for train
     # origin_number_of_evaluation_sample = 314  # 5% for evaluation
 
-    origin_number_of_samples_after_rotate = 33672  # afw, train_helen, train_lfpw
-    origin_number_of_all_sample = 6296   # afw, train_helen, train_lfpw
-    origin_number_of_train_sample = origin_number_of_all_sample - origin_number_of_all_sample* 0.5  # 95 % for train
-    origin_number_of_evaluation_sample = origin_number_of_all_sample - origin_number_of_train_sample # 5% for evaluation
+    '''after augmentation'''
+    number_of_all_sample = 134688   # afw, train_helen, train_lfpw
+    number_of_train_sample = number_of_all_sample * 0.95  # 95 % for train
+    number_of_evaluation_sample = number_of_all_sample * 0.05  # 5% for evaluation
 
     augmentation_factor = 4  # create . image from 1
     augmentation_factor_rotate = 20  # create . image from 1
-
-    sum_of_train_samples = origin_number_of_train_sample * augmentation_factor
-    sum_of_validation_samples = origin_number_of_evaluation_sample * augmentation_factor
