@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     '''create and save PCA objects'''
     # pca_utility.create_pca_from_points(DatasetName.ibug, 95)
-    pca_utility.create_pca_from_npy(DatasetName.ibug, 90)
+    # pca_utility.create_pca_from_npy(DatasetName.ibug, 90)
 
     '''generate heatmap with different accuracy'''
 
