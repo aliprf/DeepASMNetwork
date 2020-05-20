@@ -20,7 +20,7 @@ if __name__ == '__main__':
     # tf_record_util.create_adv_att_img_hm()
 
     '''augment, normalize, and save pts'''
-    tf_record_util.rotaate_and_save()
+#    tf_record_util.rotaate_and_save()
     tf_record_util.random_augment_from_rotated()
 
     '''normalize the points and save'''
