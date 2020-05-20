@@ -1175,9 +1175,9 @@ class TFRecordUtility:
         landmarks_dir = IbugConf.normalized_points_npy_dir
         pose_dir = IbugConf.pose_npy_dir
 
-        num_all_samples = 100  #
-        num_train_samples = 95  # 95%
-        num_eval_samples = 5  # 5%
+        num_all_samples = 134688  #
+        num_train_samples = num_all_samples * 0.95  # 95%
+        num_eval_samples = num_all_samples * 0.05  # 5%
         counter = 0
 
         writer_train = tf.python_io.TFRecordWriter(IbugConf.tf_train_path)

@@ -126,7 +126,7 @@ class IbugConf:
     rotated_img_path_prefix = Ibug_prefix_path + '0_rotated/'
     train_images_dir = Ibug_prefix_path + '1_train_images_pts_dir/'
     normalized_points_npy_dir = Ibug_prefix_path + '2_normalized_npy_dir/'
-    normalized_pose_npy_dir = Ibug_prefix_path + '3_normalized_pose_npy_dir/'
+    # normalized_pose_npy_dir = Ibug_prefix_path + '3_normalized_pose_npy_dir/'
     pose_npy_dir = Ibug_prefix_path + '4_pose_npy_dir/'
     tf_train_path = Ibug_prefix_path + 'train.tfrecords'
     tf_test_path = Ibug_prefix_path + 'test.tfrecords'
