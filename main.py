@@ -29,7 +29,7 @@ if __name__ == '__main__':
     '''generate pose using hopeNet'''
     # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.ibug)
     '''create tfRecord:'''
-    tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=False)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=False)
     '''retrive and test tfRecords'''
     # tf_record_util.test_tf_record()
 
