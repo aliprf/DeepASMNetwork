@@ -1,5 +1,5 @@
 from configuration import DatasetName, DatasetType,\
-    AffectnetConf, IbugConf, W300Conf, InputDataSize, LearningConfig
+    AffectnetConf, IbugConf, W300Conf, InputDataSize, LearningConfig, WflwConf, CofwConf
 from image_utility import ImageUtility
 from sklearn.decomposition import PCA, IncrementalPCA
 from sklearn.decomposition import TruncatedSVD
@@ -22,6 +22,10 @@ class PCAUtility:
         path = None
         if dataset_name == DatasetName.ibug:
             path = IbugConf.normalized_points_npy_dir  # normalized
+        elif dataset_name == DatasetName.cofw:
+            path = CofwConf.normalized_points_npy_dir  # normalized
+        elif dataset_name == DatasetName.wflw:
+            path = WflwConf.normalized_points_npy_dir  # normalized
 
         lbl_arr = []
         for file in tqdm(os.listdir(path)):
@@ -34,7 +38,7 @@ class PCAUtility:
         print('PCA calculation started')
 
         ''' no normalization is needed, since we want to generate hm'''
-        reduced_lbl_arr, eigenvalues, eigenvectors = self.__func_PCA(lbl_arr, pca_postfix)
+        reduced_lbl_arr, eigenvalues, eigenvectors = self._func_PCA(lbl_arr, pca_postfix)
         mean_lbl_arr = np.mean(lbl_arr, axis=0)
         eigenvectors = eigenvectors.T
         #
@@ -244,7 +248,7 @@ class PCAUtility:
             meanvector = pickle.load(f)
         return eigenvalues, eigenvectors, meanvector
 
-    def __func_PCA(self, input_data, pca_postfix):
+    def _func_PCA(self, input_data, pca_postfix):
         input_data = np.array(input_data)
         pca = PCA(n_components=pca_postfix/100)
         # pca = PCA(n_components=0.98)

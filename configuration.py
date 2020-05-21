@@ -4,6 +4,8 @@ class DatasetName:
     ibug = 'ibug'
     aflw = 'aflw'
     aflw2000 = 'aflw2000'
+    cofw = 'cofw'
+    wflw = 'wflw'
 
 
 
@@ -116,6 +118,55 @@ class W300Conf:
     number_of_all_sample_full = 689
 
 
+class WflwConf:
+    Cofw_prefix_path = '/media/data3/ali/FL/wflw/'  # --> Zeus
+    # _Ibug_prefix_path = '/media/data2/alip/fala/ibug/'  # --> Atlas
+
+    img_path_prefix = Cofw_prefix_path + 'all/'
+    rotated_img_path_prefix = Cofw_prefix_path + '0_rotated/'
+    train_images_dir = Cofw_prefix_path + '1_train_images_pts_dir/'
+    normalized_points_npy_dir = Cofw_prefix_path + '2_normalized_npy_dir/'
+    pose_npy_dir = Cofw_prefix_path + '4_pose_npy_dir/'
+    tf_train_path = Cofw_prefix_path + 'train.tfrecords'
+    tf_test_path = Cofw_prefix_path + 'test.tfrecords'
+    tf_evaluation_path = Cofw_prefix_path + 'evaluation.tfrecords'
+
+    orig_number_of_training = 7500
+    orig_number_of_test = 2500
+
+    number_of_all_sample = 0  # afw, train_helen, train_lfpw
+    number_of_train_sample = number_of_all_sample * 0.95  # 95 % for train
+    number_of_evaluation_sample = number_of_all_sample * 0.05  # 5% for evaluation
+
+    augmentation_factor = 4  # create . image from 1
+    augmentation_factor_rotate = 15  # create . image from 1
+    num_of_landmarks = 98
+
+class CofwConf:
+    Cofw_prefix_path = '/media/data3/ali/FL/cofw/'  # --> Zeus
+    # _Ibug_prefix_path = '/media/data2/alip/fala/ibug/'  # --> Atlas
+
+    img_path_prefix = Cofw_prefix_path + 'all/'
+    rotated_img_path_prefix = Cofw_prefix_path + '0_rotated/'
+    train_images_dir = Cofw_prefix_path + '1_train_images_pts_dir/'
+    normalized_points_npy_dir = Cofw_prefix_path + '2_normalized_npy_dir/'
+    pose_npy_dir = Cofw_prefix_path + '4_pose_npy_dir/'
+    tf_train_path = Cofw_prefix_path + 'train.tfrecords'
+    tf_test_path = Cofw_prefix_path + 'test.tfrecords'
+    tf_evaluation_path = Cofw_prefix_path + 'evaluation.tfrecords'
+
+    orig_number_of_training = 1345
+    orig_number_of_test = 507
+
+    number_of_all_sample = 0  # afw, train_helen, train_lfpw
+    number_of_train_sample = number_of_all_sample * 0.95  # 95 % for train
+    number_of_evaluation_sample = number_of_all_sample * 0.05  # 5% for evaluation
+
+    augmentation_factor = 5  # create . image from 1
+    augmentation_factor_rotate = 30  # create . image from 1
+    num_of_landmarks = 29
+
+
 class IbugConf:
 
     '''server_config'''
@@ -156,6 +207,11 @@ class IbugConf:
     # origin_number_of_train_sample = 2834  # 95 % for train
     # origin_number_of_evaluation_sample = 314  # 5% for evaluation
 
+    orig_number_of_training = 3148
+    orig_number_of_test_full = 689
+    orig_number_of_test_common = 554
+    orig_number_of_test_challenging = 135
+
     '''after augmentation'''
     number_of_all_sample = 134688   # afw, train_helen, train_lfpw
     number_of_train_sample = number_of_all_sample * 0.95  # 95 % for train
@@ -163,3 +219,5 @@ class IbugConf:
 
     augmentation_factor = 4  # create . image from 1
     augmentation_factor_rotate = 20  # create . image from 1
+    num_of_landmarks = 68
+

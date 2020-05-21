@@ -33,14 +33,19 @@ from keras.preprocessing.image import ImageDataGenerator
 from clr_callback import CyclicLR
 from cnn_model import CNNModel
 import img_printer as imgpr
-
+from pose_detection.code.PoseDetector import PoseDetector, utils
 
 class Test:
-    def __init__(self, arch, num_output_layers, weight_fname):
+    def __init__(self, dataset_name, arch, num_output_layers, weight_fname):
         cnn = CNNModel()
+        detect = PoseDetector()
         model = cnn.get_model(None, arch, num_output_layers)
         model.load_weights(weight_fname)
 
+        if dataset_name == DatasetName.ibug:
+            self._ibug_test(detect, model)
+
+    def _ibug_test(self, detect, model):
         tf_record_utility = TFRecordUtility()
         image_utility = ImageUtility()
         lbl_arr_challenging, img_arr_challenging = tf_record_utility.retrieve_tf_record_test_set(
@@ -73,10 +78,10 @@ class Test:
 
         # multitask = True
         all_true = []
-        all_pridicted  = []
+        all_pridicted = []
         for i in range(W300Conf.number_of_all_sample_challenging):
-            loss_challenging_, lt, lp = self.\
-                _test_result_per_image(i, model, img_arr_challenging[i], lbl_arr_challenging[i])
+            loss_challenging_, lt, lp, mae_yaw, mae_pitch, mae_roll = \
+                self._test_result_per_image(i, model, img_arr_challenging[i], lbl_arr_challenging[i], detect)
             loss_challenging += loss_challenging_
 
             all_true.append(lt)
@@ -89,20 +94,22 @@ class Test:
         print(loss_challenging * 100 / W300Conf.number_of_all_sample_challenging)
 
         for i in range(W300Conf.number_of_all_sample_common):
-            loss_common_, _, _ = self._test_result_per_image(i, model, img_arr_common[i], lbl_arr_common[i])
+            loss_common_, lt, lp, mae_yaw, mae_pitch, mae_roll = \
+                self._test_result_per_image(i, model, img_arr_common[i], lbl_arr_common[i], detect)
             loss_common += loss_common_
 
         print('LOSS common: ')
         print(loss_common * 100 / W300Conf.number_of_all_sample_common)
 
         for i in range(W300Conf.number_of_all_sample_full):
-            loss_full_, _, _ = self._test_result_per_image(i, model, img_arr_full[i], lbl_arr_full[i])
+            loss_full_, lt, lp, mae_yaw, mae_pitch, mae_roll = \
+                self._test_result_per_image(i, model, img_arr_full[i], lbl_arr_full[i], detect)
             loss_full += loss_full_
 
         print('LOSS full: ')
         print(loss_full * 100 / W300Conf.number_of_all_sample_full)
 
-    def _test_result_per_image(self, counter, model, img, labels_true):
+    def _test_result_per_image(self, counter, model, img, labels_true, detect):
         tf_utility = TFRecordUtility()
         image_utility = ImageUtility()
 
@@ -110,50 +117,14 @@ class Test:
 
         predict = model.predict(image)
 
-        heatmap_main = predict[0]
-        # heatmap_main = predict[0][0]
-
-        # print("labels_true: " + str(labels_true))
-        # print("labels_predicted :" + str(labels_predicted))
+        pre_points = predict[0][0]
+        pose_predicted = predict[1][0]
 
         labels_true_transformed, landmark_arr_x_t, landmark_arr_y_t = image_utility. \
             create_landmarks_from_normalized(labels_true, 224, 224, 112, 112)
-        #
-        # labels_predicted_asm = self.__post_process_correction(labels_predicted)
 
-        # labels_predict_transformed, landmark_arr_x_p, landmark_arr_y_p = image_utility. \
-            # create_landmarks_from_normalized(labels_predicted, 224, 224, 112, 112)
-
-        # labels_predict_asm_transformed, landmark_arr_x_asm_p, landmark_arr_y_asm_p = image_utility. \
-        #     create_landmarks_from_normalized(labels_predicted_asm, 224, 224, 112, 112)
-
-        # xys = np.zeros(shape=[136])
-        # xys[72:96] = labels_true_transformed[72:96]
-        # # xys[73] = labels_true_transformed[73]
-        # # xys[90] = labels_true_transformed[90]
-        # # xys[91] = labels_true_transformed[91]
-        #
-        # x_s =[]
-        # x_y =[]
-        # for i in range(0, 136, 2):
-        #     x_s.append(xys[i])
-        #     x_y.append(xys[i+1])
-        # imgpr.print_image_arr(counter+1, img, x_s, x_y)
-
-        x_h_p, y_h_p, xy_h_p = tf_utility.from_heatmap_to_point(heatmap_main, 2)
-
-        # mkps = tf_utility.get_predicted_kp_from_htmap(heatmap_main, (112, 112), 1, (56, 56)) # (68 * 3)
-        # x_h_p = []
-        # y_h_p = []
-        # xy_h_p = []
-        # for i in range(mkps.shape[0]):
-        #     x_h_p.append(mkps[i][0])
-        #     y_h_p.append(mkps[i][1])
-        #
-        #     xy_h_p.append(mkps[i][0])
-        #     xy_h_p.append(mkps[i][1])
-
-        labels_predict_transformed = xy_h_p
+        labels_predict_transformed, landmark_arr_x_p, landmark_arr_y_p = \
+            image_utility.create_landmarks_from_normalized(pre_points, 224, 224, 112, 112)
 
         '''asm pp'''
         # xy_h_p_asm = self.__post_process_correction(xy_h_p, True)
@@ -162,23 +133,9 @@ class Test:
         # labels_predict_transformed = labels_predict_transformed_asm
         ''''''
 
+        '''test print'''
         #
-
-        # heatmap_main_all = heatmap_main_all[:, :, 0]
-
-        # print(heatmap_main_all.shape)
-        # imgpr.print_image_arr(counter+1, heatmap_main_all, np.array(landmark_arr_x_t)/4, np.array(landmark_arr_y_t)/4)
-        # imgpr.print_image_arr(counter+1, heatmap_main_all, np.array(x_h_p)/4, np.array(y_h_p)/4)
-
-        imgpr.print_image_arr((counter+1)*100, img, x_h_p, y_h_p)
-        # imgpr.print_image_arr(counter+1, img, landmark_arr_x_p_asm, landmark_arr_y_p_asm)
-
-        # imgpr.print_image_arr((counter+1)*1000, img, landmark_arr_x_p, landmark_arr_y_p)
-
-        imgpr.print_image_arr_heat(counter+1, heatmap_main, print_single=False)
-        #
-        # imgpr.print_image_arr((counter+1)*100000, img, landmark_arr_x_t, landmark_arr_y_t)
-
+        imgpr.print_image_arr((counter+1)*100, img, landmark_arr_x_p, landmark_arr_y_p)
 
         # print("landmark_arr_x_t: " + str(landmark_arr_x_t))
         # print("landmark_arr_x_p :" + str(landmark_arr_x_p))
@@ -186,13 +143,13 @@ class Test:
         # print("landmark_arr_y_t: " + str(landmark_arr_y_t))
         # print("landmark_arr_y_p :" + str(landmark_arr_y_p))
 
-        # return 0,0,0,0
+        # return 0,0,0
 
         interpupil_distance = self.__calculate_interpupil_distance(labels_true_transformed)
         # interpupil_distance = self.__calculate_interoccular_distance(labels_true_transformed)
 
         sum_errors = 0
-        for i in range(0, len(labels_true_transformed), 2): # two step each time
+        for i in range(0, len(labels_true_transformed), 2):  # two step each time
             '''this is the value after transformation to the real points'''
             x_point_predicted = labels_predict_transformed[i]
             y_point_predicted = labels_predict_transformed[i+1]
@@ -219,7 +176,7 @@ class Test:
         # print(lt)
         # print('---------------')
 
-        return normalized_mean_error, lt, lp
+        # return normalized_mean_error, lt, lp
 
         '''pose estimation vs hopeNet'''
         img_cp_1 = np.array(img) * 255.0
@@ -246,16 +203,16 @@ class Test:
         # print("true:  " + str(yaw_truth)+"--"+str(pitch_truth)+"--"+str(roll_truth))
         # print("predict:  " + str(yaw_tpre)+"--"+str(pitch_tpre)+"--"+str(roll_tpre))
 
-        # output_pre = utils.draw_axis(img_cp_1, yaw_tpre, pitch_tpre, roll_tpre, tdx=150, tdy=150, size=150)
-        # output_truth = utils.draw_axis(img_cp_2, yaw_truth, pitch_truth, roll_truth, tdx=150, tdy=150, size=150)
-        # cv2.imwrite(str(counter+1) + ".jpg", output_pre)
-        # cv2.imwrite(str((counter+1)*1000) + ".jpg", output_truth)
+        output_pre = utils.draw_axis(img_cp_1, yaw_tpre, pitch_tpre, roll_tpre, tdx=150, tdy=150, size=150)
+        output_truth = utils.draw_axis(img_cp_2, yaw_truth, pitch_truth, roll_truth, tdx=150, tdy=150, size=150)
+        cv2.imwrite(str(counter+1) + ".jpg", output_pre)
+        cv2.imwrite(str((counter+1)*1000) + ".jpg", output_truth)
 
         mae_yaw = abs(yaw_tpre - yaw_truth)
         mae_pitch = abs(pitch_tpre - pitch_truth)
         mae_roll = abs(roll_tpre - roll_truth)
         "================================="
-        return normalized_mean_error, mae_yaw, mae_pitch, mae_roll
+        return normalized_mean_error, lt, lp, mae_yaw, mae_pitch, mae_roll
 
     def __calculate_interoccular_distance(self, labels_true):
         left_oc_x = labels_true[72]

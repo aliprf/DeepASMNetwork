@@ -1,4 +1,5 @@
-from configuration import DatasetName, DatasetType, AffectnetConf, IbugConf, W300Conf, InputDataSize, LearningConfig
+from configuration import DatasetName, DatasetType, AffectnetConf, IbugConf, \
+    W300Conf, InputDataSize, LearningConfig, CofwConf, WflwConf
 from image_utility import ImageUtility
 
 import tensorflow as tf
@@ -110,11 +111,11 @@ class TFRecordUtility:
 
         elif dataset_name == DatasetName.ibug:
             if heatmap:
-                self.__create_tfrecord_ibug_all_heatmap()
+                self.__create_tfrecord_ibug_all_heatmap(dataset_name)
                 # self.__create_tfrecord_ibug_all_heatmap_rotaate()
             else:
                 '''when we wannat create it from npy'''
-                self._create_tfrecord_ibug_all_from_npy()
+                self._create_tfrecord_from_npy(dataset_name)
                 '''when we wanna start from scratch'''
                 # self.__create_tfrecord_ibug_all_main()
 
@@ -480,6 +481,12 @@ class TFRecordUtility:
         if dataset_name == DatasetName.ibug:
             images_dir = IbugConf.train_images_dir
             pose_npy_dir = IbugConf.pose_npy_dir
+        elif dataset_name == DatasetName.cofw:
+            images_dir = CofwConf.train_images_dir
+            pose_npy_dir = CofwConf.pose_npy_dir
+        elif dataset_name == DatasetName.wflw:
+            images_dir = WflwConf.train_images_dir
+            pose_npy_dir = WflwConf.pose_npy_dir
         else:
             images_dir = ''
             pose_npy_dir = ''
@@ -510,9 +517,19 @@ class TFRecordUtility:
         if dataset_name == DatasetName.ibug:
             images_dir = IbugConf.train_images_dir
             normalized_points_npy_dir = IbugConf.normalized_points_npy_dir
+            num_of_landmarks = IbugConf.num_of_landmarks
+        elif dataset_name == DatasetName.cofw:
+            images_dir = CofwConf.train_images_dir
+            normalized_points_npy_dir = CofwConf.normalized_points_npy_dir
+            num_of_landmarks = CofwConf.num_of_landmarks
+        elif dataset_name == DatasetName.wflw:
+            images_dir = WflwConf.train_images_dir
+            normalized_points_npy_dir = WflwConf.normalized_points_npy_dir
+            num_of_landmarks = WflwConf.num_of_landmarks
         else:
             images_dir = ''
             normalized_points_npy_dir = ''
+            num_of_landmarks = 0
 
         counter = 1
         for file in tqdm(os.listdir(images_dir)):
@@ -524,7 +541,7 @@ class TFRecordUtility:
                     line = fp.readline()
                     cnt = 1
                     while line:
-                        if 3 < cnt < 72:
+                        if 3 < cnt < num_of_landmarks + 3:
                             x_y_pnt = line.strip()
                             x = float(x_y_pnt.split(" ")[0])
                             y = float(x_y_pnt.split(" ")[1])
@@ -1008,16 +1025,41 @@ class TFRecordUtility:
 
         return number_of_samples
 
-    def rotaate_and_save(self):
+    def rotaate_and_save(self, dataset_name):
         '''rotate image and save it in pts'''
+
+        number_of_samples = 0
+        img_path_prefix = ''
+        rotated_img_path_prefix = ''
+        augmentation_factor_rotate = 0
+        num_of_landmarks = 0
+
+        if dataset_name == DatasetName.ibug:
+            number_of_samples = IbugConf.orig_number_of_training
+            img_path_prefix = IbugConf.img_path_prefix
+            rotated_img_path_prefix = IbugConf.rotated_img_path_prefix
+            augmentation_factor_rotate = IbugConf.augmentation_factor_rotate
+            num_of_landmarks = IbugConf.landmarks
+
+        elif dataset_name == DatasetName.cofw:
+            number_of_samples = CofwConf.orig_number_of_training
+            img_path_prefix = CofwConf.img_path_prefix
+            rotated_img_path_prefix = CofwConf.rotated_img_path_prefix
+            augmentation_factor_rotate = CofwConf.augmentation_factor_rotate
+            num_of_landmarks = CofwConf.landmarks
+
+        elif dataset_name == DatasetName.wflw:
+            number_of_samples = CofwConf.orig_number_of_training
+            img_path_prefix = CofwConf.img_path_prefix
+            rotated_img_path_prefix = CofwConf.rotated_img_path_prefix
+            augmentation_factor_rotate = CofwConf.augmentation_factor_rotate
+            num_of_landmarks = WflwConf.landmarks
 
         png_file_arr = []
 
-        for file in os.listdir(IbugConf.img_path_prefix):
+        for file in os.listdir(img_path_prefix):
             if file.endswith(".jpg") or file.endswith(".png"):
-                png_file_arr.append(os.path.join(IbugConf.img_path_prefix, file))
-
-        number_of_samples = IbugConf.origin_number_of_all_sample
+                png_file_arr.append(os.path.join(img_path_prefix, file))
 
         image_utility = ImageUtility()
 
@@ -1030,7 +1072,7 @@ class TFRecordUtility:
                 line = fp.readline()
                 cnt = 1
                 while line:
-                    if 3 < cnt < 72:
+                    if 3 < cnt < num_of_landmarks+3:
                         x_y_pnt = line.strip()
                         x = float(x_y_pnt.split(" ")[0])
                         y = float(x_y_pnt.split(" ")[1])
@@ -1045,26 +1087,46 @@ class TFRecordUtility:
             resized_img = img
             landmark_arr_xy = points_arr
 
-            # heatmap_lbl_img = np.zeros(shape=[resized_img.shape[0], resized_img.shape[1]])  # 2d is ok
-            # for j in range(0, len(landmark_arr_xy), 2):
-            #     heatmap_lbl_img[int(landmark_arr_xy[j + 1]), int(landmark_arr_xy[j])] = 255
-
-            for j in range(IbugConf.augmentation_factor_rotate):
+            for j in range(augmentation_factor_rotate):
                 image_utility.random_rotate(resized_img, landmark_arr_xy,
-                                            IbugConf.rotated_img_path_prefix + str(10000 * (i + 1) + j),
+                                            rotated_img_path_prefix + str(10000 * (i + 1) + j),
                                             str(10000 * (i + 1) + j))
 
-    def random_augment_from_rotated(self):
+    def random_augment_from_rotated(self, dataset_name):
         '''we use this function to augment images after rotation'''
-        # try:
-        png_file_arr = []
-        for file in os.listdir(IbugConf.rotated_img_path_prefix):
-            if file.endswith(".jpg") or file.endswith(".png"):
-                png_file_arr.append(os.path.join(IbugConf.rotated_img_path_prefix, file))
-
-        number_of_samples = IbugConf.origin_number_of_samples_after_rotate
-
         image_utility = ImageUtility()
+
+        number_of_samples = 0
+        rotated_img_path_prefix = ''
+        num_of_landmarks = 0
+        augmentation_factor = 0
+        train_images_dir = ''
+
+        if dataset_name == DatasetName.ibug:
+            number_of_samples = IbugConf.orig_number_of_training
+            rotated_img_path_prefix = IbugConf.rotated_img_path_prefix
+            num_of_landmarks = IbugConf.num_of_landmarks
+            augmentation_factor = IbugConf.augmentation_factor
+            train_images_dir = IbugConf.train_images_dir
+
+        elif dataset_name == DatasetName.cofw:
+            number_of_samples = CofwConf.orig_number_of_training
+            rotated_img_path_prefix = CofwConf.rotated_img_path_prefix
+            num_of_landmarks = CofwConf.num_of_landmarks
+            augmentation_factor = CofwConf.augmentation_factor
+            train_images_dir = CofwConf.train_images_dir
+
+        elif dataset_name == DatasetName.wflw:
+            number_of_samples = WflwConf.orig_number_of_training
+            rotated_img_path_prefix = WflwConf.rotated_img_path_prefix
+            num_of_landmarks = WflwConf.num_of_landmarks
+            augmentation_factor = WflwConf.augmentation_factor
+            train_images_dir = WflwConf.train_images_dir
+
+        png_file_arr = []
+        for file in os.listdir(rotated_img_path_prefix):
+            if file.endswith(".jpg") or file.endswith(".png"):
+                png_file_arr.append(os.path.join(rotated_img_path_prefix, file))
 
         for i in tqdm(range(number_of_samples)):
             img_file = png_file_arr[i]
@@ -1075,7 +1137,7 @@ class TFRecordUtility:
                 line = fp.readline()
                 cnt = 1
                 while line:
-                    if 3 < cnt < 72:
+                    if 3 < cnt < num_of_landmarks + 3:
                         x_y_pnt = line.strip()
                         x = float(x_y_pnt.split(" ")[0])
                         y = float(x_y_pnt.split(" ")[1])
@@ -1094,7 +1156,7 @@ class TFRecordUtility:
                                                                                              scale_factor_x=1,
                                                                                              scale_factor_y=1)
             '''augment the images, then normalize the landmarks based on the hyperface method'''
-            for k in range(IbugConf.augmentation_factor):
+            for k in range(augmentation_factor):
                 '''save the origin image as well'''
                 if k == 0:
                     landmark_arr_flat_aug = landmark_arr_xy
@@ -1105,7 +1167,8 @@ class TFRecordUtility:
                     if k % 2 == 0:
                         landmark_arr_flat_aug, img_aug = image_utility.random_augmentation(landmark_arr_xy, resized_img)
                     else:
-                        landmark_arr_flat_aug, img_aug = image_utility.augment(resized_img, landmark_arr_xy)
+                        landmark_arr_flat_aug, img_aug = image_utility.augment(resized_img,
+                                                                               landmark_arr_xy, num_of_landmarks)
 
                 '''test '''
                 # imgpr.print_image_arr(k, img_aug, [], [])
@@ -1153,7 +1216,7 @@ class TFRecordUtility:
 
                 '''save image'''
                 im = Image.fromarray((resized_img_new * 255).astype(np.uint8))
-                file_name = IbugConf.train_images_dir + str(10000 * (i + 1) + k)
+                file_name = train_images_dir + str(10000 * (i + 1) + k)
                 im.save(str(file_name) + '.jpg')
 
                 pnt_file = open(str(file_name) + ".pts", "w")
@@ -1169,19 +1232,43 @@ class TFRecordUtility:
 
         return number_of_samples
 
-    def _create_tfrecord_ibug_all_from_npy(self):
+    def _create_tfrecord_from_npy(self, dataset_name):
         '''we use this function when we have already created and nrmalzed both landmarks and poses'''
-        img_dir = IbugConf.train_images_dir
-        landmarks_dir = IbugConf.normalized_points_npy_dir
-        pose_dir = IbugConf.pose_npy_dir
 
-        num_all_samples = IbugConf.number_of_all_sample  #
-        num_train_samples = IbugConf.number_of_train_sample # 95%
-        num_eval_samples = IbugConf.number_of_evaluation_sample # 5%
+        if dataset_name == DatasetName.ibug:
+            img_dir = IbugConf.train_images_dir
+            landmarks_dir = IbugConf.normalized_points_npy_dir
+            pose_dir = IbugConf.pose_npy_dir
+            num_train_samples = IbugConf.number_of_train_sample  # 95%
+            tf_train_path = IbugConf.tf_train_path
+            tf_evaluation_path = IbugConf.tf_evaluation_path
+
+        elif dataset_name == DatasetName.cofw:
+            img_dir = CofwConf.train_images_dir
+            landmarks_dir = CofwConf.normalized_points_npy_dir
+            pose_dir = CofwConf.pose_npy_dir
+            num_train_samples = CofwConf.number_of_train_sample  # 95%
+            tf_train_path = CofwConf.tf_train_path
+            tf_evaluation_path = CofwConf.tf_evaluation_path
+
+        elif dataset_name == DatasetName.wflw:
+            img_dir = WflwConf.train_images_dir
+            landmarks_dir = WflwConf.normalized_points_npy_dir
+            pose_dir = WflwConf.pose_npy_dir
+            num_train_samples = WflwConf.number_of_train_sample  # 95%
+            tf_train_path = WflwConf.tf_train_path
+            tf_evaluation_path = WflwConf.tf_evaluation_path
+        else:
+            img_dir = ''
+            landmarks_dir = ''
+            pose_dir = ''
+            num_train_samples = 0
+            tf_train_path = ''
+            tf_evaluation_path = ''
         counter = 0
 
-        writer_train = tf.python_io.TFRecordWriter(IbugConf.tf_train_path)
-        writer_evaluate = tf.python_io.TFRecordWriter(IbugConf.tf_evaluation_path)
+        writer_train = tf.python_io.TFRecordWriter(tf_train_path)
+        writer_evaluate = tf.python_io.TFRecordWriter(tf_evaluation_path)
 
         for file in os.listdir(img_dir):  #
             if file.endswith(".jpg") or file.endswith(".png"):

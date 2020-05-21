@@ -15,7 +15,7 @@ import random
 
 class ImageUtility:
 
-    def random_rotate(self, _image, _label, file_name, fn):
+    def random_rotate(self, _image, _label, file_name, num_of_landmarks):
         try:
 
             xy_points, x_points, y_points = self.create_landmarks(landmarks=_label,
@@ -45,12 +45,12 @@ class ImageUtility:
                 [0, 0, 1]
             ])
             landmark_arr_xy, landmark_arr_x, landmark_arr_y = self.create_landmarks(_label, 1, 1)
-            label = np.array(landmark_arr_x + landmark_arr_y).reshape([2, 68])
-            marging = np.ones([1, 68])
+            label = np.array(landmark_arr_x + landmark_arr_y).reshape([2, num_of_landmarks])
+            marging = np.ones([1, num_of_landmarks])
             label = np.concatenate((label, marging), axis=0)
 
             label_t = np.dot(t_matrix, label)
-            lbl_flat = np.delete(label_t, 2, axis=0).reshape([136])
+            lbl_flat = np.delete(label_t, 2, axis=0).reshape([2*num_of_landmarks])
 
             t_label = self.__reorder(lbl_flat)
 
@@ -172,7 +172,7 @@ class ImageUtility:
         # self.print_image_arr(im_lbl_point[0], resized_img, landmark_arr_x, landmark_arr_y)
 
 
-    def augment(self, _image, _label):
+    def augment(self, _image, _label, num_of_landmarks):
 
         # face = misc.face(gray=True)
         #
@@ -207,12 +207,12 @@ class ImageUtility:
             [0, 0, 1]
         ])
         landmark_arr_xy, landmark_arr_x, landmark_arr_y = self.create_landmarks(_label, 1, 1)
-        label = np.array(landmark_arr_x + landmark_arr_y).reshape([2, 68])
-        marging = np.ones([1, 68])
+        label = np.array(landmark_arr_x + landmark_arr_y).reshape([2, num_of_landmarks])
+        marging = np.ones([1, num_of_landmarks])
         label = np.concatenate((label, marging), axis=0)
 
         label_t = np.dot(t_matrix, label)
-        lbl_flat = np.delete(label_t, 2, axis=0).reshape([136])
+        lbl_flat = np.delete(label_t, 2, axis=0).reshape([num_of_landmarks])
 
         t_label = self.__reorder(lbl_flat)
         return t_label, output_img
@@ -255,11 +255,11 @@ class ImageUtility:
         else:
             return image
 
-    def __reorder(self, input_arr):
+    def __reorder(self, input_arr, num_of_landmarks):
         out_arr = []
-        for i in range(68):
+        for i in range(num_of_landmarks):
             out_arr.append(input_arr[i])
-            k = 68 + i
+            k = num_of_landmarks + i
             out_arr.append(input_arr[k])
         return np.array(out_arr)
 
@@ -560,8 +560,8 @@ class ImageUtility:
             rotated.append([xx + xs, yy + ys])
         return np.array(rotated)
 
-    def __rotate(self, img, landmark_old, degree, img_w, img_h):
-        landmark_old = np.reshape(landmark_old, [68, 2])
+    def __rotate(self, img, landmark_old, degree, img_w, img_h, num_of_landmarks):
+        landmark_old = np.reshape(landmark_old, [num_of_landmarks, 2])
 
         theta = math.radians(degree)
 
