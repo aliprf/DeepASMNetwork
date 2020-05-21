@@ -127,7 +127,7 @@ class CNNModel:
         revised_model.summary()
         model_json = revised_model.to_json()
 
-        with open("mobileNet_v2_main_multi_out.json", "w") as json_file:
+        with open("ASMNet.json", "w") as json_file:
             json_file.write(model_json)
 
         return revised_model
