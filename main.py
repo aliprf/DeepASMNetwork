@@ -51,12 +51,12 @@ if __name__ == '__main__':
 
     trainer = Train(use_tf_record=True,
                     dataset_name=DatasetName.ibug,
-                    custom_loss=True,
+                    custom_loss=False,
                     arch='ASMNet',
                     # arch='mobileNetV2',
                     inception_mode=False,
                     num_output_layers=2,
-                    weight='00-weights-61-0.01995.h5',
+                    weight=None,
                     train_on_batch=False,
                     accuracy=100)
 
