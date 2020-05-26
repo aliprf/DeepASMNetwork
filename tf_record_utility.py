@@ -631,7 +631,7 @@ class TFRecordUtility:
                 counter += 1
         print('generate_hm_and_save COMPLETED!!!')
 
-    def generate_hm(self, height, width, landmarks, s=2.5, upsample=True):
+    def generate_hm(self, height, width, landmarks, s=3.0, upsample=True):
         """ Generate a full Heap Map for every landmarks in an array
         Args:
             height    : The height of Heat Map (the height of target output)
