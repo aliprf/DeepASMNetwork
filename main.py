@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     trainer = Train(use_tf_record=True,
                     dataset_name=DatasetName.ibug,
-                    custom_loss=True,
+                    custom_loss=False,
                     # arch='ASMNet',
                     arch='mobileNetV2',
                     inception_mode=False,
