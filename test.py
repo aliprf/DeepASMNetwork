@@ -135,7 +135,7 @@ class Test:
 
         '''test print'''
         #
-        imgpr.print_image_arr((counter+1)*100, img, landmark_arr_x_p, landmark_arr_y_p)
+        # imgpr.print_image_arr((counter+1)*100, img, landmark_arr_x_p, landmark_arr_y_p)
 
         # print("landmark_arr_x_t: " + str(landmark_arr_x_t))
         # print("landmark_arr_x_p :" + str(landmark_arr_x_p))
@@ -145,8 +145,8 @@ class Test:
 
         # return 0,0,0
 
-        interpupil_distance = self.__calculate_interpupil_distance(labels_true_transformed)
-        # interpupil_distance = self.__calculate_interoccular_distance(labels_true_transformed)
+        # interpupil_distance = self.__calculate_interpupil_distance(labels_true_transformed)
+        interpupil_distance = self.__calculate_interoccular_distance(labels_true_transformed)
 
         sum_errors = 0
         for i in range(0, len(labels_true_transformed), 2):  # two step each time
@@ -202,11 +202,11 @@ class Test:
 
         # print("true:  " + str(yaw_truth)+"--"+str(pitch_truth)+"--"+str(roll_truth))
         # print("predict:  " + str(yaw_tpre)+"--"+str(pitch_tpre)+"--"+str(roll_tpre))
-
-        output_pre = utils.draw_axis(img_cp_1, yaw_tpre, pitch_tpre, roll_tpre, tdx=150, tdy=150, size=150)
-        output_truth = utils.draw_axis(img_cp_2, yaw_truth, pitch_truth, roll_truth, tdx=150, tdy=150, size=150)
-        cv2.imwrite(str(counter+1) + ".jpg", output_pre)
-        cv2.imwrite(str((counter+1)*1000) + ".jpg", output_truth)
+        #
+        # output_pre = utils.draw_axis(img_cp_1, yaw_tpre, pitch_tpre, roll_tpre, tdx=150, tdy=150, size=150)
+        # output_truth = utils.draw_axis(img_cp_2, yaw_truth, pitch_truth, roll_truth, tdx=150, tdy=150, size=150)
+        # cv2.imwrite(str(counter+1) + ".jpg", output_pre)
+        # cv2.imwrite(str((counter+1)*1000) + ".jpg", output_truth)
 
         mae_yaw = abs(yaw_tpre - yaw_truth)
         mae_pitch = abs(pitch_tpre - pitch_truth)
