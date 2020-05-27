@@ -511,6 +511,7 @@ class TFRecordUtility:
                 np_path = pose_npy_dir + file_name_save
                 save(np_path, pose_array)
                 counter += 1
+        print("detect_pose_and_save DONE.")
 
     def normalize_points_and_save(self, dataset_name):
 
@@ -1039,21 +1040,21 @@ class TFRecordUtility:
             img_path_prefix = IbugConf.img_path_prefix
             rotated_img_path_prefix = IbugConf.rotated_img_path_prefix
             augmentation_factor_rotate = IbugConf.augmentation_factor_rotate
-            num_of_landmarks = IbugConf.landmarks
+            num_of_landmarks = IbugConf.num_of_landmarks
 
         elif dataset_name == DatasetName.cofw:
             number_of_samples = CofwConf.orig_number_of_training
             img_path_prefix = CofwConf.img_path_prefix
             rotated_img_path_prefix = CofwConf.rotated_img_path_prefix
             augmentation_factor_rotate = CofwConf.augmentation_factor_rotate
-            num_of_landmarks = CofwConf.landmarks
+            num_of_landmarks = CofwConf.num_of_landmarks
 
         elif dataset_name == DatasetName.wflw:
             number_of_samples = CofwConf.orig_number_of_training
             img_path_prefix = CofwConf.img_path_prefix
             rotated_img_path_prefix = CofwConf.rotated_img_path_prefix
             augmentation_factor_rotate = CofwConf.augmentation_factor_rotate
-            num_of_landmarks = WflwConf.landmarks
+            num_of_landmarks = WflwConf.num_of_landmarks
 
         png_file_arr = []
 
@@ -1091,6 +1092,8 @@ class TFRecordUtility:
                 image_utility.random_rotate(resized_img, landmark_arr_xy,
                                             rotated_img_path_prefix + str(10000 * (i + 1) + j),
                                             str(10000 * (i + 1) + j))
+        print("rotaate_and_save")
+
 
     def random_augment_from_rotated(self, dataset_name):
         '''we use this function to augment images after rotation'''
@@ -1230,6 +1233,7 @@ class TFRecordUtility:
                 pnt_file.write("} \n")
                 pnt_file.close()
 
+        print("random_augment_from_rotated DONE.")
         return number_of_samples
 
     def _create_tfrecord_from_npy(self, dataset_name):
