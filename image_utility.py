@@ -52,7 +52,7 @@ class ImageUtility:
             label_t = np.dot(t_matrix, label)
             lbl_flat = np.delete(label_t, 2, axis=0).reshape([2*num_of_landmarks])
 
-            t_label = self.__reorder(lbl_flat)
+            t_label = self.__reorder(lbl_flat, num_of_landmarks)
 
             '''crop data: we add a small margin to the images'''
             xy_points, x_points, y_points = self.create_landmarks(landmarks=t_label,

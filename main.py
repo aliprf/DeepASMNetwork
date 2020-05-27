@@ -48,19 +48,19 @@ if __name__ == '__main__':
     # trg.create_seq_model()
 
     # test = Test(dataset_name=DatasetName.ibug, arch='ASMNet', num_output_layers=2, weight_fname='weights-41-0.00429.h5')
-    test = Test(dataset_name=DatasetName.ibug, arch='mobileNetV2', num_output_layers=2, weight_fname='weights-41-0.00066.h5')
-
-    trainer = Train(use_tf_record=True,
-                    dataset_name=DatasetName.ibug,
-                    custom_loss=True,
-                    # arch='ASMNet',
-                    arch='mobileNetV2',
-                    inception_mode=False,
-                    num_output_layers=2,
-                    # weight='00-weights-61-0.01995.h5',
-                    weight=None,
-                    train_on_batch=False,
-                    accuracy=100)
+    # test = Test(dataset_name=DatasetName.ibug, arch='mobileNetV2', num_output_layers=2, weight_fname='weights-41-0.00066.h5')
+    #
+    # trainer = Train(use_tf_record=True,
+    #                 dataset_name=DatasetName.ibug,
+    #                 custom_loss=True,
+    #                 # arch='ASMNet',
+    #                 arch='mobileNetV2',
+    #                 inception_mode=False,
+    #                 num_output_layers=2,
+    #                 # weight='00-weights-61-0.01995.h5',
+    #                 weight=None,
+    #                 train_on_batch=False,
+    #                 accuracy=100)
 
 
 
