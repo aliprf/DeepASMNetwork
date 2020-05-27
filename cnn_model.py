@@ -40,16 +40,16 @@ class CNNModel:
         if arch == 'ASMNet':
             model = self.create_ASMNet(inp_tensor=train_images, inp_shape=None)
         elif arch == 'mobileNetV2':
-            model = self.create_MobileNet(inp_shape=[224, 224, 3])
+            model = self.create_MobileNet(inp_tensor=train_images)
 
         return model
 
-    def create_MobileNet(self, inp_shape):
-        mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=inp_shape,
+    def create_MobileNet(self, inp_tensor):
+        mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=None,
                                                    alpha=1.0,
                                                    include_top=True,
                                                    weights=None,
-                                                   input_tensor=None,
+                                                   input_tensor=inp_tensor,
                                                    pooling=None)
         # model_json = mobilenet_model.to_json()
         #
