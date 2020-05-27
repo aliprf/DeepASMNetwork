@@ -1050,30 +1050,34 @@ class TFRecordUtility:
             num_of_landmarks = CofwConf.num_of_landmarks
 
         elif dataset_name == DatasetName.wflw:
-            number_of_samples = CofwConf.orig_number_of_training
-            img_path_prefix = CofwConf.img_path_prefix
-            rotated_img_path_prefix = CofwConf.rotated_img_path_prefix
-            augmentation_factor_rotate = CofwConf.augmentation_factor_rotate
+            number_of_samples = WflwConf.orig_number_of_training
+            img_path_prefix = WflwConf.img_path_prefix
+            rotated_img_path_prefix = WflwConf.rotated_img_path_prefix
+            augmentation_factor_rotate = WflwConf.augmentation_factor_rotate
             num_of_landmarks = WflwConf.num_of_landmarks
 
-        png_file_arr = []
+        pts_file_arr = []
 
         for file in os.listdir(img_path_prefix):
-            if file.endswith(".jpg") or file.endswith(".png"):
-                png_file_arr.append(os.path.join(img_path_prefix, file))
+            if file.endswith(".pts"):
+                pts_file_arr.append(os.path.join(img_path_prefix, file))
 
         image_utility = ImageUtility()
 
         for i in tqdm(range(number_of_samples)):
-            img_file = png_file_arr[i]
-            pts_file = png_file_arr[i][:-3] + "pts"
+            pts_file = pts_file_arr[i]
+
+            if '#' in pts_file_arr[i]:
+                img_file = pts_file_arr[i].split('#')[0] + ".jpg"
+            else:
+                img_file = pts_file_arr[i][:-3] + "jpg"
 
             points_arr = []
             with open(pts_file) as fp:
                 line = fp.readline()
                 cnt = 1
                 while line:
-                    if 3 < cnt < num_of_landmarks+3:
+                    if 3 < cnt <= num_of_landmarks+3:
                         x_y_pnt = line.strip()
                         x = float(x_y_pnt.split(" ")[0])
                         y = float(x_y_pnt.split(" ")[1])
@@ -1091,7 +1095,7 @@ class TFRecordUtility:
             for j in range(augmentation_factor_rotate):
                 image_utility.random_rotate(resized_img, landmark_arr_xy,
                                             rotated_img_path_prefix + str(10000 * (i + 1) + j),
-                                            str(10000 * (i + 1) + j))
+                                            num_of_landmarks, dataset_name)
         print("rotaate_and_save")
 
 
@@ -1140,7 +1144,7 @@ class TFRecordUtility:
                 line = fp.readline()
                 cnt = 1
                 while line:
-                    if 3 < cnt < num_of_landmarks + 3:
+                    if 3 < cnt <= num_of_landmarks + 3:
                         x_y_pnt = line.strip()
                         x = float(x_y_pnt.split(" ")[0])
                         y = float(x_y_pnt.split(" ")[1])

@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     '''augment, normalize, and save pts'''
 
-    tf_record_util.rotaate_and_save(dataset_name=DatasetName.cofw)
+    tf_record_util.rotaate_and_save(dataset_name=DatasetName.wflw)
     tf_record_util.random_augment_from_rotated(dataset_name=DatasetName.cofw)
 
     '''normalize the points and save'''

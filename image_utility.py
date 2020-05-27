@@ -12,14 +12,17 @@ from skimage.transform import resize
 from skimage import transform
 from skimage.transform import SimilarityTransform, AffineTransform
 import random
+from configuration import  DatasetName
 
 class ImageUtility:
 
-    def random_rotate(self, _image, _label, file_name, num_of_landmarks):
+    def random_rotate(self, _image, _label, file_name, num_of_landmarks, dataset_name):
         try:
 
             xy_points, x_points, y_points = self.create_landmarks(landmarks=_label,
                                                                   scale_factor_x=1, scale_factor_y=1)
+            # self.print_image_arr(str(xy_points[8]), _image, x_points, y_points)
+
             _image, _label = self.cropImg_2time(_image, x_points, y_points)
 
             scale = (np.random.uniform(0.7, 1.3), np.random.uniform(0.7, 1.3))
@@ -76,9 +79,16 @@ class ImageUtility:
                                       scale_factor_x=scale_factor_x,
                                       scale_factor_y=scale_factor_y)
 
-            if not(min(landmark_arr_x) < 0.0 or min(landmark_arr_y) < 0.0 or max(landmark_arr_x) > 224 or max(landmark_arr_y) > 224):
+            min_b = 0.0
+            max_b = 224
+            if dataset_name == DatasetName.cofw:
+                min_b = 5.0
+                max_b = 214
 
-                # self.print_image_arr(fn, resized_img, landmark_arr_x, landmark_arr_y)
+            if not(min(landmark_arr_x) < 0 or min(landmark_arr_y) < min_b or
+                   max(landmark_arr_x) > 224 or max(landmark_arr_y) > max_b):
+
+                # self.print_image_arr(str(landmark_arr_x[0]), resized_img, landmark_arr_x, landmark_arr_y)
 
                 im = Image.fromarray((resized_img * 255).astype(np.uint8))
                 im.save(str(file_name) + '.jpg')
@@ -95,7 +105,8 @@ class ImageUtility:
                 pnt_file.close()
 
             return t_label, output_img
-        except:
+        except Exception as e:
+            print(e)
             return None, None
 
 
@@ -387,10 +398,10 @@ class ImageUtility:
 
 
     def cropImg_2time(self, img, x_s, y_s):
-        min_x = max(0, int(min(x_s) - 150))
-        max_x = int(max(x_s) + 150)
-        min_y = max(0, int(min(y_s) - 150))
-        max_y = int(max(y_s) + 150)
+        min_x = max(0, int(min(x_s) - 50))
+        max_x = int(max(x_s) + 50)
+        min_y = max(0, int(min(y_s) - 50))
+        max_y = int(max(y_s) + 50)
 
         crop = img[min_y:max_y, min_x:max_x]
 
