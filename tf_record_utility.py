@@ -1135,7 +1135,7 @@ class TFRecordUtility:
             if file.endswith(".jpg") or file.endswith(".png"):
                 png_file_arr.append(os.path.join(rotated_img_path_prefix, file))
 
-        for i in tqdm(range(number_of_samples)):
+        for i in tqdm(range(len(png_file_arr))):
             img_file = png_file_arr[i]
             pts_file = png_file_arr[i][:-3] + "pts"
 
