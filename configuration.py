@@ -170,18 +170,18 @@ class CofwConf:
 class IbugConf:
 
     '''server_config'''
-    Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
-    # _Ibug_prefix_path = '/media/data2/alip/fala/ibug/'  # --> Atlas
+    # Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
+    _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> Atlas
 
-    img_path_prefix = Ibug_prefix_path + 'all/'
-    rotated_img_path_prefix = Ibug_prefix_path + '0_rotated/'
-    train_images_dir = Ibug_prefix_path + '1_train_images_pts_dir/'
-    normalized_points_npy_dir = Ibug_prefix_path + '2_normalized_npy_dir/'
-    # normalized_pose_npy_dir = Ibug_prefix_path + '3_normalized_pose_npy_dir/'
-    pose_npy_dir = Ibug_prefix_path + '4_pose_npy_dir/'
-    tf_train_path = Ibug_prefix_path + 'train.tfrecords'
-    tf_test_path = Ibug_prefix_path + 'test.tfrecords'
-    tf_evaluation_path = Ibug_prefix_path + 'evaluation.tfrecords'
+    img_path_prefix = _Ibug_prefix_path + 'all/'
+    rotated_img_path_prefix = _Ibug_prefix_path + '0_rotated/'
+    train_images_dir = _Ibug_prefix_path + '1_train_images_pts_dir/'
+    normalized_points_npy_dir = _Ibug_prefix_path + '2_normalized_npy_dir/'
+    # normalized_pose_npy_dir = _Ibug_prefix_path + '3_normalized_pose_npy_dir/'
+    pose_npy_dir = _Ibug_prefix_path + '4_pose_npy_dir/'
+    tf_train_path = _Ibug_prefix_path + 'train.tfrecords'
+    tf_test_path = _Ibug_prefix_path + 'test.tfrecords'
+    tf_evaluation_path = _Ibug_prefix_path + 'evaluation.tfrecords'
 
     # train_hm_dir = '/media/data2/alip/fala/ibug/train_hm_dir/'
     # train_hm_dir_85 = '/media/data2/alip/fala/ibug/train_hm_dir_85/'

@@ -1172,7 +1172,8 @@ class TFRecordUtility:
                 else:
                     '''save the augmented images'''
                     if k % 2 == 0:
-                        landmark_arr_flat_aug, img_aug = image_utility.random_augmentation(landmark_arr_xy, resized_img)
+                        landmark_arr_flat_aug, img_aug = image_utility.random_augmentation(landmark_arr_xy,
+                                                                                           resized_img, num_of_landmarks)
                     else:
                         landmark_arr_flat_aug, img_aug = image_utility.augment(resized_img,
                                                                                landmark_arr_xy, num_of_landmarks)

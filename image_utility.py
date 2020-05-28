@@ -223,9 +223,9 @@ class ImageUtility:
         label = np.concatenate((label, marging), axis=0)
 
         label_t = np.dot(t_matrix, label)
-        lbl_flat = np.delete(label_t, 2, axis=0).reshape([num_of_landmarks])
+        lbl_flat = np.delete(label_t, 2, axis=0).reshape([num_of_landmarks*2])
 
-        t_label = self.__reorder(lbl_flat)
+        t_label = self.__reorder(lbl_flat, num_of_landmarks)
         return t_label, output_img
 
     def __noisy(self, image):
@@ -371,7 +371,7 @@ class ImageUtility:
 
         return landmark_arr_xy, landmark_arr_x, landmark_arr_y
 
-    def random_augmentation(self, lbl, img):
+    def random_augmentation(self, lbl, img, number_of_landmark):
         # a = random.randint(0, 1)
         # if a == 0:
         #     img, lbl = self.__add_margin(img, img.shape[0], lbl)
@@ -393,7 +393,7 @@ class ImageUtility:
         if k > 0:
             img = self.__change_color(img)
 
-        lbl = np.reshape(lbl, [136])
+        lbl = np.reshape(lbl, [number_of_landmark*2])
         return lbl, img
 
 
