@@ -170,7 +170,7 @@ class CofwConf:
 class IbugConf:
 
     '''server_config'''
-    Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
+    _Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
     # _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> Atlas
 
     img_path_prefix = _Ibug_prefix_path + 'all/'
