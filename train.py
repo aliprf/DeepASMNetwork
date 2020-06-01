@@ -242,7 +242,7 @@ class Train:
         return tensors
 
     def _generate_loss_weights(self):
-        wights = [1.0, 0.5]
+        wights = [1.0, 0.2]
         # wights = [0.7*3*1,  # main labels
         #           0.3*0.5,  # asm 85 labels
         #           0.3*0.7,  # asm 90 labels
