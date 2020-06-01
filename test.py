@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 import math
 from keras.callbacks import CSVLogger
 from datetime import datetime
+from sklearn import metrics
 
 import cv2
 import os.path
@@ -44,6 +45,7 @@ class Test:
 
         if dataset_name == DatasetName.ibug:
             self._ibug_test(detect, model)
+
 
     def _ibug_test(self, detect, model):
         tf_record_utility = TFRecordUtility()
@@ -109,6 +111,15 @@ class Test:
         print('LOSS full: ')
         print(loss_full * 100 / W300Conf.number_of_all_sample_full)
 
+    # def calculate_AUC(self, y, y_pred):
+    #     y = np.array(y)
+    #     y_pred = np.array(y_pred)
+    #
+    #     # fpr, tpr, thresholds = metrics.roc_curve(y, y_pred, pos_label=255)
+    #     fpr, tpr, thresholds = metrics.roc_curve(y, y_pred)
+    #     auc = metrics.auc(fpr, tpr)
+    #     return auc
+
     def _test_result_per_image(self, counter, model, img, labels_true, detect):
         tf_utility = TFRecordUtility()
         image_utility = ImageUtility()
@@ -125,6 +136,8 @@ class Test:
 
         labels_predict_transformed, landmark_arr_x_p, landmark_arr_y_p = \
             image_utility.create_landmarks_from_normalized(pre_points, 224, 224, 112, 112)
+
+        # auc = self.calculate_AUC(labels_true, pre_points)
 
         '''asm pp'''
         # xy_h_p_asm = self.__post_process_correction(xy_h_p, True)
