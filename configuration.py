@@ -143,8 +143,8 @@ class WflwConf:
     num_of_landmarks = 98
 
 class CofwConf:
-    # Cofw_prefix_path = '/media/data3/ali/FL/cofw/'  # --> Zeus
-    Cofw_prefix_path = '/media/ali/data/cofw/'  # --> Atlas
+    Cofw_prefix_path = '/media/data3/ali/FL/cofw/'  # --> Zeus
+    # Cofw_prefix_path = '/media/ali/data/cofw/'  # --> Atlas
 
     img_path_prefix = Cofw_prefix_path + 'all/'
     rotated_img_path_prefix = Cofw_prefix_path + '0_rotated/'
