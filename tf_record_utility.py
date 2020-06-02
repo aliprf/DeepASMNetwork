@@ -104,23 +104,25 @@ class TFRecordUtility:
         return plain * (plain == maximum_filter(plain, footprint=np.ones((windowSize, windowSize))))
 
     def create_tf_record(self, dataset_name, dataset_type, heatmap):
-        if dataset_name == DatasetName.affectnet:
-            self.__create_tfrecord_affectnet(dataset_type, need_augmentation=True)
-        elif dataset_name == DatasetName.w300:
-            self.__create_tfrecord_w300(dataset_type)
+        self._create_tfrecord_from_npy(dataset_name)
 
-        elif dataset_name == DatasetName.ibug:
-            if heatmap:
-                self.__create_tfrecord_ibug_all_heatmap(dataset_name)
-                # self.__create_tfrecord_ibug_all_heatmap_rotaate()
-            else:
-                '''when we wannat create it from npy'''
-                self._create_tfrecord_from_npy(dataset_name)
-                '''when we wanna start from scratch'''
-                # self.__create_tfrecord_ibug_all_main()
-
-        elif dataset_name == DatasetName.aflw:
-            self.__create_tfrecord_aflw()
+        # if dataset_name == DatasetName.affectnet:
+        #     self.__create_tfrecord_affectnet(dataset_type, need_augmentation=True)
+        # elif dataset_name == DatasetName.w300:
+        #     self.__create_tfrecord_w300(dataset_type)
+        #
+        # elif dataset_name == DatasetName.ibug:
+        #     if heatmap:
+        #         self.__create_tfrecord_ibug_all_heatmap(dataset_name)
+        #         # self.__create_tfrecord_ibug_all_heatmap_rotaate()
+        #     else:
+        #         '''when we wannat create it from npy'''
+        #         self._create_tfrecord_from_npy(dataset_name)
+        #         '''when we wanna start from scratch'''
+        #         # self.__create_tfrecord_ibug_all_main()
+        #
+        # elif dataset_name == DatasetName.aflw:
+        #     self.__create_tfrecord_aflw()
 
     def test_tf_record(self, ):
         image_utility = ImageUtility()
