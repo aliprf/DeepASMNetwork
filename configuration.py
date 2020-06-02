@@ -158,7 +158,7 @@ class CofwConf:
     orig_number_of_training = 1345
     orig_number_of_test = 507
 
-    number_of_all_sample = 0  # afw, train_helen, train_lfpw
+    number_of_all_sample = 108820  # afw, train_helen, train_lfpw
     number_of_train_sample = number_of_all_sample * 0.95  # 95 % for train
     number_of_evaluation_sample = number_of_all_sample * 0.05  # 5% for evaluation
 
