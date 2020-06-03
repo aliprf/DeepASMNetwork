@@ -559,15 +559,15 @@ class TFRecordUtility:
                 np_path = normalized_points_npy_dir + file_name_save
 
                 '''these are for test'''
-                # image_utility = ImageUtility()
-                # landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = image_utility.\
-                #     create_landmarks_from_normalized(normalized_points,
-                #                                      InputDataSize.image_input_size,
-                #                                      InputDataSize.image_input_size,
-                #                                      InputDataSize.image_input_size/2,
-                #                                      InputDataSize.image_input_size/2
-                #                                      )
-                # imgpr.print_image_arr(counter+1, np.zeros([224, 224]), landmark_arr_x_n, landmark_arr_y_n)
+                image_utility = ImageUtility()
+                landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = image_utility.\
+                    create_landmarks_from_normalized(normalized_points,
+                                                     InputDataSize.image_input_size,
+                                                     InputDataSize.image_input_size,
+                                                     InputDataSize.image_input_size/2,
+                                                     InputDataSize.image_input_size/2
+                                                     )
+                imgpr.print_image_arr(counter+1, np.zeros([224, 224]), landmark_arr_x_n, landmark_arr_y_n)
                 ''''''
                 save(np_path, normalized_points)
                 counter += 1
