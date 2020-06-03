@@ -133,11 +133,10 @@ class WflwConf:
     tf_train_path_90 = Wflw_prefix_path + 'train_90.tfrecords'
     tf_evaluation_path_90 = Wflw_prefix_path + 'evaluation_90.tfrecords'
 
-
     orig_number_of_training = 7500
     orig_number_of_test = 2500
 
-    number_of_all_sample = 20 #270956  # just images. dont count both img and lbls
+    number_of_all_sample = 270956  # just images. dont count both img and lbls
     number_of_train_sample = number_of_all_sample * 0.95  # 95 % for train
     number_of_evaluation_sample = number_of_all_sample * 0.05  # 5% for evaluation
 
