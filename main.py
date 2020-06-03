@@ -31,7 +31,7 @@ if __name__ == '__main__':
     '''create tfRecord:'''
     # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=100)
     '''retrive and test tfRecords'''
-    tf_record_util.test_tf_record()
+    # tf_record_util.test_tf_record()
 
     '''create and save PCA objects'''
     # pca_utility.create_pca_from_points(DatasetName.ibug, 95)
@@ -50,17 +50,17 @@ if __name__ == '__main__':
     # test = Test(dataset_name=DatasetName.ibug, arch='ASMNet', num_output_layers=2, weight_fname='weights-41-0.00429.h5')
     # test = Test(dataset_name=DatasetName.ibug, arch='mobileNetV2', num_output_layers=2, weight_fname='weights-200-0.01521.h5')
     #
-    # trainer = Train(use_tf_record=True,
-    #                 dataset_name=DatasetName.cofw,
-    #                 custom_loss=False,
-    #                 # arch='ASMNet',
-    #                 arch='mobileNetV2',
-    #                 inception_mode=False,
-    #                 num_output_layers=2,
-    #                 # weight='00-w-dasm.h5',
-    #                 weight=None,
-    #                 train_on_batch=False,
-    #                 accuracy=100)
+    trainer = Train(use_tf_record=True,
+                    dataset_name=DatasetName.cofw,
+                    custom_loss=False,
+                    # arch='ASMNet',
+                    arch='mobileNetV2',
+                    inception_mode=False,
+                    num_output_layers=2,
+                    # weight='00-w-dasm.h5',
+                    weight=None,
+                    train_on_batch=False,
+                    accuracy=100)
 
 
 
