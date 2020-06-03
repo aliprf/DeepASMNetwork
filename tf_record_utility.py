@@ -31,6 +31,8 @@ from pose_detection.code.PoseDetector import PoseDetector
 
 
 class TFRecordUtility:
+    def __init__(self, number_of_landmark):
+        self.number_of_landmark = number_of_landmark
 
     def test_hm_accuracy(self):
         images_dir = IbugConf.images_dir
@@ -667,7 +669,7 @@ class TFRecordUtility:
         return hm
 
     def __parse_function_reduced(self, proto):
-        keys_to_features = {'landmarks': tf.FixedLenFeature([InputDataSize.landmark_len], tf.float32),
+        keys_to_features = {'landmarks': tf.FixedLenFeature([self.number_of_landmark], tf.float32),
                             'heatmap': tf.FixedLenFeature([56, 56, 68], tf.float32),
                             'image_raw': tf.FixedLenFeature([InputDataSize.image_input_size,
                                                              InputDataSize.image_input_size, 3], tf.float32)}
@@ -679,7 +681,7 @@ class TFRecordUtility:
         return _images, _landmarks, _heatmap
 
     def __parse_function(self, proto):
-        keys_to_features = {'landmarks': tf.FixedLenFeature([InputDataSize.landmark_len], tf.float32),
+        keys_to_features = {'landmarks': tf.FixedLenFeature([self.number_of_landmark], tf.float32),
                             'pose': tf.FixedLenFeature([InputDataSize.pose_len], tf.float32),
                             'image_raw': tf.FixedLenFeature([InputDataSize.image_input_size,
                                                              InputDataSize.image_input_size, 3], tf.float32)}

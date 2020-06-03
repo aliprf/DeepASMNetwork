@@ -199,7 +199,7 @@ class Train:
                             )
 
     def train_fit(self):
-        tf_record_util = TFRecordUtility()
+        tf_record_util = TFRecordUtility(self.output_len)
 
         '''prepare callbacks'''
         callbacks_list = self._prepare_callback()

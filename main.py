@@ -10,7 +10,7 @@ from test import Test
 # from Train_Gan import TrainGan
 
 if __name__ == '__main__':
-    tf_record_util = TFRecordUtility()
+    tf_record_util = TFRecordUtility(136)
     pca_utility = PCAUtility()
     cnn_model = CNNModel()
     image_utility = ImageUtility()
