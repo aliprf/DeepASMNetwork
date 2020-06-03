@@ -42,12 +42,12 @@ class Train:
             self.tf_eval_path = IbugConf.tf_evaluation_path
             self.output_len = IbugConf.num_of_landmarks * 2
         elif dataset_name == DatasetName.cofw:
-            self.SUM_OF_ALL_TRAIN_SAMPLES = CofwConf.orig_number_of_training
+            self.SUM_OF_ALL_TRAIN_SAMPLES = CofwConf.number_of_all_sample
             self.tf_train_path = CofwConf.tf_train_path
             self.tf_eval_path = CofwConf.tf_evaluation_path
             self.output_len = CofwConf.num_of_landmarks * 2
         elif dataset_name == DatasetName.wflw:
-            self.SUM_OF_ALL_TRAIN_SAMPLES = WflwConf.orig_number_of_training
+            self.SUM_OF_ALL_TRAIN_SAMPLES = WflwConf.number_of_all_sample
             self.tf_train_path = WflwConf.tf_train_path
             self.tf_eval_path = WflwConf.tf_evaluation_path
             self.output_len = WflwConf.num_of_landmarks * 2
