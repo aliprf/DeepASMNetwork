@@ -1,5 +1,5 @@
 from tf_record_utility import TFRecordUtility
-from configuration import DatasetName, DatasetType, AffectnetConf, IbugConf, W300Conf, InputDataSize
+from configuration import DatasetName, DatasetType, AffectnetConf, IbugConf, W300Conf, InputDataSize, CofwConf, WflwConf
 from cnn_model import CNNModel
 from pca_utility import PCAUtility
 from image_utility import ImageUtility
@@ -10,7 +10,7 @@ from test import Test
 # from Train_Gan import TrainGan
 
 if __name__ == '__main__':
-    tf_record_util = TFRecordUtility(56)
+    tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks*2)
     pca_utility = PCAUtility()
     cnn_model = CNNModel()
     image_utility = ImageUtility()
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     '''generate pose using hopeNet'''
     # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.cofw)
     '''create tfRecord:'''
-    # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=100)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=100)
     '''retrive and test tfRecords'''
     # tf_record_util.test_tf_record()
 
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     # test = Test(dataset_name=DatasetName.ibug, arch='mobileNetV2', num_output_layers=2, weight_fname='weights-200-0.01521.h5')
     #
     trainer = Train(use_tf_record=True,
-                    dataset_name=DatasetName.cofw,
+                    dataset_name=DatasetName.wflw,
                     custom_loss=False,
                     # arch='ASMNet',
                     arch='mobileNetV2',

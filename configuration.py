@@ -60,8 +60,8 @@ class LearningConfig:
     steps_per_validation_epochs = 5
 
     epochs = 200
-    landmark_len = 136
-    point_len = 68
+    # landmark_len = 136
+    # point_len = 68
     pose_len = 3
 
     reg_term_ASM = 0.8
@@ -70,7 +70,7 @@ class LearningConfig:
 
 class InputDataSize:
     image_input_size = 224
-    landmark_len = 136
+    # landmark_len = 136
     landmark_face_len = 54
     landmark_nose_len = 18
     landmark_eys_len = 24
@@ -137,13 +137,13 @@ class WflwConf:
     orig_number_of_training = 7500
     orig_number_of_test = 2500
 
-    number_of_all_sample = 270956  # just images. dont count both img and lbls
+    number_of_all_sample = 20 #270956  # just images. dont count both img and lbls
     number_of_train_sample = number_of_all_sample * 0.95  # 95 % for train
     number_of_evaluation_sample = number_of_all_sample * 0.05  # 5% for evaluation
 
     augmentation_factor = 4  # create . image from 1
     augmentation_factor_rotate = 15  # create . image from 1
-    num_of_landmarks = 98
+    num_of_landmarks = 97
 
 class CofwConf:
     Cofw_prefix_path = '/media/data3/ali/FL/cofw/'  # --> Zeus
@@ -162,16 +162,16 @@ class CofwConf:
     tf_train_path_90 = Cofw_prefix_path + 'train_90.tfrecords'
     tf_evaluation_path_90 = Cofw_prefix_path + 'evaluation_90.tfrecords'
 
-    orig_number_of_training = 50 #1345
+    orig_number_of_training = 1345
     orig_number_of_test = 507
 
-    number_of_all_sample = 100 #108820  # afw, train_helen, train_lfpw
+    number_of_all_sample = 108820  # afw, train_helen, train_lfpw
     number_of_train_sample = number_of_all_sample * 0.95  # 95 % for train
     number_of_evaluation_sample = number_of_all_sample * 0.05  # 5% for evaluation
 
-    augmentation_factor = 2 #5  # create . image from 1
+    augmentation_factor = 5  # create . image from 1
     augmentation_factor_rotate = 30  # create . image from 1
-    num_of_landmarks = 29
+    num_of_landmarks = 28
 
 
 class IbugConf:

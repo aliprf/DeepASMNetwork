@@ -160,7 +160,7 @@ class Train:
 
         '''creating model'''
         cnn = CNNModel()
-        model = cnn.get_model(None, self.arch, self.num_output_layers)
+        model = cnn.get_model(None, self.arch, self.num_output_layers,)
 
         '''create train, validation, test data iterator'''
         x_train_filenames, x_val_filenames, y_train_filenames, y_val_filenames = self._create_generators()

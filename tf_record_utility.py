@@ -131,8 +131,8 @@ class TFRecordUtility:
 
     def test_tf_record(self, ):
         image_utility = ImageUtility()
-        lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(CofwConf.tf_train_path,
-                                                             number_of_records=10, only_label=False)
+        lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(WflwConf.tf_train_path,
+                                                             number_of_records=20, only_label=False)
         counter = 0
         for lbl in lbl_arr:
             landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = \
@@ -319,7 +319,7 @@ class TFRecordUtility:
 
         # Maps the parser on every file path in the array. You can set the number of parallel loaders here
 
-        dataset = dataset.map(sefl.__parse_function, num_parallel_calls=16)
+        dataset = dataset.map(sefl.__parse_function, num_parallel_calls=32)
 
         # This dataset will go on forever
         dataset = dataset.repeat()
