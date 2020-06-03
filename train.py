@@ -1,5 +1,5 @@
 from configuration import DatasetName, DatasetType, \
-    AffectnetConf, IbugConf, W300Conf, InputDataSize, LearningConfig
+    AffectnetConf, IbugConf, W300Conf, InputDataSize, LearningConfig, CofwConf, WflwConf
 from tf_record_utility import TFRecordUtility
 from clr_callback import CyclicLR
 from cnn_model import CNNModel
@@ -38,8 +38,19 @@ class Train:
 
         if dataset_name == DatasetName.ibug:
             self.SUM_OF_ALL_TRAIN_SAMPLES = IbugConf.number_of_all_sample
-        elif dataset_name == DatasetName.affectnet:
-            self.SUM_OF_ALL_TRAIN_SAMPLES = AffectnetConf.sum_of_train_samples
+            self.tf_train_path = IbugConf.tf_train_path
+            self.tf_eval_path = IbugConf.tf_evaluation_path
+            self.output_len = IbugConf.num_of_landmarks * 2
+        elif dataset_name == DatasetName.cofw:
+            self.SUM_OF_ALL_TRAIN_SAMPLES = CofwConf.orig_number_of_training
+            self.tf_train_path = CofwConf.tf_train_path
+            self.tf_eval_path = CofwConf.tf_evaluation_path
+            self.output_len = CofwConf.num_of_landmarks * 2
+        elif dataset_name == DatasetName.wflw:
+            self.SUM_OF_ALL_TRAIN_SAMPLES = WflwConf.orig_number_of_training
+            self.tf_train_path = WflwConf.tf_train_path
+            self.tf_eval_path = WflwConf.tf_evaluation_path
+            self.output_len = WflwConf.num_of_landmarks * 2
 
         self.BATCH_SIZE = LearningConfig.batch_size
         self.STEPS_PER_VALIDATION_EPOCH = LearningConfig.steps_per_validation_epochs
@@ -198,15 +209,15 @@ class Train:
 
         '''create train, validation, test data iterator'''
         train_images, train_landmarks, train_poses = \
-            tf_record_util.create_training_tensor(tfrecord_filename=IbugConf.tf_train_path,
+            tf_record_util.create_training_tensor(tfrecord_filename=self.tf_train_path,
                                                   batch_size=self.BATCH_SIZE)
         validation_images, validation_landmarks, validation_poses = \
-            tf_record_util.create_training_tensor(tfrecord_filename=IbugConf.tf_evaluation_path,
+            tf_record_util.create_training_tensor(tfrecord_filename=self.tf_eval_path,
                                                   batch_size=self.BATCH_SIZE)
 
         '''creating model'''
         cnn = CNNModel()
-        model = cnn.get_model(train_images, self.arch, self.num_output_layers)
+        model = cnn.get_model(train_images, self.arch, self.num_output_layers, self.output_len)
 
         if self.weight is not None:
             model.load_weights(self.weight)

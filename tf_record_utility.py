@@ -103,26 +103,29 @@ class TFRecordUtility:
         plain[under_th_indices] = 0
         return plain * (plain == maximum_filter(plain, footprint=np.ones((windowSize, windowSize))))
 
-    def create_tf_record(self, dataset_name, dataset_type, heatmap):
+    def create_tf_record(self, dataset_name, dataset_type, heatmap, accuracy=100):
         self._create_tfrecord_from_npy(dataset_name)
 
-        # if dataset_name == DatasetName.affectnet:
-        #     self.__create_tfrecord_affectnet(dataset_type, need_augmentation=True)
-        # elif dataset_name == DatasetName.w300:
-        #     self.__create_tfrecord_w300(dataset_type)
-        #
-        # elif dataset_name == DatasetName.ibug:
-        #     if heatmap:
-        #         self.__create_tfrecord_ibug_all_heatmap(dataset_name)
-        #         # self.__create_tfrecord_ibug_all_heatmap_rotaate()
-        #     else:
-        #         '''when we wannat create it from npy'''
-        #         self._create_tfrecord_from_npy(dataset_name)
-        #         '''when we wanna start from scratch'''
-        #         # self.__create_tfrecord_ibug_all_main()
-        #
-        # elif dataset_name == DatasetName.aflw:
-        #     self.__create_tfrecord_aflw()
+        if dataset_name == DatasetName.cofw or dataset_name == DatasetName.wflw:
+            self._create_tfrecord_from_npy(dataset_name, accuracy)
+
+        elif dataset_name == DatasetName.affectnet:
+            self.__create_tfrecord_affectnet(dataset_type, need_augmentation=True)
+        elif dataset_name == DatasetName.w300:
+            self.__create_tfrecord_w300(dataset_type)
+
+        elif dataset_name == DatasetName.ibug:
+            if heatmap:
+                self.__create_tfrecord_ibug_all_heatmap(dataset_name)
+                # self.__create_tfrecord_ibug_all_heatmap_rotaate()
+            else:
+                '''when we wannat create it from npy'''
+                self._create_tfrecord_from_npy(dataset_name, accuracy)
+                '''when we wanna start from scratch'''
+                # self.__create_tfrecord_ibug_all_main()
+
+        elif dataset_name == DatasetName.aflw:
+            self.__create_tfrecord_aflw()
 
     def test_tf_record(self, ):
         image_utility = ImageUtility()
@@ -1243,7 +1246,7 @@ class TFRecordUtility:
         print("random_augment_from_rotated DONE.")
         return number_of_samples
 
-    def _create_tfrecord_from_npy(self, dataset_name):
+    def _create_tfrecord_from_npy(self, dataset_name, accuracy):
         '''we use this function when we have already created and nrmalzed both landmarks and poses'''
 
         if dataset_name == DatasetName.ibug:
@@ -1251,24 +1254,36 @@ class TFRecordUtility:
             landmarks_dir = IbugConf.normalized_points_npy_dir
             pose_dir = IbugConf.pose_npy_dir
             num_train_samples = IbugConf.number_of_train_sample  # 95%
-            tf_train_path = IbugConf.tf_train_path
-            tf_evaluation_path = IbugConf.tf_evaluation_path
+            if accuracy == 100:
+                tf_train_path = IbugConf.tf_train_path
+                tf_evaluation_path = IbugConf.tf_evaluation_path
+            elif accuracy == 90:
+                tf_train_path = IbugConf.tf_train_path_90
+                tf_evaluation_path = IbugConf.tf_evaluation_path_90
 
         elif dataset_name == DatasetName.cofw:
             img_dir = CofwConf.train_images_dir
             landmarks_dir = CofwConf.normalized_points_npy_dir
             pose_dir = CofwConf.pose_npy_dir
             num_train_samples = CofwConf.number_of_train_sample  # 95%
-            tf_train_path = CofwConf.tf_train_path
-            tf_evaluation_path = CofwConf.tf_evaluation_path
+            if accuracy == 100:
+                tf_train_path = CofwConf.tf_train_path
+                tf_evaluation_path = CofwConf.tf_evaluation_path
+            elif accuracy == 90:
+                tf_train_path = CofwConf.tf_train_path_90
+                tf_evaluation_path = CofwConf.tf_evaluation_path_90
 
         elif dataset_name == DatasetName.wflw:
             img_dir = WflwConf.train_images_dir
             landmarks_dir = WflwConf.normalized_points_npy_dir
             pose_dir = WflwConf.pose_npy_dir
             num_train_samples = WflwConf.number_of_train_sample  # 95%
-            tf_train_path = WflwConf.tf_train_path
-            tf_evaluation_path = WflwConf.tf_evaluation_path
+            if accuracy == 100:
+                tf_train_path = WflwConf.tf_train_path
+                tf_evaluation_path = WflwConf.tf_evaluation_path
+            elif accuracy == 90:
+                tf_train_path = WflwConf.tf_train_path_90
+                tf_evaluation_path = WflwConf.tf_evaluation_path_90
         else:
             img_dir = ''
             landmarks_dir = ''

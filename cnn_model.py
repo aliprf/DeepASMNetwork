@@ -35,16 +35,16 @@ import scipy.io as sio
 
 
 class CNNModel:
-    def get_model(self, train_images, arch, num_output_layers):
+    def get_model(self, train_images, arch, num_output_layers, output_len):
 
         if arch == 'ASMNet':
-            model = self.create_ASMNet(inp_tensor=train_images, inp_shape=None)
+            model = self.create_ASMNet(inp_tensor=train_images, inp_shape=None, output_len=output_len)
         elif arch == 'mobileNetV2':
-            model = self.create_MobileNet(inp_tensor=train_images)
+            model = self.create_MobileNet(inp_tensor=train_images, output_len=output_len)
 
         return model
 
-    def create_MobileNet(self, inp_tensor):
+    def create_MobileNet(self, inp_tensor, output_len):
         mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=None,
                                                    alpha=1.0,
                                                    include_top=True,
@@ -61,7 +61,7 @@ class CNNModel:
         mobilenet_model.layers.pop()
 
         x = mobilenet_model.get_layer('global_average_pooling2d_1').output  # 1280
-        out_landmarks = Dense(LearningConfig.landmark_len, name='O_L')(x)
+        out_landmarks = Dense(output_len, name='O_L')(x)
         out_poses = Dense(LearningConfig.pose_len, name='O_P')(x)
 
         inp = mobilenet_model.input
@@ -78,7 +78,7 @@ class CNNModel:
         return revised_model
 
 
-    def create_ASMNet(self, inp_tensor=None, inp_shape=None):
+    def create_ASMNet(self, output_len, inp_tensor=None, inp_shape=None):
         mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=inp_shape,
                                                    alpha=1.0,
                                                    include_top=True,
@@ -111,7 +111,7 @@ class CNNModel:
                                         block_10_project_BN_mpool, block_13_project_BN_mpool, block_15_add_mpool])
         x = keras.layers.Dropout(rate=0.3)(x)
         ''''''
-        out_landmarks = Dense(LearningConfig.landmark_len,
+        out_landmarks = Dense(output_len,
                               kernel_regularizer=l2(0.01),
                               # activity_regularizer=l1(0.01),
                               bias_regularizer=l2(0.01),
