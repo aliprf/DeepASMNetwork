@@ -130,6 +130,9 @@ class WflwConf:
     tf_train_path = Wflw_prefix_path + 'train.tfrecords'
     tf_test_path = Wflw_prefix_path + 'test.tfrecords'
     tf_evaluation_path = Wflw_prefix_path + 'evaluation.tfrecords'
+    tf_train_path_90 = Wflw_prefix_path + 'train_90.tfrecords'
+    tf_evaluation_path_90 = Wflw_prefix_path + 'evaluation_90.tfrecords'
+
 
     orig_number_of_training = 7500
     orig_number_of_test = 2500
@@ -151,18 +154,22 @@ class CofwConf:
     train_images_dir = Cofw_prefix_path + '1_train_images_pts_dir/'
     normalized_points_npy_dir = Cofw_prefix_path + '2_normalized_npy_dir/'
     pose_npy_dir = Cofw_prefix_path + '4_pose_npy_dir/'
+
     tf_train_path = Cofw_prefix_path + 'train.tfrecords'
     tf_test_path = Cofw_prefix_path + 'test.tfrecords'
     tf_evaluation_path = Cofw_prefix_path + 'evaluation.tfrecords'
 
-    orig_number_of_training = 1345
+    tf_train_path_90 = Cofw_prefix_path + 'train_90.tfrecords'
+    tf_evaluation_path_90 = Cofw_prefix_path + 'evaluation_90.tfrecords'
+
+    orig_number_of_training = 50 #1345
     orig_number_of_test = 507
 
-    number_of_all_sample = 108820  # afw, train_helen, train_lfpw
+    number_of_all_sample = 100 #108820  # afw, train_helen, train_lfpw
     number_of_train_sample = number_of_all_sample * 0.95  # 95 % for train
     number_of_evaluation_sample = number_of_all_sample * 0.05  # 5% for evaluation
 
-    augmentation_factor = 5  # create . image from 1
+    augmentation_factor = 2 #5  # create . image from 1
     augmentation_factor_rotate = 30  # create . image from 1
     num_of_landmarks = 29
 
@@ -182,6 +189,8 @@ class IbugConf:
     tf_train_path = _Ibug_prefix_path + 'train.tfrecords'
     tf_test_path = _Ibug_prefix_path + 'test.tfrecords'
     tf_evaluation_path = _Ibug_prefix_path + 'evaluation.tfrecords'
+    tf_train_path_90 = _Ibug_prefix_path + 'train_90.tfrecords'
+    tf_evaluation_path_90 = _Ibug_prefix_path + 'evaluation_90.tfrecords'
 
     # train_hm_dir = '/media/data2/alip/fala/ibug/train_hm_dir/'
     # train_hm_dir_85 = '/media/data2/alip/fala/ibug/train_hm_dir_85/'

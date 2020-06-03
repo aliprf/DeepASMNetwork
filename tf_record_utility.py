@@ -106,7 +106,7 @@ class TFRecordUtility:
         return plain * (plain == maximum_filter(plain, footprint=np.ones((windowSize, windowSize))))
 
     def create_tf_record(self, dataset_name, dataset_type, heatmap, accuracy=100):
-        self._create_tfrecord_from_npy(dataset_name)
+        # self._create_tfrecord_from_npy(dataset_name)
 
         if dataset_name == DatasetName.cofw or dataset_name == DatasetName.wflw:
             self._create_tfrecord_from_npy(dataset_name, accuracy)
@@ -131,8 +131,8 @@ class TFRecordUtility:
 
     def test_tf_record(self, ):
         image_utility = ImageUtility()
-        lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(IbugConf.tf_train_path,
-                                                             number_of_records=30, only_label=False)
+        lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(CofwConf.tf_train_path,
+                                                             number_of_records=10, only_label=False)
         counter = 0
         for lbl in lbl_arr:
             landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = \
@@ -564,15 +564,15 @@ class TFRecordUtility:
                 np_path = normalized_points_npy_dir + file_name_save
 
                 '''these are for test'''
-                image_utility = ImageUtility()
-                landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = image_utility.\
-                    create_landmarks_from_normalized(normalized_points,
-                                                     InputDataSize.image_input_size,
-                                                     InputDataSize.image_input_size,
-                                                     InputDataSize.image_input_size/2,
-                                                     InputDataSize.image_input_size/2
-                                                     )
-                imgpr.print_image_arr(counter+1, np.zeros([224, 224]), landmark_arr_x_n, landmark_arr_y_n)
+                # image_utility = ImageUtility()
+                # landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = image_utility.\
+                #     create_landmarks_from_normalized(normalized_points,
+                #                                      InputDataSize.image_input_size,
+                #                                      InputDataSize.image_input_size,
+                #                                      InputDataSize.image_input_size/2,
+                #                                      InputDataSize.image_input_size/2
+                #                                      )
+                # imgpr.print_image_arr(counter+1, np.zeros([224, 224]), landmark_arr_x_n, landmark_arr_y_n)
                 ''''''
                 save(np_path, normalized_points)
                 counter += 1
@@ -1248,7 +1248,7 @@ class TFRecordUtility:
         print("random_augment_from_rotated DONE.")
         return number_of_samples
 
-    def _create_tfrecord_from_npy(self, dataset_name, accuracy):
+    def _create_tfrecord_from_npy(self, dataset_name, accuracy=100):
         '''we use this function when we have already created and nrmalzed both landmarks and poses'''
 
         if dataset_name == DatasetName.ibug:
@@ -1525,7 +1525,7 @@ class TFRecordUtility:
 
         features = tf.parse_single_example(serialized_example,
                                            features={
-                                               'landmarks': tf.FixedLenFeature([InputDataSize.landmark_len],
+                                               'landmarks': tf.FixedLenFeature([self.number_of_landmark],
                                                                                tf.float32),
                                                'pose': tf.FixedLenFeature([InputDataSize.pose_len], tf.float32),
                                                'image_raw': tf.FixedLenFeature(
