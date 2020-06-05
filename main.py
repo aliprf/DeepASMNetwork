@@ -29,6 +29,10 @@ if __name__ == '__main__':
     '''generate pose using hopeNet'''
     # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.cofw)
     '''create tfRecord:'''
+    pca_utility.create_pca_from_npy(DatasetName.ibug, 95)
+    pca_utility.create_pca_from_npy(DatasetName.cofw, 95)
+    pca_utility.create_pca_from_npy(DatasetName.wflw, 95)
+
     tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=False, accuracy=95)
     tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=95)
     tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=95)
