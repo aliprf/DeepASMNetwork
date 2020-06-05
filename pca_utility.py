@@ -27,6 +27,8 @@ class PCAUtility:
         elif dataset_name == DatasetName.wflw:
             path = WflwConf.normalized_points_npy_dir  # normalized
 
+        print('PCA calculation started: loading labels')
+
         lbl_arr = []
         for file in tqdm(os.listdir(path)):
             if file.endswith(".npy"):
@@ -34,8 +36,6 @@ class PCAUtility:
                 lbl_arr.append(load(npy_file))
 
         lbl_arr = np.array(lbl_arr)
-
-        print('PCA calculation started')
 
         ''' no normalization is needed, since we want to generate hm'''
         reduced_lbl_arr, eigenvalues, eigenvectors = self._func_PCA(lbl_arr, pca_postfix)
