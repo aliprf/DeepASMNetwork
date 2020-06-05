@@ -33,10 +33,10 @@ class Custom_losses:
         '''
 
         pca_util = PCAUtility()
-        image_utility = ImageUtility()
-        tf_record_utility = TFRecordUtility()
+        # image_utility = ImageUtility()
+        # tf_record_utility = TFRecordUtility()
         dataset_name = DatasetName.ibug
-        pca_percentage = 90
+        pca_percentage = 95
 
         eigenvalues = load('pca_obj/' + dataset_name + pca_util.eigenvalues_prefix + str(pca_percentage) + ".npy")
         eigenvectors = load('pca_obj/' + dataset_name + pca_util.eigenvectors_prefix + str(pca_percentage) + ".npy")

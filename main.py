@@ -10,7 +10,7 @@ from test import Test
 # from Train_Gan import TrainGan
 
 if __name__ == '__main__':
-    # tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks*2)
+    tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks*2)
     pca_utility = PCAUtility()
     cnn_model = CNNModel()
     image_utility = ImageUtility()
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     '''generate pose using hopeNet'''
     # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.cofw)
     '''create tfRecord:'''
-    # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=100)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=False, accuracy=90)
     '''retrive and test tfRecords'''
     # tf_record_util.test_tf_record()
 
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     #
     trainer = Train(use_tf_record=True,
                     dataset_name=DatasetName.cofw,
-                    custom_loss=False,
+                    custom_loss=True,
                     # arch='ASMNet',
                     arch='mobileNetV2',
                     inception_mode=False,

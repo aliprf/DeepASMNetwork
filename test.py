@@ -1,5 +1,5 @@
 from configuration import DatasetName, DatasetType, \
-    AffectnetConf, IbugConf, W300Conf, InputDataSize, LearningConfig
+    AffectnetConf, IbugConf, W300Conf, InputDataSize, LearningConfig, CofwConf, WflwConf
 from tf_record_utility import TFRecordUtility
 from pca_utility import PCAUtility
 from image_utility import ImageUtility
@@ -38,17 +38,33 @@ from pose_detection.code.PoseDetector import PoseDetector, utils
 
 class Test:
     def __init__(self, dataset_name, arch, num_output_layers, weight_fname):
+        if dataset_name == DatasetName.ibug:
+            self.SUM_OF_ALL_TRAIN_SAMPLES = IbugConf.number_of_all_sample
+            self.tf_train_path = IbugConf.tf_train_path
+            self.tf_eval_path = IbugConf.tf_evaluation_path
+            self.output_len = IbugConf.num_of_landmarks * 2
+        elif dataset_name == DatasetName.cofw:
+            self.SUM_OF_ALL_TRAIN_SAMPLES = CofwConf.number_of_all_sample
+            self.tf_train_path = CofwConf.tf_train_path
+            self.tf_eval_path = CofwConf.tf_evaluation_path
+            self.output_len = CofwConf.num_of_landmarks * 2
+        elif dataset_name == DatasetName.wflw:
+            self.SUM_OF_ALL_TRAIN_SAMPLES = WflwConf.number_of_all_sample
+            self.tf_train_path = WflwConf.tf_train_path
+            self.tf_eval_path = WflwConf.tf_evaluation_path
+            self.output_len = WflwConf.num_of_landmarks * 2
+
         cnn = CNNModel()
         detect = PoseDetector()
-        model = cnn.get_model(None, arch, num_output_layers)
+        model = cnn.get_model(train_images=None, arch=arch,
+                              num_output_layers=num_output_layers, output_len= self.output_len)
         model.load_weights(weight_fname)
 
         if dataset_name == DatasetName.ibug:
             self._ibug_test(detect, model)
 
-
     def _ibug_test(self, detect, model):
-        tf_record_utility = TFRecordUtility()
+        tf_record_utility = TFRecordUtility(self.output_len)
         image_utility = ImageUtility()
         lbl_arr_challenging, img_arr_challenging = tf_record_utility.retrieve_tf_record_test_set(
             tfrecord_filename=W300Conf.tf_challenging,
@@ -121,7 +137,7 @@ class Test:
     #     return auc
 
     def _test_result_per_image(self, counter, model, img, labels_true, detect):
-        tf_utility = TFRecordUtility()
+
         image_utility = ImageUtility()
 
         image = np.expand_dims(img, axis=0)
@@ -178,7 +194,7 @@ class Test:
             error = math.sqrt(((x_point_predicted - x_point_true) ** 2) + ((y_point_predicted - y_point_true) ** 2))
             sum_errors += error
 
-        normalized_mean_error = sum_errors / (interpupil_distance * (LearningConfig.landmark_len/2))
+        normalized_mean_error = sum_errors / (interpupil_distance * (self.output_len/2))
         # print(normalized_mean_error)
         # print('=====')
 
