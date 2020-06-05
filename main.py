@@ -29,7 +29,9 @@ if __name__ == '__main__':
     '''generate pose using hopeNet'''
     # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.cofw)
     '''create tfRecord:'''
-    # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=False, accuracy=90)
+    tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=False, accuracy=95)
+    tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=95)
+    tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=95)
     '''retrive and test tfRecords'''
     # tf_record_util.test_tf_record()
 
@@ -48,19 +50,20 @@ if __name__ == '__main__':
     # trg.create_seq_model()
 
     # test = Test(dataset_name=DatasetName.ibug, arch='ASMNet', num_output_layers=2, weight_fname='weights-41-0.00429.h5')
-    # test = Test(dataset_name=DatasetName.ibug, arch='mobileNetV2', num_output_layers=2, weight_fname='weights-200-0.01521.h5')
+    # test = Test(dataset_name=DatasetName.cofw, arch='mobileNetV2', num_output_layers=2, weight_fname='weights-120-0.00021.h5')
     #
-    trainer = Train(use_tf_record=True,
-                    dataset_name=DatasetName.cofw,
-                    custom_loss=True,
-                    # arch='ASMNet',
-                    arch='mobileNetV2',
-                    inception_mode=False,
-                    num_output_layers=2,
-                    # weight='00-w-dasm.h5',
-                    weight=None,
-                    train_on_batch=False,
-                    accuracy=95)
+
+    # trainer = Train(use_tf_record=True,
+    #                 dataset_name=DatasetName.cofw,
+    #                 custom_loss=True,
+    #                 # arch='ASMNet',
+    #                 arch='mobileNetV2',
+    #                 inception_mode=False,
+    #                 num_output_layers=2,
+    #                 # weight='00-w-dasm.h5',
+    #                 weight=None,
+    #                 train_on_batch=False,
+    #                 accuracy=95)
 
 
 

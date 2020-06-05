@@ -106,26 +106,17 @@ class TFRecordUtility:
         return plain * (plain == maximum_filter(plain, footprint=np.ones((windowSize, windowSize))))
 
     def create_tf_record(self, dataset_name, dataset_type, heatmap, accuracy=100):
-        # self._create_tfrecord_from_npy(dataset_name)
 
-        if dataset_name == DatasetName.cofw or dataset_name == DatasetName.wflw:
+        if not heatmap:
             self._create_tfrecord_from_npy(dataset_name, accuracy)
 
         elif dataset_name == DatasetName.affectnet:
             self.__create_tfrecord_affectnet(dataset_type, need_augmentation=True)
         elif dataset_name == DatasetName.w300:
             self.__create_tfrecord_w300(dataset_type)
-
         elif dataset_name == DatasetName.ibug:
             if heatmap:
-                self.__create_tfrecord_ibug_all_heatmap(dataset_name)
-                # self.__create_tfrecord_ibug_all_heatmap_rotaate()
-            else:
-                '''when we wannat create it from npy'''
-                self._create_tfrecord_from_npy(dataset_name, accuracy)
-                '''when we wanna start from scratch'''
-                # self.__create_tfrecord_ibug_all_main()
-
+                self._create_tfrecord_ibug_all_heatmap(dataset_name)
         elif dataset_name == DatasetName.aflw:
             self.__create_tfrecord_aflw()
 
@@ -1248,6 +1239,17 @@ class TFRecordUtility:
         print("random_augment_from_rotated DONE.")
         return number_of_samples
 
+    def _get_asm(self, input, dataset_name, accuracy):
+        pca_utils = PCAUtility()
+
+        eigenvalues = load('pca_obj/' + dataset_name + pca_utils.eigenvalues_prefix + str(accuracy) + ".npy")
+        eigenvectors = load('pca_obj/' + dataset_name + pca_utils.eigenvectors_prefix + str(accuracy) + ".npy")
+        meanvector = load('pca_obj/' + dataset_name + pca_utils.meanvector_prefix + str(accuracy) + ".npy")
+
+        b_vector_p = pca_utils.calculate_b_vector(input, True, eigenvalues, eigenvectors, meanvector)
+        out = meanvector + np.dot(eigenvectors, b_vector_p)
+        return out
+
     def _create_tfrecord_from_npy(self, dataset_name, accuracy=100):
         '''we use this function when we have already created and nrmalzed both landmarks and poses'''
 
@@ -1255,13 +1257,13 @@ class TFRecordUtility:
             img_dir = IbugConf.train_images_dir
             landmarks_dir = IbugConf.normalized_points_npy_dir
             pose_dir = IbugConf.pose_npy_dir
-            num_train_samples = IbugConf.number_of_train_sample  # 95%
+            num_train_samples = IbugConf.number_of_train_sample
             if accuracy == 100:
                 tf_train_path = IbugConf.tf_train_path
                 tf_evaluation_path = IbugConf.tf_evaluation_path
-            elif accuracy == 90:
-                tf_train_path = IbugConf.tf_train_path_90
-                tf_evaluation_path = IbugConf.tf_evaluation_path_90
+            elif accuracy == 95:
+                tf_train_path = IbugConf.tf_train_path_95
+                tf_evaluation_path = IbugConf.tf_evaluation_path_95
 
         elif dataset_name == DatasetName.cofw:
             img_dir = CofwConf.train_images_dir
@@ -1271,9 +1273,9 @@ class TFRecordUtility:
             if accuracy == 100:
                 tf_train_path = CofwConf.tf_train_path
                 tf_evaluation_path = CofwConf.tf_evaluation_path
-            elif accuracy == 90:
-                tf_train_path = CofwConf.tf_train_path_90
-                tf_evaluation_path = CofwConf.tf_evaluation_path_90
+            elif accuracy == 95:
+                tf_train_path = CofwConf.tf_train_path_95
+                tf_evaluation_path = CofwConf.tf_evaluation_path_95
 
         elif dataset_name == DatasetName.wflw:
             img_dir = WflwConf.train_images_dir
@@ -1283,16 +1285,9 @@ class TFRecordUtility:
             if accuracy == 100:
                 tf_train_path = WflwConf.tf_train_path
                 tf_evaluation_path = WflwConf.tf_evaluation_path
-            elif accuracy == 90:
-                tf_train_path = WflwConf.tf_train_path_90
-                tf_evaluation_path = WflwConf.tf_evaluation_path_90
-        else:
-            img_dir = ''
-            landmarks_dir = ''
-            pose_dir = ''
-            num_train_samples = 0
-            tf_train_path = ''
-            tf_evaluation_path = ''
+            elif accuracy == 95:
+                tf_train_path = WflwConf.tf_train_path_95
+                tf_evaluation_path = WflwConf.tf_evaluation_path_95
         counter = 0
 
         writer_train = tf.python_io.TFRecordWriter(tf_train_path)
@@ -1318,6 +1313,10 @@ class TFRecordUtility:
                 if not os.path.exists(pose_file_name):
                     continue
                 pose = load(pose_file_name)
+                '''create new landmark using accuracy'''
+                if accuracy != 100:
+                    landmark = self._get_asm(landmark, dataset_name, accuracy)
+                    '''test image after ASM: '''
 
                 '''create tf_record:'''
                 writable_img = np.reshape(img,
@@ -1543,7 +1542,7 @@ class TFRecordUtility:
 
         features = tf.parse_single_example(serialized_example,
                                            features={
-                                               'landmarks': tf.FixedLenFeature([InputDataSize.landmark_len],
+                                               'landmarks': tf.FixedLenFeature([self.number_of_landmark],
                                                                                tf.float32),
                                                'image_raw': tf.FixedLenFeature(
                                                    [InputDataSize.image_input_size *

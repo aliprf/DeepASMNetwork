@@ -61,9 +61,12 @@ class Test:
         model.load_weights(weight_fname)
 
         if dataset_name == DatasetName.ibug:
-            self._ibug_test(detect, model)
+            self._calculate_NME(detect, model)
+        elif dataset_name == DatasetName.cofw:
+            self.output_len = 136
+            self._calculate_NME(detect, model)
 
-    def _ibug_test(self, detect, model):
+    def _calculate_NME(self, detect, model):
         tf_record_utility = TFRecordUtility(self.output_len)
         image_utility = ImageUtility()
         lbl_arr_challenging, img_arr_challenging = tf_record_utility.retrieve_tf_record_test_set(
@@ -163,8 +166,7 @@ class Test:
         ''''''
 
         '''test print'''
-        #
-        # imgpr.print_image_arr((counter+1)*100, img, landmark_arr_x_p, landmark_arr_y_p)
+        imgpr.print_image_arr((counter+1)*100, img, landmark_arr_x_p, landmark_arr_y_p)
 
         # print("landmark_arr_x_t: " + str(landmark_arr_x_t))
         # print("landmark_arr_x_p :" + str(landmark_arr_x_p))
@@ -172,7 +174,7 @@ class Test:
         # print("landmark_arr_y_t: " + str(landmark_arr_y_t))
         # print("landmark_arr_y_p :" + str(landmark_arr_y_p))
 
-        # return 0,0,0
+        # return 0, 0, 0, 0, 0, 0
 
         # interpupil_distance = self.__calculate_interpupil_distance(labels_true_transformed)
         interpupil_distance = self.__calculate_interoccular_distance(labels_true_transformed)

@@ -120,7 +120,8 @@ class W300Conf:
 
 class WflwConf:
     Wflw_prefix_path = '/media/data3/ali/FL/wflw/'  # --> Zeus
-    # Wflw_prefix_path = '/media/ali/data/wflw/'  # --> Atlas
+    # Wflw_prefix_path = '/media/data2/alip/FL/wflw/'  # --> Atlas
+    # Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
 
     img_path_prefix = Wflw_prefix_path + 'all/'
     rotated_img_path_prefix = Wflw_prefix_path + '0_rotated/'
@@ -130,8 +131,8 @@ class WflwConf:
     tf_train_path = Wflw_prefix_path + 'train.tfrecords'
     tf_test_path = Wflw_prefix_path + 'test.tfrecords'
     tf_evaluation_path = Wflw_prefix_path + 'evaluation.tfrecords'
-    tf_train_path_90 = Wflw_prefix_path + 'train_90.tfrecords'
-    tf_evaluation_path_90 = Wflw_prefix_path + 'evaluation_90.tfrecords'
+    tf_train_path_95 = Wflw_prefix_path + 'train_95.tfrecords'
+    tf_evaluation_path_95 = Wflw_prefix_path + 'evaluation_95.tfrecords'
 
     orig_number_of_training = 7500
     orig_number_of_test = 2500
@@ -146,7 +147,8 @@ class WflwConf:
 
 class CofwConf:
     Cofw_prefix_path = '/media/data3/ali/FL/cofw/'  # --> Zeus
-    # Cofw_prefix_path = '/media/ali/data/cofw/'  # --> Atlas
+    # Cofw_prefix_path = '/media/data2/alip/FL/cofw/'  # --> Atlas
+    # Cofw_prefix_path = '/media/ali/data/cofw/'  # --> local
 
     img_path_prefix = Cofw_prefix_path + 'all/'
     rotated_img_path_prefix = Cofw_prefix_path + '0_rotated/'
@@ -158,8 +160,8 @@ class CofwConf:
     tf_test_path = Cofw_prefix_path + 'test.tfrecords'
     tf_evaluation_path = Cofw_prefix_path + 'evaluation.tfrecords'
 
-    tf_train_path_90 = Cofw_prefix_path + 'train_90.tfrecords'
-    tf_evaluation_path_90 = Cofw_prefix_path + 'evaluation_90.tfrecords'
+    tf_train_path_95 = Cofw_prefix_path + 'train_95.tfrecords'
+    tf_evaluation_path_95 = Cofw_prefix_path + 'evaluation_95.tfrecords'
 
     orig_number_of_training = 1345
     orig_number_of_test = 507
@@ -177,7 +179,8 @@ class IbugConf:
 
     '''server_config'''
     _Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
-    # _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> Atlas
+    # _Ibug_prefix_path = '/media/data2/alip/FL/ibug/'  # --> Atlas
+    # _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
 
     img_path_prefix = _Ibug_prefix_path + 'all/'
     rotated_img_path_prefix = _Ibug_prefix_path + '0_rotated/'
@@ -188,32 +191,13 @@ class IbugConf:
     tf_train_path = _Ibug_prefix_path + 'train.tfrecords'
     tf_test_path = _Ibug_prefix_path + 'test.tfrecords'
     tf_evaluation_path = _Ibug_prefix_path + 'evaluation.tfrecords'
-    tf_train_path_90 = _Ibug_prefix_path + 'train_90.tfrecords'
-    tf_evaluation_path_90 = _Ibug_prefix_path + 'evaluation_90.tfrecords'
+    tf_train_path_95 = _Ibug_prefix_path + 'train_95.tfrecords'
+    tf_evaluation_path_95 = _Ibug_prefix_path + 'evaluation_95.tfrecords'
 
     # train_hm_dir = '/media/data2/alip/fala/ibug/train_hm_dir/'
     # train_hm_dir_85 = '/media/data2/alip/fala/ibug/train_hm_dir_85/'
     # train_hm_dir_90 = '/media/data2/alip/fala/ibug/train_hm_dir_90/'
     # train_hm_dir_97 = '/media/data2/alip/fala/ibug/train_hm_dir_97/'
-
-    '''local'''
-    # img_path_prefix = '/media/ali/data/train_set/'
-    # rotated_img_path_prefix = '/media/ali/data/rotated/'
-    # train_images_dir = '/media/ali/data/train_images_dir/'
-    # normalized_points_npy_dir = '/media/ali/data/normalized_points_npy_dir/'
-    # pose_npy_dir = '/media/ali/data/train_before_heatmap_pose/'
-    # train_hm_dir = '/media/ali/data/train_before_heatmap_npy/'
-    # train_hm_dir_85 = '/media/ali/data/train_hm_dir_85/'
-    # train_hm_dir_90 = '/media/ali/data/train_hm_dir_90/'
-    # train_hm_dir_97 = '/media/ali/data/train_hm_dir_97/'
-    # tf_train_path = '/media/ali/data/train.tfrecords'
-    # tf_test_path = '/media/ali/data/test.tfrecords'
-    # tf_evaluation_path = '/media/ali/data/evaluation.tfrecords'
-
-
-    # origin_number_of_all_sample = 3148  # afw, train_helen, train_lfpw
-    # origin_number_of_train_sample = 2834  # 95 % for train
-    # origin_number_of_evaluation_sample = 314  # 5% for evaluation
 
     orig_number_of_training = 3148
     orig_number_of_test_full = 689
