@@ -34,7 +34,7 @@ from skimage.io import imread
 class Train:
     def __init__(self, use_tf_record, dataset_name, custom_loss, arch, inception_mode, num_output_layers,
                  train_on_batch, weight=None, accuracy=100):
-        c_loss = Custom_losses()
+        c_loss = Custom_losses(dataset_name, accuracy)
 
         if dataset_name == DatasetName.ibug:
             self.SUM_OF_ALL_TRAIN_SAMPLES = IbugConf.number_of_all_sample

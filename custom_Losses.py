@@ -23,6 +23,9 @@ import img_printer as imgpr
 from numpy import load,save
 
 class Custom_losses:
+    def __init__(self, dataset_name, accuracy):
+        self.dataset_name = dataset_name
+        self.accuracy = accuracy
 
     def asm_assisted_loss(self, yTrue, yPred):
         '''def::
@@ -35,12 +38,11 @@ class Custom_losses:
         pca_util = PCAUtility()
         # image_utility = ImageUtility()
         # tf_record_utility = TFRecordUtility()
-        dataset_name = DatasetName.ibug
-        pca_percentage = 95
+        pca_percentage = self.accuracy
 
-        eigenvalues = load('pca_obj/' + dataset_name + pca_util.eigenvalues_prefix + str(pca_percentage) + ".npy")
-        eigenvectors = load('pca_obj/' + dataset_name + pca_util.eigenvectors_prefix + str(pca_percentage) + ".npy")
-        meanvector = load('pca_obj/' + dataset_name + pca_util.meanvector_prefix + str(pca_percentage) + ".npy")
+        eigenvalues = load('pca_obj/' + self.dataset_name + pca_util.eigenvalues_prefix + str(pca_percentage) + ".npy")
+        eigenvectors = load('pca_obj/' + self.dataset_name + pca_util.eigenvectors_prefix + str(pca_percentage) + ".npy")
+        meanvector = load('pca_obj/' + self.dataset_name + pca_util.meanvector_prefix + str(pca_percentage) + ".npy")
 
         # yTrue = tf.constant([[1.0, 2.0, 3.0], [5.0, 4.0, 7.0]])
         # yPred = tf.constant([[9.0, 1.0, 2.0], [7.0, 3.0, 8.0]])
