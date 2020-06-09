@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     trainer = Train(use_tf_record=True,
                     dataset_name=DatasetName.cofw,
-                    custom_loss=False,
+                    custom_loss=True,
                     arch='ASMNet',
                     # arch='mobileNetV2',
                     inception_mode=False,
