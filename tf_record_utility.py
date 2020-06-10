@@ -277,7 +277,7 @@ class TFRecordUtility:
     def retrieve_tf_record_test_set(self, tfrecord_filename, number_of_records, only_label=True):
         with tf.Session() as sess:
             filename_queue = tf.train.string_input_producer([tfrecord_filename])
-            image_raw, landmarks = self.__read_and_decode_test_set(filename_queue)
+            image_raw, landmarks, pose = self.__read_and_decode_test_set(filename_queue)
 
             init_op = tf.initialize_all_variables()
             sess.run(init_op)
@@ -288,7 +288,8 @@ class TFRecordUtility:
             lbl_arr = []
 
             for i in range(number_of_records):
-                _image_raw, _landmarks = sess.run([image_raw, landmarks])
+                _landmarks, _pose, _image_raw = sess.run([landmarks, pose, image_raw])
+                # _image_raw, _landmarks = sess.run([image_raw, pose, landmarks])
 
                 if not only_label:
                     img = np.array(_image_raw)
@@ -552,7 +553,7 @@ class TFRecordUtility:
                     line = fp.readline()
                     cnt = 1
                     while line:
-                        if 3 < cnt < num_of_landmarks + 3:
+                        if 3 < cnt <= num_of_landmarks + 3:
                             x_y_pnt = line.strip()
                             x = float(x_y_pnt.split(" ")[0])
                             y = float(x_y_pnt.split(" ")[1])
@@ -1637,15 +1638,16 @@ class TFRecordUtility:
 
         features = tf.parse_single_example(serialized_example,
                                            features={
-                                               'landmarks': tf.FixedLenFeature([self.number_of_landmark],
-                                                                               tf.float32),
+                                               'landmarks': tf.FixedLenFeature([self.number_of_landmark],tf.float32),
+                                               'pose': tf.FixedLenFeature([3], tf.float32),
                                                'image_raw': tf.FixedLenFeature(
                                                    [InputDataSize.image_input_size *
                                                     InputDataSize.image_input_size * 3]
                                                    , tf.float32)})
         landmarks = features['landmarks']
         image_raw = features['image_raw']
-        return image_raw, landmarks
+        pose = features['pose']
+        return image_raw, landmarks, pose
 
     def test_tf_records_validity(self):
         image_utility = ImageUtility()

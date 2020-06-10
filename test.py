@@ -1,74 +1,56 @@
 from configuration import DatasetName, DatasetType, \
     AffectnetConf, IbugConf, W300Conf, InputDataSize, LearningConfig, CofwConf, WflwConf
 from tf_record_utility import TFRecordUtility
-from pca_utility import PCAUtility
 from image_utility import ImageUtility
-from hg_Class import HourglassNet
-
-import tensorflow as tf
-import keras
 from skimage.transform import resize
-
-from keras.regularizers import l2
-from keras.models import Model
-from keras.applications import mobilenet_v2, mobilenet, resnet50, densenet
-from keras.layers import Dense, MaxPooling2D, Conv2D, Flatten, \
-    BatchNormalization, Activation, GlobalAveragePooling2D, DepthwiseConv2D, Dropout, ReLU, Concatenate, Deconvolution2D
-from keras.callbacks import ModelCheckpoint
-from keras import backend as K
-
-from keras.optimizers import adam
 import numpy as np
-import matplotlib.pyplot as plt
 import math
-from keras.callbacks import CSVLogger
-from datetime import datetime
-from sklearn import metrics
 
 import cv2
 import os.path
-from keras.utils.vis_utils import plot_model
-from scipy.spatial import distance
 import scipy.io as sio
-from keras.preprocessing.image import ImageDataGenerator
-from clr_callback import CyclicLR
 from cnn_model import CNNModel
 import img_printer as imgpr
 from pose_detection.code.PoseDetector import PoseDetector, utils
+from tqdm import tqdm
 
 class Test:
     def __init__(self, dataset_name, arch, num_output_layers, weight_fname):
+        self.dataset_name = dataset_name
+
         if dataset_name == DatasetName.ibug:
-            self.SUM_OF_ALL_TRAIN_SAMPLES = IbugConf.number_of_all_sample
-            self.tf_train_path = IbugConf.tf_train_path
-            self.tf_eval_path = IbugConf.tf_evaluation_path
             self.output_len = IbugConf.num_of_landmarks * 2
-        elif dataset_name == DatasetName.cofw:
-            self.SUM_OF_ALL_TRAIN_SAMPLES = CofwConf.number_of_all_sample
-            self.tf_train_path = CofwConf.tf_train_path
-            self.tf_eval_path = CofwConf.tf_evaluation_path
+        elif dataset_name == DatasetName.cofw_test:
             self.output_len = CofwConf.num_of_landmarks * 2
         elif dataset_name == DatasetName.wflw:
-            self.SUM_OF_ALL_TRAIN_SAMPLES = WflwConf.number_of_all_sample
-            self.tf_train_path = WflwConf.tf_train_path
-            self.tf_eval_path = WflwConf.tf_evaluation_path
             self.output_len = WflwConf.num_of_landmarks * 2
 
         cnn = CNNModel()
         detect = PoseDetector()
         model = cnn.get_model(train_images=None, arch=arch,
-                              num_output_layers=num_output_layers, output_len= self.output_len)
+                              num_output_layers=num_output_layers, output_len=self.output_len)
         model.load_weights(weight_fname)
 
         if dataset_name == DatasetName.ibug:
-            self._calculate_NME(detect, model)
-        elif dataset_name == DatasetName.cofw:
-            self.output_len = 136
-            self._calculate_NME(detect, model)
+            self._test_on_W300(detect, model)
+        elif dataset_name == DatasetName.cofw_test:
+            self._test_on_COFW(detect, model)
 
-    def _calculate_NME(self, detect, model):
+    def _test_on_COFW(self, detect, model):
         tf_record_utility = TFRecordUtility(self.output_len)
-        image_utility = ImageUtility()
+        lbl_arr_total, img_arr_total = tf_record_utility.retrieve_tf_record_test_set(
+            tfrecord_filename=CofwConf.tf_test_path,
+            number_of_records=CofwConf.orig_number_of_test,
+            only_label=False)
+        lbl_arr_total = np.array(lbl_arr_total)
+        img_arr_total = np.array(img_arr_total)
+
+        nme_ch, fr_ch, auc_ch = self._calculate_errors(detect, model, CofwConf.orig_number_of_test,
+                                                       img_arr_total, lbl_arr_total)
+        print('nme_ch: ', str(nme_ch), 'fr_ch: ', str(fr_ch), 'auc_ch: ', str(auc_ch))
+
+    def _test_on_W300(self, detect, model):
+        tf_record_utility = TFRecordUtility(self.output_len)
         lbl_arr_challenging, img_arr_challenging = tf_record_utility.retrieve_tf_record_test_set(
             tfrecord_filename=W300Conf.tf_challenging,
             number_of_records=W300Conf.number_of_all_sample_challenging,
@@ -91,60 +73,48 @@ class Test:
         lbl_arr_full = np.array(lbl_arr_full)
         img_arr_full = np.array(img_arr_full)
 
-        ########
+        nme_ch, fr_ch, auc_ch = self._calculate_errors(detect, model, W300Conf.number_of_all_sample_challenging,
+                                                    img_arr_challenging, lbl_arr_challenging)
+        print('nme_ch: ', str(nme_ch), 'fr_ch: ', str(fr_ch), 'auc_ch: ', str(auc_ch))
 
-        loss_challenging = 0
-        loss_common = 0
-        loss_full = 0
+        nme_c, fr_c, auc_c = self._calculate_errors(detect, model, W300Conf.number_of_all_sample_common,
+                                                 img_arr_common, lbl_arr_common)
+        print('nme_c: ', str(nme_c), 'fr_c: ', str(fr_c), 'auc_c: ', str(auc_c))
 
-        # multitask = True
+        nme_f, fr_f, auc_f = self._calculate_errors(detect, model, W300Conf.number_of_all_sample_full,
+                                                 img_arr_full, lbl_arr_full)
+        print('nme_f: ', str(nme_f), 'fr_f: ', str(fr_f), 'auc_f: ', str(auc_f))
+
+    def _calculate_errors(self, detect, model, number_test_set, test_img_arr, test_lbl_arr):
+        fr_threshold = 0.1
+        ACU = []
+
+        fail_counter = 0
+        sum_loss = 0
         all_true = []
-        all_pridicted = []
-        for i in range(W300Conf.number_of_all_sample_challenging):
-            loss_challenging_, lt, lp, mae_yaw, mae_pitch, mae_roll = \
-                self._test_result_per_image(i, model, img_arr_challenging[i], lbl_arr_challenging[i], detect)
-            loss_challenging += loss_challenging_
+        all_predicted = []
+        for i in tqdm(range(number_test_set)):
+            loss, lt, lp, mae_yaw, mae_pitch, mae_roll = \
+                self._test_result_per_image(i, model, test_img_arr[i], test_lbl_arr[i], detect)
+            sum_loss += loss
+            if loss > fr_threshold:
+                fail_counter += 1
 
             all_true.append(lt)
-            all_pridicted.append(lp)
+            all_predicted.append(lp)
 
         sio.savemat('all_true.mat', {'ground_truth_all': np.array(all_true)})
-        sio.savemat('all_pridicted.mat', {'detected_points_all': np.array(all_pridicted)})
-        print('LOSS challenging: ')
+        sio.savemat('all_pridicted.mat', {'detected_points_all': np.array(all_predicted)})
 
-        print(loss_challenging * 100 / W300Conf.number_of_all_sample_challenging)
+        nme = sum_loss * 100 / number_test_set
+        fr = 100 * fail_counter / number_test_set
+        return nme, fr, ACU
 
-        for i in range(W300Conf.number_of_all_sample_common):
-            loss_common_, lt, lp, mae_yaw, mae_pitch, mae_roll = \
-                self._test_result_per_image(i, model, img_arr_common[i], lbl_arr_common[i], detect)
-            loss_common += loss_common_
-
-        print('LOSS common: ')
-        print(loss_common * 100 / W300Conf.number_of_all_sample_common)
-
-        for i in range(W300Conf.number_of_all_sample_full):
-            loss_full_, lt, lp, mae_yaw, mae_pitch, mae_roll = \
-                self._test_result_per_image(i, model, img_arr_full[i], lbl_arr_full[i], detect)
-            loss_full += loss_full_
-
-        print('LOSS full: ')
-        print(loss_full * 100 / W300Conf.number_of_all_sample_full)
-
-    # def calculate_AUC(self, y, y_pred):
-    #     y = np.array(y)
-    #     y_pred = np.array(y_pred)
-    #
-    #     # fpr, tpr, thresholds = metrics.roc_curve(y, y_pred, pos_label=255)
-    #     fpr, tpr, thresholds = metrics.roc_curve(y, y_pred)
-    #     auc = metrics.auc(fpr, tpr)
-    #     return auc
+        # fail = 100 * length(find(loss > 0.1)) / length(loss);
 
     def _test_result_per_image(self, counter, model, img, labels_true, detect):
-
         image_utility = ImageUtility()
-
         image = np.expand_dims(img, axis=0)
-
         predict = model.predict(image)
 
         pre_points = predict[0][0]
@@ -166,7 +136,8 @@ class Test:
         ''''''
 
         '''test print'''
-        imgpr.print_image_arr((counter+1)*100, img, landmark_arr_x_p, landmark_arr_y_p)
+        # imgpr.print_image_arr((counter+1)*1000, img, landmark_arr_x_p, landmark_arr_y_p)
+        # imgpr.print_image_arr((counter+1), img, landmark_arr_x_t, landmark_arr_y_t)
 
         # print("landmark_arr_x_t: " + str(landmark_arr_x_t))
         # print("landmark_arr_x_p :" + str(landmark_arr_x_p))
@@ -200,8 +171,8 @@ class Test:
         # print(normalized_mean_error)
         # print('=====')
 
-        lp = np.array(labels_predict_transformed).reshape([68, 2])
-        lt = np.array(labels_true_transformed).reshape([68, 2])
+        lp = np.array(labels_predict_transformed).reshape([self.output_len//2, 2])
+        lt = np.array(labels_true_transformed).reshape([self.output_len//2, 2])
 
         # print(labels_true_transformed)
         # print(lt)
@@ -246,11 +217,16 @@ class Test:
         return normalized_mean_error, lt, lp, mae_yaw, mae_pitch, mae_roll
 
     def __calculate_interoccular_distance(self, labels_true):
-        left_oc_x = labels_true[72]
-        left_oc_y = labels_true[73]
-
-        right_oc_x = labels_true[90]
-        right_oc_y = labels_true[91]
+        if self.dataset_name == DatasetName.ibug:
+            left_oc_x = labels_true[72]
+            left_oc_y = labels_true[73]
+            right_oc_x = labels_true[90]
+            right_oc_y = labels_true[91]
+        elif self.dataset_name == DatasetName.cofw_test:
+            left_oc_x = labels_true[16]
+            left_oc_y = labels_true[17]
+            right_oc_x = labels_true[18]
+            right_oc_y = labels_true[19]
 
         distance = math.sqrt(((left_oc_x - right_oc_x) ** 2) + ((left_oc_y - right_oc_y) ** 2))
         return distance

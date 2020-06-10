@@ -172,7 +172,6 @@ class CofwConf:
     test_normalized_points_npy_dir = Cofw_prefix_path + 'test_normalized_npy_dir/'
     test_pose_npy_dir = Cofw_prefix_path + 'test_pose_npy_dir/'
 
-
     tf_train_path = Cofw_prefix_path + 'train.tfrecords'
     tf_test_path = Cofw_prefix_path + 'test.tfrecords'
     tf_evaluation_path = Cofw_prefix_path + 'evaluation.tfrecords'
