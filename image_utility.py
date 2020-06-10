@@ -16,6 +16,58 @@ from configuration import  DatasetName
 
 class ImageUtility:
 
+    def crop_and_save(self, _image, _label, file_name, num_of_landmarks, dataset_name):
+        try:
+            '''crop data: we add a small margin to the images'''
+
+            xy_points, x_points, y_points = self.create_landmarks(landmarks=_label,
+                                                                      scale_factor_x=1, scale_factor_y=1)
+
+            # self.print_image_arr(str(x_points[0]), _image, x_points, y_points)
+
+            img_arr, points_arr = self.cropImg(_image, x_points, y_points, no_padding=False)
+            # img_arr = output_img
+            # points_arr = t_label
+            '''resize image to 224*224'''
+            resized_img = resize(img_arr,
+                                 (224, 224, 3),
+                                 anti_aliasing=True)
+            dims = img_arr.shape
+            height = dims[0]
+            width = dims[1]
+            scale_factor_y = 224 / height
+            scale_factor_x = 224 / width
+
+            '''rescale and retrieve landmarks'''
+            landmark_arr_xy, landmark_arr_x, landmark_arr_y = \
+                self.create_landmarks(landmarks=points_arr,
+                                      scale_factor_x=scale_factor_x,
+                                      scale_factor_y=scale_factor_y)
+
+            min_b = 0.0
+            max_b = 224
+            if True or not(min(landmark_arr_x) < min_b or min(landmark_arr_y) < min_b or
+                   max(landmark_arr_x) > max_b or max(landmark_arr_y) > max_b):
+
+                # self.print_image_arr(str(landmark_arr_x[0]), resized_img, landmark_arr_x, landmark_arr_y)
+
+                im = Image.fromarray((resized_img * 255).astype(np.uint8))
+                im.save(str(file_name) + '.jpg')
+
+                pnt_file = open(str(file_name) + ".pts", "w")
+                pre_txt = ["version: 1 \n", "n_points: 68 \n", "{ \n"]
+                pnt_file.writelines(pre_txt)
+                points_txt = ""
+                for i in range(0, len(landmark_arr_xy), 2):
+                    points_txt += str(landmark_arr_xy[i]) + " " + str(landmark_arr_xy[i + 1]) + "\n"
+
+                pnt_file.writelines(points_txt)
+                pnt_file.write("} \n")
+                pnt_file.close()
+
+        except Exception as e:
+            print(e)
+
     def random_rotate(self, _image, _label, file_name, num_of_landmarks, dataset_name):
         try:
 

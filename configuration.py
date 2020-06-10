@@ -7,6 +7,9 @@ class DatasetName:
     cofw = 'cofw'
     wflw = 'wflw'
 
+    wflw_test = 'wflw_test'
+    cofw_test = 'cofw_test'
+
 
 
 class DatasetType:
@@ -119,18 +122,26 @@ class W300Conf:
 
 
 class WflwConf:
-    Wflw_prefix_path = '/media/data3/ali/FL/wflw/'  # --> Zeus
+    # Wflw_prefix_path = '/media/data3/ali/FL/wflw/'  # --> Zeus
     # Wflw_prefix_path = '/media/data2/alip/FL/wflw/'  # --> Atlas
-    # Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
+    Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
 
     img_path_prefix = Wflw_prefix_path + 'all/'
     rotated_img_path_prefix = Wflw_prefix_path + '0_rotated/'
     train_images_dir = Wflw_prefix_path + '1_train_images_pts_dir/'
     normalized_points_npy_dir = Wflw_prefix_path + '2_normalized_npy_dir/'
     pose_npy_dir = Wflw_prefix_path + '4_pose_npy_dir/'
+
+    test_img_path_prefix = Wflw_prefix_path + 'test_all/'
+    test_images_dir = Wflw_prefix_path + 'test_images_pts_dir/'
+    test_normalized_points_npy_dir = Wflw_prefix_path + 'test_normalized_npy_dir/'
+    test_pose_npy_dir = Wflw_prefix_path + 'test_pose_npy_dir/'
+
+
     tf_train_path = Wflw_prefix_path + 'train.tfrecords'
     tf_test_path = Wflw_prefix_path + 'test.tfrecords'
     tf_evaluation_path = Wflw_prefix_path + 'evaluation.tfrecords'
+
     tf_train_path_95 = Wflw_prefix_path + 'train_95.tfrecords'
     tf_evaluation_path_95 = Wflw_prefix_path + 'evaluation_95.tfrecords'
 
@@ -146,15 +157,21 @@ class WflwConf:
     num_of_landmarks = 97
 
 class CofwConf:
-    Cofw_prefix_path = '/media/data3/ali/FL/cofw/'  # --> Zeus
+    # Cofw_prefix_path = '/media/data3/ali/FL/cofw/'  # --> Zeus
     # Cofw_prefix_path = '/media/data2/alip/FL/cofw/'  # --> Atlas
-    # Cofw_prefix_path = '/media/ali/data/cofw/'  # --> local
+    Cofw_prefix_path = '/media/ali/data/cofw/'  # --> local
 
     img_path_prefix = Cofw_prefix_path + 'all/'
     rotated_img_path_prefix = Cofw_prefix_path + '0_rotated/'
     train_images_dir = Cofw_prefix_path + '1_train_images_pts_dir/'
     normalized_points_npy_dir = Cofw_prefix_path + '2_normalized_npy_dir/'
     pose_npy_dir = Cofw_prefix_path + '4_pose_npy_dir/'
+
+    test_img_path_prefix = Cofw_prefix_path + 'test_all/'
+    test_images_dir = Cofw_prefix_path + 'test_images_pts_dir/'
+    test_normalized_points_npy_dir = Cofw_prefix_path + 'test_normalized_npy_dir/'
+    test_pose_npy_dir = Cofw_prefix_path + 'test_pose_npy_dir/'
+
 
     tf_train_path = Cofw_prefix_path + 'train.tfrecords'
     tf_test_path = Cofw_prefix_path + 'test.tfrecords'

@@ -485,6 +485,12 @@ class TFRecordUtility:
         elif dataset_name == DatasetName.wflw:
             images_dir = WflwConf.train_images_dir
             pose_npy_dir = WflwConf.pose_npy_dir
+        elif dataset_name == DatasetName.cofw_test:
+            images_dir = CofwConf.test_images_dir
+            pose_npy_dir = CofwConf.test_pose_npy_dir
+        elif dataset_name == DatasetName.wflw_test:
+            images_dir = WflwConf.test_images_dir
+            pose_npy_dir = WflwConf.test_pose_npy_dir
         else:
             images_dir = ''
             pose_npy_dir = ''
@@ -512,6 +518,7 @@ class TFRecordUtility:
         print("detect_pose_and_save DONE.")
 
     def normalize_points_and_save(self, dataset_name):
+        img_util = ImageUtility()
 
         if dataset_name == DatasetName.ibug:
             images_dir = IbugConf.train_images_dir
@@ -525,10 +532,15 @@ class TFRecordUtility:
             images_dir = WflwConf.train_images_dir
             normalized_points_npy_dir = WflwConf.normalized_points_npy_dir
             num_of_landmarks = WflwConf.num_of_landmarks
-        else:
-            images_dir = ''
-            normalized_points_npy_dir = ''
-            num_of_landmarks = 0
+        elif dataset_name == DatasetName.cofw_test:
+            images_dir = CofwConf.test_images_dir
+            normalized_points_npy_dir = CofwConf.test_normalized_points_npy_dir
+            num_of_landmarks = CofwConf.num_of_landmarks
+
+        elif dataset_name == DatasetName.wflw_test:
+            images_dir = WflwConf.test_images_dir
+            normalized_points_npy_dir = WflwConf.test_normalized_points_npy_dir
+            num_of_landmarks = WflwConf.num_of_landmarks
 
         counter = 1
         for file in tqdm(os.listdir(images_dir)):
@@ -1024,6 +1036,70 @@ class TFRecordUtility:
 
         return number_of_samples
 
+    def crop_and_save(self, dataset_name):
+        number_of_samples = 0
+        img_path_prefix = ''
+        num_of_landmarks = 0
+
+        if dataset_name == DatasetName.cofw_test:
+            number_of_samples = CofwConf.orig_number_of_test
+            img_path_prefix = CofwConf.test_img_path_prefix
+            crop_img_path_prefix = CofwConf.test_images_dir
+            pts_path_prefix = CofwConf.test_img_path_prefix
+            num_of_landmarks = CofwConf.num_of_landmarks
+            img_ext = "png"
+        elif dataset_name == DatasetName.wflw_test:
+            number_of_samples = WflwConf.orig_number_of_test
+            img_path_prefix = WflwConf.img_path_prefix
+            pts_path_prefix = WflwConf.test_img_path_prefix
+            crop_img_path_prefix = WflwConf.test_images_dir
+            num_of_landmarks = WflwConf.num_of_landmarks
+            img_ext = "jpg"
+
+        pts_file_arr = []
+        name_file_arr = []
+
+        for file in os.listdir(pts_path_prefix):
+            if file.endswith(".pts"):
+                pts_file_arr.append(os.path.join(pts_path_prefix, file))
+                name_file_arr.append(file)
+
+        image_utility = ImageUtility()
+
+
+        for i in tqdm(range(number_of_samples)):
+            pts_file = pts_file_arr[i]
+
+            if '#' in pts_file_arr[i]:
+                img_file = img_path_prefix + name_file_arr[i].split('#')[0] + "." + img_ext
+            else:
+                img_file = img_path_prefix + name_file_arr[i][:-3] + img_ext
+
+            points_arr = []
+            with open(pts_file) as fp:
+                line = fp.readline()
+                cnt = 1
+                while line:
+                    if 3 < cnt <= num_of_landmarks + 3:
+                        x_y_pnt = line.strip()
+                        x = float(x_y_pnt.split(" ")[0])
+                        y = float(x_y_pnt.split(" ")[1])
+                        points_arr.append(x)
+                        points_arr.append(y)
+                    line = fp.readline()
+                    cnt += 1
+
+            img = Image.open(img_file)
+            img = np.array(img)
+
+            resized_img = img
+            landmark_arr_xy = points_arr
+
+            image_utility.crop_and_save(resized_img, landmark_arr_xy,
+                                            crop_img_path_prefix + str(10000 * (i + 1)),
+                                            num_of_landmarks, dataset_name)
+        print("crop_and_save")
+
     def rotaate_and_save(self, dataset_name):
         '''rotate image and save it in pts'''
 
@@ -1288,10 +1364,28 @@ class TFRecordUtility:
             elif accuracy == 95:
                 tf_train_path = WflwConf.tf_train_path_95
                 tf_evaluation_path = WflwConf.tf_evaluation_path_95
+
+        elif dataset_name == DatasetName.wflw_test:
+            img_dir = WflwConf.test_images_dir
+            landmarks_dir = WflwConf.test_normalized_points_npy_dir
+            pose_dir = WflwConf.test_pose_npy_dir
+            num_train_samples = WflwConf.orig_number_of_test
+            tf_train_path = WflwConf.tf_test_path
+            tf_evaluation_path = None
+
+        elif dataset_name == DatasetName.cofw_test:
+            img_dir = CofwConf.test_images_dir
+            landmarks_dir = CofwConf.test_normalized_points_npy_dir
+            pose_dir = CofwConf.test_pose_npy_dir
+            num_train_samples = CofwConf.orig_number_of_test
+            tf_train_path = CofwConf.tf_test_path
+            tf_evaluation_path = None
+
         counter = 0
 
         writer_train = tf.python_io.TFRecordWriter(tf_train_path)
-        writer_evaluate = tf.python_io.TFRecordWriter(tf_evaluation_path)
+        if tf_evaluation_path is not None:
+            writer_evaluate = tf.python_io.TFRecordWriter(tf_evaluation_path)
 
         for file in os.listdir(img_dir):  #
             if file.endswith(".jpg") or file.endswith(".png"):
@@ -1333,7 +1427,7 @@ class TFRecordUtility:
                           " created." + '\033[94m' + "remains " + str(num_train_samples - counter - 1)
                     sys.stdout.write('\r' + msg)
 
-                else:
+                elif tf_evaluation_path is not None:
                     writer_evaluate.write(example.SerializeToString())
                     msg = 'eval --> \033[92m' + " sample number " + str(counter + 1) + \
                           " created." + '\033[94m' + "remains " + str(num_train_samples - counter - 1)
@@ -1341,7 +1435,8 @@ class TFRecordUtility:
                 counter += 1
 
         writer_train.close()
-        writer_evaluate.close()
+        if tf_evaluation_path is not None:
+            writer_evaluate.close()
 
     def __create_tfrecord_ibug_all_main(self):
         # try:
