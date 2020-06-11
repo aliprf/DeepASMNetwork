@@ -47,21 +47,21 @@ if __name__ == '__main__':
 
     '''--> Evaluate Results'''
     # test = Test(dataset_name=DatasetName.ibug, arch='ASMNet', num_output_layers=2, weight_fname='asmnet_weights-200-0.00340.h5')
-    test = Test(dataset_name=DatasetName.cofw_test, arch='ASMNet', num_output_layers=2, weight_fname='weights-141-0.00264.h5')
+    # test = Test(dataset_name=DatasetName.cofw_test, arch='ASMNet', num_output_layers=2, weight_fname='weights-141-0.00264.h5')
     #
 
     '''--> Train Model'''
-    # trainer = Train(use_tf_record=True,
-    #                 dataset_name=DatasetName.cofw,
-    #                 custom_loss=True,
-    #                 arch='ASMNet',
-    #                 # arch='mobileNetV2',
-    #                 inception_mode=False,
-    #                 num_output_layers=2,
-    #                 # weight='00-w-dasm.h5',
-    #                 weight=None,
-    #                 train_on_batch=False,
-    #                 accuracy=95)
+    trainer = Train(use_tf_record=True,
+                    dataset_name=DatasetName.wflw,
+                    custom_loss=False,
+                    # arch='ASMNet',
+                    arch='mobileNetV2',
+                    inception_mode=False,
+                    num_output_layers=2,
+                    # weight='00-w-dasm.h5',
+                    weight=None,
+                    train_on_batch=False,
+                    accuracy=100)
 
 
 
