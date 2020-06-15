@@ -61,7 +61,7 @@ if __name__ == '__main__':
                     # weight='00-w-dasm.h5',
                     weight=None,
                     train_on_batch=False,
-                    accuracy=100)
+                    accuracy=95)
 
 
 
