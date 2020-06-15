@@ -15,14 +15,15 @@ from pose_detection.code.PoseDetector import PoseDetector, utils
 from tqdm import tqdm
 
 class Test:
-    def __init__(self, dataset_name, arch, num_output_layers, weight_fname):
+    def __init__(self, dataset_name, arch, num_output_layers, weight_fname, has_pose=False):
         self.dataset_name = dataset_name
+        self.has_pose = has_pose
 
         if dataset_name == DatasetName.ibug:
             self.output_len = IbugConf.num_of_landmarks * 2
         elif dataset_name == DatasetName.cofw_test:
             self.output_len = CofwConf.num_of_landmarks * 2
-        elif dataset_name == DatasetName.wflw:
+        elif dataset_name == DatasetName.wflw_test:
             self.output_len = WflwConf.num_of_landmarks * 2
 
         cnn = CNNModel()
@@ -35,6 +36,23 @@ class Test:
             self._test_on_W300(detect, model)
         elif dataset_name == DatasetName.cofw_test:
             self._test_on_COFW(detect, model)
+        elif dataset_name == DatasetName.wflw_test:
+            self._test_on_COFW(detect, model)
+
+    def _test_on_WFLW(self, detect, model):
+        tf_record_utility = TFRecordUtility(self.output_len)
+        lbl_arr_total, img_arr_total = tf_record_utility.retrieve_tf_record_test_set(
+            tfrecord_filename=WflwConf.tf_test_path,
+            number_of_records=WflwConf.orig_number_of_test,
+            only_label=False)
+        lbl_arr_total = np.array(lbl_arr_total)
+        img_arr_total = np.array(img_arr_total)
+
+        nme, fr, auc, mae_yaw, mae_pitch, mae_roll = self._calculate_errors(detect, model, CofwConf.orig_number_of_test,
+                                                                            img_arr_total, lbl_arr_total)
+        print('nme: ', str(nme), 'fr: ', str(fr), 'auc: ', str(auc))
+        print('mae_yaw: ', str(mae_yaw), 'mae_pitch: ', str(mae_pitch), 'mae_roll: ', str(mae_roll))
+        print("-------------------------------------------------------------")
 
     def _test_on_COFW(self, detect, model):
         tf_record_utility = TFRecordUtility(self.output_len)
@@ -45,9 +63,12 @@ class Test:
         lbl_arr_total = np.array(lbl_arr_total)
         img_arr_total = np.array(img_arr_total)
 
-        nme_ch, fr_ch, auc_ch = self._calculate_errors(detect, model, CofwConf.orig_number_of_test,
-                                                       img_arr_total, lbl_arr_total)
-        print('nme_ch: ', str(nme_ch), 'fr_ch: ', str(fr_ch), 'auc_ch: ', str(auc_ch))
+        nme, fr, auc, mae_yaw, mae_pitch, mae_roll = self._calculate_errors(detect, model,
+                                                                            CofwConf.orig_number_of_test,
+                                                                            img_arr_total, lbl_arr_total)
+        print('nme: ', str(nme), 'fr: ', str(fr), 'auc: ', str(auc))
+        print('mae_yaw: ', str(mae_yaw), 'mae_pitch: ', str(mae_pitch), 'mae_roll: ', str(mae_roll))
+        print("-------------------------------------------------------------")
 
     def _test_on_W300(self, detect, model):
         tf_record_utility = TFRecordUtility(self.output_len)
@@ -73,17 +94,25 @@ class Test:
         lbl_arr_full = np.array(lbl_arr_full)
         img_arr_full = np.array(img_arr_full)
 
-        nme_ch, fr_ch, auc_ch = self._calculate_errors(detect, model, W300Conf.number_of_all_sample_challenging,
-                                                    img_arr_challenging, lbl_arr_challenging)
+        nme_ch, fr_ch, auc_ch, mae_yaw_ch, mae_pitch_ch, mae_roll_ch = self._calculate_errors(
+            detect, model, W300Conf.number_of_all_sample_challenging,
+            img_arr_challenging, lbl_arr_challenging)
         print('nme_ch: ', str(nme_ch), 'fr_ch: ', str(fr_ch), 'auc_ch: ', str(auc_ch))
+        print('mae_yaw: ', str(mae_yaw_ch), 'mae_pitch: ', str(mae_pitch_ch), 'mae_roll: ', str(mae_roll_ch))
 
-        nme_c, fr_c, auc_c = self._calculate_errors(detect, model, W300Conf.number_of_all_sample_common,
-                                                 img_arr_common, lbl_arr_common)
+        nme_c, fr_c, auc_c, mae_yaw_c, mae_pitch_c, mae_roll_c = self._calculate_errors(detect,
+                                                                                        model,
+                                                                                        W300Conf.number_of_all_sample_common,
+                                                                                        img_arr_common, lbl_arr_common)
         print('nme_c: ', str(nme_c), 'fr_c: ', str(fr_c), 'auc_c: ', str(auc_c))
+        print('mae_yaw: ', str(mae_yaw_c), 'mae_pitch: ', str(mae_pitch_c), 'mae_roll: ', str(mae_roll_c))
 
-        nme_f, fr_f, auc_f = self._calculate_errors(detect, model, W300Conf.number_of_all_sample_full,
-                                                 img_arr_full, lbl_arr_full)
+        nme_f, fr_f, auc_f, mae_yaw_f, mae_pitch_f, mae_roll_f = self._calculate_errors(detect,
+                                                                                        model,
+                                                                                        W300Conf.number_of_all_sample_full,
+                                                                                        img_arr_full, lbl_arr_full)
         print('nme_f: ', str(nme_f), 'fr_f: ', str(fr_f), 'auc_f: ', str(auc_f))
+        print('mae_yaw: ', str(mae_yaw_f), 'mae_pitch: ', str(mae_pitch_f), 'mae_roll: ', str(mae_roll_f))
 
     def _calculate_errors(self, detect, model, number_test_set, test_img_arr, test_lbl_arr):
         fr_threshold = 0.1
@@ -93,10 +122,18 @@ class Test:
         sum_loss = 0
         all_true = []
         all_predicted = []
+        sum_mae_yaw = 0
+        sum_mae_pitch = 0
+        sum_mae_roll = 0
         for i in tqdm(range(number_test_set)):
-            loss, lt, lp, mae_yaw, mae_pitch, mae_roll = \
+            loss, lt, lp, yaw, pitch, roll = \
                 self._test_result_per_image(i, model, test_img_arr[i], test_lbl_arr[i], detect)
             sum_loss += loss
+
+            sum_mae_yaw += yaw
+            sum_mae_pitch += pitch
+            sum_mae_roll += roll
+
             if loss > fr_threshold:
                 fail_counter += 1
 
@@ -107,10 +144,13 @@ class Test:
         sio.savemat('all_pridicted.mat', {'detected_points_all': np.array(all_predicted)})
 
         nme = sum_loss * 100 / number_test_set
-        fr = 100 * fail_counter / number_test_set
-        return nme, fr, ACU
 
-        # fail = 100 * length(find(loss > 0.1)) / length(loss);
+        mae_yaw = sum_mae_yaw * 100 / number_test_set
+        mae_pitch = sum_mae_pitch * 100 / number_test_set
+        mae_roll = sum_mae_roll * 100 / number_test_set
+
+        fr = 100 * fail_counter / number_test_set
+        return nme, fr, ACU, mae_yaw, mae_pitch, mae_roll
 
     def _test_result_per_image(self, counter, model, img, labels_true, detect):
         image_utility = ImageUtility()
@@ -178,7 +218,9 @@ class Test:
         # print(lt)
         # print('---------------')
 
-        # return normalized_mean_error, lt, lp
+        '''When there is no pose:'''
+        if not self.has_pose:
+            return normalized_mean_error, lt, lp, 0, 0, 0
 
         '''pose estimation vs hopeNet'''
         img_cp_1 = np.array(img) * 255.0

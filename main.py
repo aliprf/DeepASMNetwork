@@ -46,14 +46,14 @@ if __name__ == '__main__':
     # trg.create_seq_model()
 
     '''--> Evaluate Results'''
-    # test = Test(dataset_name=DatasetName.ibug, arch='ASMNet', num_output_layers=2, weight_fname='asmnet_weights-200-0.00340.h5')
-    # test = Test(dataset_name=DatasetName.cofw_test, arch='ASMNet', num_output_layers=2, weight_fname='weights-141-0.00264.h5')
+    # test = Test(dataset_name=DatasetName.ibug, arch='ASMNet', num_output_layers=2, weight_fname='asmnet_weights-200-0.00340.h5', has_pose=True)
+    # test = Test(dataset_name=DatasetName.wflw_test, arch='ASMNet', num_output_layers=2, weight_fname='weights-141-0.00264.h5', has_pose=True)
     #
 
     '''--> Train Model'''
     trainer = Train(use_tf_record=True,
                     dataset_name=DatasetName.wflw,
-                    custom_loss=False,
+                    custom_loss=True,
                     # arch='ASMNet',
                     arch='mobileNetV2',
                     inception_mode=False,
