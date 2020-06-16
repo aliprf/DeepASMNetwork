@@ -156,7 +156,7 @@ class WflwConf:
     num_of_landmarks = 97
 
 class CofwConf:
-    # Cofw_prefix_path = '/media/data3/ali/FL/cofw/'  # --> Zeus
+    Cofw_prefix_path = '/media/data3/ali/FL/cofw/'  # --> Zeus
     # Cofw_prefix_path = '/media/data2/alip/FL/cofw/'  # --> Atlas
     # Cofw_prefix_path = '/media/ali/data/cofw/'  # --> local
 
