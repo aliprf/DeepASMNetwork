@@ -137,7 +137,6 @@ class WflwConf:
     test_normalized_points_npy_dir = Wflw_prefix_path + 'test_normalized_npy_dir/'
     test_pose_npy_dir = Wflw_prefix_path + 'test_pose_npy_dir/'
 
-
     tf_train_path = Wflw_prefix_path + 'train.tfrecords'
     tf_test_path = Wflw_prefix_path + 'test.tfrecords'
     tf_evaluation_path = Wflw_prefix_path + 'evaluation.tfrecords'
@@ -194,9 +193,9 @@ class CofwConf:
 class IbugConf:
 
     '''server_config'''
-    _Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
+    # _Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
     # _Ibug_prefix_path = '/media/data2/alip/FL/ibug/'  # --> Atlas
-    # _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
+    _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
 
     img_path_prefix = _Ibug_prefix_path + 'all/'
     rotated_img_path_prefix = _Ibug_prefix_path + '0_rotated/'

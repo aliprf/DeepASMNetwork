@@ -1,10 +1,7 @@
 from configuration import DatasetName, DatasetType, AffectnetConf, IbugConf, \
     W300Conf, InputDataSize, LearningConfig, CofwConf, WflwConf
 from image_utility import ImageUtility
-
 import tensorflow as tf
-from keras import backend as K
-
 import numpy as np
 import os
 from skimage.transform import resize
@@ -12,8 +9,6 @@ import csv
 import sys
 from PIL import Image
 from pathlib import Path
-
-sys.path.append('../')
 import sqlite3
 import cv2
 import os.path
@@ -26,6 +21,7 @@ from numpy import save, load, asarray
 import img_printer as imgpr
 from tqdm import tqdm
 from pca_utility import PCAUtility
+import pickle
 
 from pose_detection.code.PoseDetector import PoseDetector
 
@@ -1327,8 +1323,55 @@ class TFRecordUtility:
         out = meanvector + np.dot(eigenvectors, b_vector_p)
         return out
 
+    def create_point_imgpath_map(self, dataset_name):
+        """
+        create a map between facialLandmarks and image_name
+        :param dataset_name:
+        :return:
+        """
+        map = {}
+
+        if dataset_name == DatasetName.ibug:
+            img_dir = IbugConf.train_images_dir
+            landmarks_dir = IbugConf.normalized_points_npy_dir
+
+        elif dataset_name == DatasetName.cofw:
+            img_dir = CofwConf.train_images_dir
+            landmarks_dir = CofwConf.normalized_points_npy_dir
+
+        elif dataset_name == DatasetName.wflw:
+            img_dir = WflwConf.train_images_dir
+            landmarks_dir = WflwConf.normalized_points_npy_dir
+
+        for img_file_name in tqdm(os.listdir(img_dir)):  #
+            if img_file_name.endswith(".jpg") or img_file_name.endswith(".png"):
+
+                '''load landmark npy, (has been augmented already)'''
+                landmark_file_name = os.path.join(landmarks_dir, img_file_name[:-3] + "npy")
+                landmark = load(landmark_file_name)
+                landmark_key = self.get_hash_key(landmark)
+                map[landmark_key] = img_file_name
+
+        print(map)
+        # np.save("map_" + dataset_name, map)
+        # load_map = np.load("map_" + dataset_name+".npy", allow_pickle=True)
+
+        pkl_file = open("map_" + dataset_name, 'wb')
+        pickle.dump(map, pkl_file)
+        pkl_file.close()
+
+        file = open("map_" + dataset_name, 'rb')
+        load_map = pickle.load(file)
+        file.close()
+
+        # print(load_map.get(landmark_key))
+        # print(load_map)
+
+    def get_hash_key(self, input):
+        return hash(str(input).replace("\n", "").replace(" ", ""))
+
     def _create_tfrecord_from_npy(self, dataset_name, accuracy=100):
-        '''we use this function when we have already created and nrmalzed both landmarks and poses'''
+        """we use this function when we have already created and nrmalzed both landmarks and poses"""
 
         if dataset_name == DatasetName.ibug:
             img_dir = IbugConf.train_images_dir
