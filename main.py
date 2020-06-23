@@ -19,10 +19,10 @@ if __name__ == '__main__':
     # tf_record_util.create_adv_att_img_hm()
 
     '''--> Preparing Test Data process:'''
-    # tf_record_util.crop_and_save(dataset_name=DatasetName.cofw_test)
-    # tf_record_util.normalize_points_and_save(dataset_name=DatasetName.wflw_test)
-    # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.cofw_test)
-    # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw_test, dataset_type=None, heatmap=False, accuracy=100)
+    tf_record_util.crop_and_save(dataset_name=DatasetName.wflw_test)
+    tf_record_util.normalize_points_and_save(dataset_name=DatasetName.wflw_test)
+    tf_record_util.detect_pose_and_save(dataset_name=DatasetName.wflw_test)
+    tf_record_util.create_tf_record(dataset_name=DatasetName.wflw_test, dataset_type=None, heatmap=False, accuracy=100)
 
     '''--> Preparing Train Data process:'''
     '''     augment, normalize, and save pts'''
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     '''--> Train Model'''
     trainer = Train(use_tf_record=True,
                     dataset_name=DatasetName.wflw,
-                    custom_loss=False,
+                    custom_loss=True,
                     arch='ASMNet',
                     # arch='mobileNetV2',
                     inception_mode=False,

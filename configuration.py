@@ -9,6 +9,7 @@ class DatasetName:
 
     wflw_test = 'wflw_test'
     cofw_test = 'cofw_test'
+    ibug_test = 'ibug_test'
 
 
 
@@ -122,9 +123,9 @@ class W300Conf:
 
 
 class WflwConf:
-    Wflw_prefix_path = '/media/data3/ali/FL/wflw/'  # --> Zeus
+#     Wflw_prefix_path = '/media/data3/ali/FL/wflw/'  # --> Zeus
     # Wflw_prefix_path = '/media/data2/alip/FL/wflw/'  # --> Atlas
-    # Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
+    Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
 
     img_path_prefix = Wflw_prefix_path + 'all/'
     rotated_img_path_prefix = Wflw_prefix_path + '0_rotated/'
@@ -146,6 +147,13 @@ class WflwConf:
 
     orig_number_of_training = 7500
     orig_number_of_test = 2500
+
+    orig_of_all_test_blur = 773
+    orig_of_all_test_expression = 314
+    orig_of_all_test_illumination = 689
+    orig_of_all_test_largepose = 326
+    orig_of_all_test_makeup = 206
+    orig_of_all_test_occlusion = 736
 
     number_of_all_sample = 270956  # just images. dont count both img and lbls
     number_of_train_sample = number_of_all_sample * 0.95  # 95 % for train
@@ -193,21 +201,27 @@ class CofwConf:
 class IbugConf:
 
     '''server_config'''
-    _Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
+    # _Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
     # _Ibug_prefix_path = '/media/data2/alip/FL/ibug/'  # --> Atlas
-    # _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
+    _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
 
     img_path_prefix = _Ibug_prefix_path + 'all/'
     rotated_img_path_prefix = _Ibug_prefix_path + '0_rotated/'
     train_images_dir = _Ibug_prefix_path + '1_train_images_pts_dir/'
     normalized_points_npy_dir = _Ibug_prefix_path + '2_normalized_npy_dir/'
-    # normalized_pose_npy_dir = _Ibug_prefix_path + '3_normalized_pose_npy_dir/'
     pose_npy_dir = _Ibug_prefix_path + '4_pose_npy_dir/'
+
     tf_train_path = _Ibug_prefix_path + 'train.tfrecords'
-    tf_test_path = _Ibug_prefix_path + 'test.tfrecords'
     tf_evaluation_path = _Ibug_prefix_path + 'evaluation.tfrecords'
+    tf_test_path = _Ibug_prefix_path + 'test.tfrecords'
+
     tf_train_path_95 = _Ibug_prefix_path + 'train_95.tfrecords'
     tf_evaluation_path_95 = _Ibug_prefix_path + 'evaluation_95.tfrecords'
+
+    test_img_path_prefix = _Ibug_prefix_path + 'test_all/'
+    test_images_dir = _Ibug_prefix_path + 'test_images_pts_dir/'
+    test_normalized_points_npy_dir = _Ibug_prefix_path + 'test_normalized_npy_dir/'
+    test_pose_npy_dir = _Ibug_prefix_path + 'test_pose_npy_dir/'
 
     # train_hm_dir = '/media/data2/alip/fala/ibug/train_hm_dir/'
     # train_hm_dir_85 = '/media/data2/alip/fala/ibug/train_hm_dir_85/'

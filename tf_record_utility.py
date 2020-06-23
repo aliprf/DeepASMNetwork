@@ -488,6 +488,9 @@ class TFRecordUtility:
         elif dataset_name == DatasetName.wflw_test:
             images_dir = WflwConf.test_images_dir
             pose_npy_dir = WflwConf.test_pose_npy_dir
+        elif dataset_name == DatasetName.ibug_test:
+            images_dir = IbugConf.test_images_dir
+            pose_npy_dir = IbugConf.test_pose_npy_dir
         else:
             images_dir = ''
             pose_npy_dir = ''
@@ -538,6 +541,10 @@ class TFRecordUtility:
             images_dir = WflwConf.test_images_dir
             normalized_points_npy_dir = WflwConf.test_normalized_points_npy_dir
             num_of_landmarks = WflwConf.num_of_landmarks
+        elif dataset_name == DatasetName.ibug_test:
+            images_dir = IbugConf.test_images_dir
+            normalized_points_npy_dir = IbugConf.test_normalized_points_npy_dir
+            num_of_landmarks = IbugConf.num_of_landmarks
 
         counter = 1
         for file in tqdm(os.listdir(images_dir)):
@@ -1047,10 +1054,17 @@ class TFRecordUtility:
             img_ext = "png"
         elif dataset_name == DatasetName.wflw_test:
             number_of_samples = WflwConf.orig_number_of_test
-            img_path_prefix = WflwConf.img_path_prefix
+            img_path_prefix = WflwConf.img_path_prefix  # both test and trains are in one Folder
             pts_path_prefix = WflwConf.test_img_path_prefix
             crop_img_path_prefix = WflwConf.test_images_dir
             num_of_landmarks = WflwConf.num_of_landmarks
+            img_ext = "jpg"
+        elif dataset_name == DatasetName.ibug_test:
+            number_of_samples = IbugConf.orig_number_of_test_full
+            img_path_prefix = IbugConf.test_img_path_prefix
+            pts_path_prefix = IbugConf.test_img_path_prefix
+            crop_img_path_prefix = IbugConf.test_images_dir
+            num_of_landmarks = IbugConf.num_of_landmarks
             img_ext = "jpg"
 
         pts_file_arr = []
@@ -1063,14 +1077,16 @@ class TFRecordUtility:
 
         image_utility = ImageUtility()
 
-
         for i in tqdm(range(number_of_samples)):
             pts_file = pts_file_arr[i]
 
             if '#' in pts_file_arr[i]:
                 img_file = img_path_prefix + name_file_arr[i].split('#')[0] + "." + img_ext
             else:
-                img_file = img_path_prefix + name_file_arr[i][:-3] + img_ext
+                if os.path.isfile(img_path_prefix + name_file_arr[i][:-3] + "jpg"):
+                    img_file = img_path_prefix + name_file_arr[i][:-3] + "jpg"
+                elif os.path.isfile(img_path_prefix + name_file_arr[i][:-3] + "png"):
+                    img_file = img_path_prefix + name_file_arr[i][:-3] + "png"
 
             points_arr = []
             with open(pts_file) as fp:
@@ -1423,6 +1439,14 @@ class TFRecordUtility:
             pose_dir = CofwConf.test_pose_npy_dir
             num_train_samples = CofwConf.orig_number_of_test
             tf_train_path = CofwConf.tf_test_path
+            tf_evaluation_path = None
+
+        elif dataset_name == DatasetName.ibug_test:
+            img_dir = IbugConf.test_images_dir
+            landmarks_dir = IbugConf.test_normalized_points_npy_dir
+            pose_dir = IbugConf.test_pose_npy_dir
+            num_train_samples = IbugConf.orig_number_of_test_full
+            tf_train_path = IbugConf.tf_test_path
             tf_evaluation_path = None
 
         counter = 0
