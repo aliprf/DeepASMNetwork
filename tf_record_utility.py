@@ -1365,9 +1365,9 @@ class TFRecordUtility:
                 '''load landmark npy, (has been augmented already)'''
                 landmark_file_name = os.path.join(landmarks_dir, img_file_name[:-3] + "npy")
                 landmark = load(landmark_file_name)
-                landmark = str(landmark).replace(" ", "")
-                print(landmark)
-                landmark_key = self.get_hash_key(landmark)
+                # print(landmark)
+                landmark_key = hash(landmark)
+                # landmark_key = self.get_hash_key(landmark)
                 map[landmark_key] = img_file_name
 
         print(map)
