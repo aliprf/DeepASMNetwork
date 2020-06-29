@@ -1361,17 +1361,22 @@ class TFRecordUtility:
             img_dir = WflwConf.train_images_dir
             landmarks_dir = WflwConf.normalized_points_npy_dir
 
+        file1 = open(dataset_name+".txt", "a")
+
         for img_file_name in tqdm(os.listdir(img_dir)):  #
             if img_file_name.endswith(".jpg") or img_file_name.endswith(".png"):
 
                 '''load landmark npy, (has been augmented already)'''
                 landmark_file_name = os.path.join(landmarks_dir, img_file_name[:-3] + "npy")
-                landmark = load(landmark_file_name).tostring()
+                landmark = str(load(landmark_file_name))
                 # print(landmark)
                 # landmark_key = hash(landmark)
                 landmark_key = landmark
                 # landmark_key = self.get_hash_key(landmark)
                 map[landmark_key] = img_file_name
+                file1.write(landmark_key)
+
+        file1.close()
 
         # print(map)
 
