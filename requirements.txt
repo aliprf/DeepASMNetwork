@@ -16,3 +16,4 @@ scikit-image
 Pillow
 tqdm
 pandas
+efficientnet
