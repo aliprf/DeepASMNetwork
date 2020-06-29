@@ -36,7 +36,7 @@ if __name__ == '__main__':
     # pca_utility.create_pca_from_points(DatasetName.ibug, 95)
     # pca_utility.create_pca_from_npy(DatasetName.cofw, 95)
     '''     create tfRecord:'''
-    # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=95)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=95)
 
     '''create point->imgName map'''
     tf_record_util.create_point_imgpath_map(dataset_name=DatasetName.ibug)

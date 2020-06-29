@@ -118,7 +118,7 @@ class TFRecordUtility:
 
     def test_tf_record(self, ):
         image_utility = ImageUtility()
-        lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(WflwConf.tf_train_path,
+        lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(CofwConf.tf_train_path,
                                                              number_of_records=20, only_label=False)
         counter = 0
         for lbl in lbl_arr:
@@ -1339,6 +1339,8 @@ class TFRecordUtility:
         out = meanvector + np.dot(eigenvectors, b_vector_p)
         return out
 
+    # def create_point_imgpath_map_tf_record(self, dataset_name):
+
     def create_point_imgpath_map(self, dataset_name):
         """
         create a map between facialLandmarks and image_name
@@ -1366,7 +1368,8 @@ class TFRecordUtility:
                 landmark_file_name = os.path.join(landmarks_dir, img_file_name[:-3] + "npy")
                 landmark = load(landmark_file_name)
                 # print(landmark)
-                landmark_key = hash(landmark.tostring())
+                landmark = landmark.tostring()
+                landmark_key = hash(landmark)
                 # landmark_key = self.get_hash_key(landmark)
                 map[landmark_key] = img_file_name
 
