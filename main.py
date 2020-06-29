@@ -39,7 +39,7 @@ if __name__ == '__main__':
     # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=95)
 
     '''create point->imgName map'''
-    tf_record_util.create_point_imgpath_map(dataset_name=DatasetName.ibug)
+    # tf_record_util.create_point_imgpath_map(dataset_name=DatasetName.ibug)
     tf_record_util.create_point_imgpath_map(dataset_name=DatasetName.cofw)
     tf_record_util.create_point_imgpath_map(dataset_name=DatasetName.wflw)
 

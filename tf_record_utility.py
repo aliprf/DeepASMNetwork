@@ -1366,14 +1366,15 @@ class TFRecordUtility:
 
                 '''load landmark npy, (has been augmented already)'''
                 landmark_file_name = os.path.join(landmarks_dir, img_file_name[:-3] + "npy")
-                landmark = load(landmark_file_name)
+                landmark = load(landmark_file_name).tostring()
                 # print(landmark)
-                landmark = landmark.tostring()
-                landmark_key = hash(landmark)
+                # landmark_key = hash(landmark)
+                landmark_key = landmark
                 # landmark_key = self.get_hash_key(landmark)
                 map[landmark_key] = img_file_name
 
-        print(map)
+        # print(map)
+
         # np.save("map_" + dataset_name, map)
         # load_map = np.load("map_" + dataset_name+".npy", allow_pickle=True)
 
