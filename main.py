@@ -10,7 +10,7 @@ from test import Test
 # from Train_Gan import TrainGan
 
 if __name__ == '__main__':
-    tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks*2)
+    tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks*2)
     pca_utility = PCAUtility()
     cnn_model = CNNModel()
     image_utility = ImageUtility()
@@ -35,16 +35,20 @@ if __name__ == '__main__':
     '''     create and save PCA objects'''
     # pca_utility.create_pca_from_points(DatasetName.ibug, 95)
     # pca_utility.create_pca_from_npy(DatasetName.cofw, 95)
-    '''     create tfRecord:'''
-    # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=95)
 
-    '''create point->imgName map'''
-    tf_record_util.create_point_imgpath_map(dataset_name=DatasetName.ibug)
-    tf_record_util.create_point_imgpath_map(dataset_name=DatasetName.cofw)
-    tf_record_util.create_point_imgpath_map(dataset_name=DatasetName.wflw)
+    '''     create tfRecord:'''
+    tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=False, accuracy=100)
+    tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=100)
+    tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=100)
 
     '''--> retrive and test tfRecords'''
     # tf_record_util.test_tf_record()
+
+    '''create point->imgName map'''
+    tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.ibug)
+    tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.cofw)
+    tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.wflw)
+
 
     '''--> Train GAN:'''
     # trg = TrainGan()

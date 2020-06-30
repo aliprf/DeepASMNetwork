@@ -119,7 +119,7 @@ class TFRecordUtility:
     def test_tf_record(self, ):
         image_utility = ImageUtility()
         lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(CofwConf.tf_train_path,
-                                                             number_of_records=20, only_label=False)
+                                                             number_of_records=CofwConf.orig_number_of_training, only_label=True)
         counter = 0
         for lbl in lbl_arr:
             landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = \
@@ -131,7 +131,7 @@ class TFRecordUtility:
     def retrieve_tf_record(self, tfrecord_filename, number_of_records, only_label=True):
         with tf.Session() as sess:
             filename_queue = tf.train.string_input_producer([tfrecord_filename])
-            image_raw, landmarks, pose = self.__read_and_decode(filename_queue)
+            image_raw, landmarks, pose, img_name = self.__read_and_decode(filename_queue)
 
             init_op = tf.initialize_all_variables()
             sess.run(init_op)
@@ -141,22 +141,24 @@ class TFRecordUtility:
             img_arr = []
             lbl_arr = []
             pose_arr = []
+            img_name_arr = []
 
             for i in range(number_of_records):
-                _image_raw, _landmarks, _pose = sess.run([image_raw, landmarks, pose])
+                _image_raw, _landmarks, _pose, _img_name = sess.run([image_raw, landmarks, pose, img_name])
 
                 if not only_label:
                     img = np.array(_image_raw)
                     img = img.reshape(InputDataSize.image_input_size, InputDataSize.image_input_size, 3)
                     img_arr.append(img)
 
+                img_name_arr.append(_img_name)
                 lbl_arr.append(_landmarks)
                 pose_arr.append(_pose)
 
             coord.request_stop()
             coord.join(threads)
             """ the output image is x y x y array"""
-            return lbl_arr, img_arr, pose_arr
+            return lbl_arr, img_arr, pose_arr, img_name_arr
 
     def create_adv_att_img_hm(self):
         png_file_arr = []
@@ -1339,7 +1341,47 @@ class TFRecordUtility:
         out = meanvector + np.dot(eigenvectors, b_vector_p)
         return out
 
-    # def create_point_imgpath_map_tf_record(self, dataset_name):
+    def create_point_imgpath_map_tf_record(self, dataset_name):
+        map = {}
+        if dataset_name == DatasetName.ibug:
+            tf_path = IbugConf.tf_train_path
+            sample_counts = IbugConf.number_of_train_sample
+            landmarks_dir = IbugConf.normalized_points_npy_dir
+
+        elif dataset_name == DatasetName.cofw:
+            tf_path = CofwConf.tf_train_path
+            sample_counts = CofwConf.number_of_train_sample
+            landmarks_dir = CofwConf.normalized_points_npy_dir
+
+        elif dataset_name == DatasetName.wflw:
+            tf_path = WflwConf.tf_train_path
+            sample_counts = WflwConf.number_of_train_sample
+            landmarks_dir = WflwConf.normalized_points_npy_dir
+
+        # sample_counts = 1708
+        lbl_arr, img_arr, pose_arr, img_name_arr = self.retrieve_tf_record(tf_path,
+                                                             number_of_records=sample_counts,
+                                                             only_label=True)
+        counter = 0
+        # f = open("key_"+dataset_name, "a")
+        for lbl in lbl_arr:
+            img_name = self._decode_tf_file_name(img_name_arr[counter].decode("utf-8"))
+            landmark_key = lbl.tostring()
+            # img_name = os.path.join(landmarks_dir, img_name)
+            map[landmark_key] = img_name
+
+            # f.write(str(landmark_key))
+            counter += 1
+        # f.close()
+
+        pkl_file = open("map_" + dataset_name, 'wb')
+        pickle.dump(map, pkl_file)
+        pkl_file.close()
+
+        file = open("map_" + dataset_name, 'rb')
+        load_map = pickle.load(file)
+        print(load_map)
+        file.close()
 
     def create_point_imgpath_map(self, dataset_name):
         """
@@ -1370,13 +1412,12 @@ class TFRecordUtility:
                 landmark_file_name = os.path.join(landmarks_dir, img_file_name[:-3] + "npy")
                 landmark = str(load(landmark_file_name))
                 # print(landmark)
-                # landmark_key = hash(landmark)
-                landmark_key = landmark
+                landmark_key = hash(landmark)
                 # landmark_key = self.get_hash_key(landmark)
                 map[landmark_key] = img_file_name
-                file1.write(landmark_key)
+                # file1.write(landmark_key)
 
-        file1.close()
+        # file1.close()
 
         # print(map)
 
@@ -1396,6 +1437,14 @@ class TFRecordUtility:
 
     def get_hash_key(self, input):
         return hash(str(input).replace("\n", "").replace(" ", ""))
+
+    def _decode_tf_file_name(self, file_name):
+        return str(file_name).replace("X", "")
+
+    def _encode_tf_file_name(self, file_name):
+        while len(file_name) < 15:
+            file_name = "X" + file_name
+        return file_name
 
     def _create_tfrecord_from_npy(self, dataset_name, accuracy=100):
         """we use this function when we have already created and nrmalzed both landmarks and poses"""
@@ -1466,8 +1515,10 @@ class TFRecordUtility:
         if tf_evaluation_path is not None:
             writer_evaluate = tf.python_io.TFRecordWriter(tf_evaluation_path)
 
-        for file in os.listdir(img_dir):  #
+        for file in os.listdir(img_dir):
             if file.endswith(".jpg") or file.endswith(".png"):
+                img_tf_name = self._encode_tf_file_name(file)
+                # img_tf_name_ = self._decode_tf_file_name(img_tf_name)
 
                 img_file_name = os.path.join(img_dir, file)
 
@@ -1497,7 +1548,9 @@ class TFRecordUtility:
 
                 feature = {'landmarks': self.__float_feature(landmark),
                            'pose': self.__float_feature(pose),
-                           'image_raw': self.__float_feature(writable_img)}
+                           'image_raw': self.__float_feature(writable_img),
+                           'image_name': self.__bytes_feature(img_tf_name.encode('utf-8')),
+                           }
                 example = tf.train.Example(features=tf.train.Features(feature=feature))
 
                 if counter <= num_train_samples:
@@ -1689,8 +1742,9 @@ class TFRecordUtility:
         return tf.train.Feature(float_list=tf.train.FloatList(value=[value]))
 
     def __bytes_feature(self, value):
-        x = tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
-        return x
+        if isinstance(value, type(tf.constant(0))):
+            value = value.numpy()
+        return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
     def __read_and_decode(self, filename_queue):
         reader = tf.TFRecordReader()
@@ -1704,11 +1758,14 @@ class TFRecordUtility:
                                                'image_raw': tf.FixedLenFeature(
                                                    [InputDataSize.image_input_size *
                                                     InputDataSize.image_input_size * 3]
-                                                   , tf.float32)})
+                                                   , tf.float32),
+                                               "image_name": tf.FixedLenFeature([], tf.string)
+                                           })
         landmarks = features['landmarks']
         pose = features['pose']
         image_raw = features['image_raw']
-        return image_raw, landmarks, pose
+        image_name = features['image_name']
+        return image_raw, landmarks, pose,image_name
 
     def __read_and_decode_test_set(self, filename_queue):
         reader = tf.TFRecordReader()
