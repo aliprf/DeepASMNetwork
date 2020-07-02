@@ -38,8 +38,8 @@ if __name__ == '__main__':
 
     '''     create tfRecord:'''
     # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=False, accuracy=100)
-    tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=100)
-    tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=100)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=100)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=100)
 
     '''--> retrive and test tfRecords'''
     # tf_record_util.test_tf_record()
