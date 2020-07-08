@@ -13,11 +13,19 @@ from cnn_model import CNNModel
 import img_printer as imgpr
 from pose_detection.code.PoseDetector import PoseDetector, utils
 from tqdm import tqdm
+from os import listdir
+from os.path import isfile, join
+
 
 class Test:
+
     def __init__(self, dataset_name, arch, num_output_layers, weight_fname, has_pose=False):
+        if dataset_name is None:
+            return
+
         self.dataset_name = dataset_name
         self.has_pose = has_pose
+        self.num_output_layers = num_output_layers
 
         if dataset_name == DatasetName.ibug:
             self.output_len = IbugConf.num_of_landmarks * 2
@@ -37,7 +45,59 @@ class Test:
         elif dataset_name == DatasetName.cofw_test:
             self._test_on_COFW(detect, model)
         elif dataset_name == DatasetName.wflw_test:
-            self._test_on_COFW(detect, model)
+            self._test_on_WFLW(detect, model)
+
+    def test_all_results(self, weight_path, num_output_layers):
+        self.has_pose = True
+        self.num_output_layers = num_output_layers
+
+        cnn = CNNModel()
+        detect = PoseDetector()
+
+        f_names = [f for f in listdir(weight_path) if isfile(join(weight_path, f))]
+        # cofw_ds_asm
+
+        res_wflw = ""
+        res_ibug = ""
+        res_cofw = ""
+
+        for file_name in f_names:
+            dataset_name = file_name.split('_')[0]
+            arch = file_name.split('_')[1]
+            if arch == 'ds':
+                arch = 'ASMNet'
+            else:
+                arch = 'mobileNetV2'
+
+            self.dataset_name = dataset_name
+
+            if dataset_name == DatasetName.ibug:
+
+                self.output_len = IbugConf.num_of_landmarks * 2
+                model = cnn.get_model(train_images=None, arch=arch,
+                                      num_output_layers=num_output_layers,
+                                      output_len=IbugConf.num_of_landmarks * 2)
+                model.load_weights(weight_path + '/' + file_name)
+                res_ibug = self._test_on_W300(detect, model)
+
+            elif dataset_name == DatasetName.cofw:
+                self.output_len = CofwConf.num_of_landmarks * 2
+                model = cnn.get_model(train_images=None, arch=arch,
+                                      num_output_layers=num_output_layers,
+                                      output_len=CofwConf.num_of_landmarks * 2)
+                model.load_weights(weight_path + '/' + file_name)
+                res_cofw = self._test_on_COFW(detect, model)
+
+            elif dataset_name == DatasetName.wflw:
+                self.output_len = WflwConf.num_of_landmarks * 2
+                model = cnn.get_model(train_images=None, arch=arch,
+                                      num_output_layers=num_output_layers,
+                                      output_len=WflwConf.num_of_landmarks * 2)
+                model.load_weights(weight_path + '/' + file_name)
+                res_wflw = self._test_on_WFLW(detect, model)
+        print(res_ibug)
+        print(res_cofw)
+        print(res_wflw)
 
     def _test_on_WFLW(self, detect, model):
         tf_record_utility = TFRecordUtility(self.output_len)
@@ -48,11 +108,16 @@ class Test:
         lbl_arr_total = np.array(lbl_arr_total)
         img_arr_total = np.array(img_arr_total)
 
-        nme, fr, auc, mae_yaw, mae_pitch, mae_roll = self._calculate_errors(detect, model, CofwConf.orig_number_of_test,
+        nme, fr, auc, mae_yaw, mae_pitch, mae_roll = self._calculate_errors(detect, model, WflwConf.orig_number_of_test,
                                                                             img_arr_total, lbl_arr_total)
+        result_str = "-------------------------_test_on_WFLW------------------------------------" + '\n\r' \
+                     + 'nme: ', str(nme), 'fr: ', str(fr), 'auc: ', str(auc) + '\n\r' \
+                     + 'mae_yaw: ', str(mae_yaw), 'mae_pitch: ', str(mae_pitch), 'mae_roll: ', str(mae_roll)
+
         print('nme: ', str(nme), 'fr: ', str(fr), 'auc: ', str(auc))
         print('mae_yaw: ', str(mae_yaw), 'mae_pitch: ', str(mae_pitch), 'mae_roll: ', str(mae_roll))
         print("-------------------------------------------------------------")
+        return result_str
 
     def _test_on_COFW(self, detect, model):
         tf_record_utility = TFRecordUtility(self.output_len)
@@ -66,9 +131,16 @@ class Test:
         nme, fr, auc, mae_yaw, mae_pitch, mae_roll = self._calculate_errors(detect, model,
                                                                             CofwConf.orig_number_of_test,
                                                                             img_arr_total, lbl_arr_total)
+
+        result_str = "-------------------------_test_on_COFW------------------------------------" + '\n\r' \
+                     + 'nme: ', str(nme), 'fr: ', str(fr), 'auc: ', str(auc) + '\n\r' \
+                     + 'mae_yaw: ', str(mae_yaw), 'mae_pitch: ', str(mae_pitch), 'mae_roll: ', str(mae_roll)
+
         print('nme: ', str(nme), 'fr: ', str(fr), 'auc: ', str(auc))
         print('mae_yaw: ', str(mae_yaw), 'mae_pitch: ', str(mae_pitch), 'mae_roll: ', str(mae_roll))
         print("-------------------------------------------------------------")
+
+        return result_str
 
     def _test_on_W300(self, detect, model):
         tf_record_utility = TFRecordUtility(self.output_len)
@@ -97,6 +169,7 @@ class Test:
         nme_ch, fr_ch, auc_ch, mae_yaw_ch, mae_pitch_ch, mae_roll_ch = self._calculate_errors(
             detect, model, W300Conf.number_of_all_sample_challenging,
             img_arr_challenging, lbl_arr_challenging)
+
         print('nme_ch: ', str(nme_ch), 'fr_ch: ', str(fr_ch), 'auc_ch: ', str(auc_ch))
         print('mae_yaw: ', str(mae_yaw_ch), 'mae_pitch: ', str(mae_pitch_ch), 'mae_roll: ', str(mae_roll_ch))
 
@@ -113,6 +186,15 @@ class Test:
                                                                                         img_arr_full, lbl_arr_full)
         print('nme_f: ', str(nme_f), 'fr_f: ', str(fr_f), 'auc_f: ', str(auc_f))
         print('mae_yaw: ', str(mae_yaw_f), 'mae_pitch: ', str(mae_pitch_f), 'mae_roll: ', str(mae_roll_f))
+
+        result_str = "-------------------------_test_on_W300------------------------------------" + '\n\r' \
+                     'nme_ch: ', str(nme_ch), 'fr_ch: ', str(fr_ch), 'auc_ch: ', str(auc_ch) + '\n\r' \
+                     'mae_yaw: ', str(mae_yaw_ch), 'mae_pitch: ', str(mae_pitch_ch), 'mae_roll: ', str(mae_roll_ch) + '\n\r' \
+                     'nme_c: ', str(nme_c), 'fr_c: ', str(fr_c), 'auc_c: ', str(auc_c) + '\n\r' \
+                     'mae_yaw: ', str(mae_yaw_c), 'mae_pitch: ', str(mae_pitch_c), 'mae_roll: ', str(mae_roll_c) + '\n\r' \
+                     'nme_f: ', str(nme_f), 'fr_f: ', str(fr_f), 'auc_f: ', str(auc_f) + '\n\r' \
+                     'mae_yaw: ', str(mae_yaw_f), 'mae_pitch: ', str(mae_pitch_f), 'mae_roll: ', str(mae_roll_f)
+        return result_str
 
     def _calculate_errors(self, detect, model, number_test_set, test_img_arr, test_lbl_arr):
         fr_threshold = 0.1
@@ -176,8 +258,8 @@ class Test:
         ''''''
 
         '''test print'''
-        # imgpr.print_image_arr((counter+1)*1000, img, landmark_arr_x_p, landmark_arr_y_p)
-        # imgpr.print_image_arr((counter+1), img, landmark_arr_x_t, landmark_arr_y_t)
+        # imgpr.print_image_arr((counter + 1) * 1000, img, landmark_arr_x_p, landmark_arr_y_p)
+        # imgpr.print_image_arr((counter + 1), img, landmark_arr_x_t, landmark_arr_y_t)
 
         # print("landmark_arr_x_t: " + str(landmark_arr_x_t))
         # print("landmark_arr_x_p :" + str(landmark_arr_x_p))
@@ -190,29 +272,31 @@ class Test:
         # interpupil_distance = self.__calculate_interpupil_distance(labels_true_transformed)
         interpupil_distance = self.__calculate_interoccular_distance(labels_true_transformed)
 
+        # return 1, 1, 1, 1, 1, 1
+
         sum_errors = 0
         for i in range(0, len(labels_true_transformed), 2):  # two step each time
             '''this is the value after transformation to the real points'''
             x_point_predicted = labels_predict_transformed[i]
-            y_point_predicted = labels_predict_transformed[i+1]
+            y_point_predicted = labels_predict_transformed[i + 1]
 
             # x_point_predicted_asm = labels_predict_asm_transformed[i]
             # y_point_predicted_asm = labels_predict_asm_transformed[i+1]
             #
 
             x_point_true = labels_true_transformed[i]
-            y_point_true = labels_true_transformed[i+1]
+            y_point_true = labels_true_transformed[i + 1]
 
             '''this is the normalized value, which predicted by network'''
             error = math.sqrt(((x_point_predicted - x_point_true) ** 2) + ((y_point_predicted - y_point_true) ** 2))
             sum_errors += error
 
-        normalized_mean_error = sum_errors / (interpupil_distance * (self.output_len/2))
+        normalized_mean_error = sum_errors / (interpupil_distance * (self.output_len / 2))
         # print(normalized_mean_error)
         # print('=====')
 
-        lp = np.array(labels_predict_transformed).reshape([self.output_len//2, 2])
-        lt = np.array(labels_true_transformed).reshape([self.output_len//2, 2])
+        lp = np.array(labels_predict_transformed).reshape([self.output_len // 2, 2])
+        lt = np.array(labels_true_transformed).reshape([self.output_len // 2, 2])
 
         # print(labels_true_transformed)
         # print(lt)
@@ -240,9 +324,9 @@ class Test:
         ''' normalized to normal '''
         min_degree = - 65
         max_degree = 65
-        yaw_tpre = min_degree + (max_degree - min_degree) * (yaw_p+1)/2
-        pitch_tpre = min_degree + (max_degree - min_degree) * (pitch_p+1)/2
-        roll_tpre = min_degree + (max_degree - min_degree) * (roll_p+1)/2
+        yaw_tpre = min_degree + (max_degree - min_degree) * (yaw_p + 1) / 2
+        pitch_tpre = min_degree + (max_degree - min_degree) * (pitch_p + 1) / 2
+        roll_tpre = min_degree + (max_degree - min_degree) * (roll_p + 1) / 2
 
         # print("true:  " + str(yaw_truth)+"--"+str(pitch_truth)+"--"+str(roll_truth))
         # print("predict:  " + str(yaw_tpre)+"--"+str(pitch_tpre)+"--"+str(roll_tpre))
@@ -264,11 +348,16 @@ class Test:
             left_oc_y = labels_true[73]
             right_oc_x = labels_true[90]
             right_oc_y = labels_true[91]
-        elif self.dataset_name == DatasetName.cofw_test:
+        elif self.dataset_name == DatasetName.cofw_test or self.dataset_name == DatasetName.cofw:
             left_oc_x = labels_true[16]
             left_oc_y = labels_true[17]
             right_oc_x = labels_true[18]
             right_oc_y = labels_true[19]
+        elif self.dataset_name == DatasetName.wflw_test or self.dataset_name == DatasetName.wflw:
+            left_oc_x = labels_true[192]
+            left_oc_y = labels_true[193]
+            right_oc_x = labels_true[194]
+            right_oc_y = labels_true[195]
 
         distance = math.sqrt(((left_oc_x - right_oc_x) ** 2) + ((left_oc_y - right_oc_y) ** 2))
         return distance
@@ -276,13 +365,17 @@ class Test:
     def __calculate_interpupil_distance(self, labels_true):
         # points: x,y 36--> 41 point for left, and 42->47 for right
 
-        left_pupil_x = (labels_true[72]+labels_true[74]+labels_true[76]+labels_true[78]+labels_true[80]+labels_true[82])/6
-        left_pupil_y = (labels_true[73]+labels_true[75]+labels_true[77]+labels_true[79]+labels_true[81]+labels_true[83])/6
+        left_pupil_x = (labels_true[72] + labels_true[74] + labels_true[76] + labels_true[78] + labels_true[80] +
+                        labels_true[82]) / 6
+        left_pupil_y = (labels_true[73] + labels_true[75] + labels_true[77] + labels_true[79] + labels_true[81] +
+                        labels_true[83]) / 6
 
-        right_pupil_x = (labels_true[84] + labels_true[86] + labels_true[88] + labels_true[90] + labels_true[92] + labels_true[94]) / 6
-        right_pupil_y = (labels_true[85] + labels_true[87] + labels_true[89] + labels_true[91] + labels_true[93] + labels_true[95]) / 6
+        right_pupil_x = (labels_true[84] + labels_true[86] + labels_true[88] + labels_true[90] + labels_true[92] +
+                         labels_true[94]) / 6
+        right_pupil_y = (labels_true[85] + labels_true[87] + labels_true[89] + labels_true[91] + labels_true[93] +
+                         labels_true[95]) / 6
 
-        dis = math.sqrt(((left_pupil_x - right_pupil_x)**2) + ((left_pupil_y - right_pupil_y)**2))
+        dis = math.sqrt(((left_pupil_x - right_pupil_x) ** 2) + ((left_pupil_y - right_pupil_y) ** 2))
 
         # p1 = [left_pupil_x, left_pupil_y]
         # p2 = [right_pupil_x, right_pupil_y]
@@ -310,7 +403,7 @@ class Test:
         #
 
         # model = self.__shrink_v3_mobileNet_v2_multi_task(tensor=None, pose=True)
-        model = self.__shrink_v6_mobileNet_v2_single_task(tensor=None, pose=True,test=True)
+        model = self.__shrink_v6_mobileNet_v2_single_task(tensor=None, pose=True, test=True)
         model.load_weights("weights-05-0.05.h5")  # no: 0.19980816035713   ** asm: 0.20618409347179825  weights-01-0.01
         # model.load_weights("weight_deepASMNet_asm.h5")  # no: 0.19980816035713   ** asm: 0.20618409347179825  weights-01-0.01
         model.summary()
@@ -341,7 +434,7 @@ class Test:
                 scale_x = crop_img.shape[1] / resized_img.shape[1]
                 scale_y = crop_img.shape[0] / resized_img.shape[0]
 
-                out_img = self.test_per_image(i, model, resized_img, True, 0,  img, x1, y1, scale_x, scale_y)
+                out_img = self.test_per_image(i, model, resized_img, True, 0, img, x1, y1, scale_x, scale_y)
                 video.write(out_img)
                 print("v..")
                 i += 1
@@ -385,7 +478,6 @@ class Test:
         # imgpr.print_image_arr((counter+1)*1000, img, landmark_arr_x_t, landmark_arr_y_t)
         # imgpr.print_image_arr((counter+1)*100000, img, landmark_arr_x_asm_p, landmark_arr_y_asm_p)
 
-
         '''pose estimation vs hopeNet'''
         img_cp_1 = np.array(img) * 255.0
         r, g, b = cv2.split(img_cp_1)
@@ -404,11 +496,12 @@ class Test:
         ''' normalized to normal '''
         min_degree = - 65
         max_degree = 65
-        yaw_tpre = min_degree + (max_degree - min_degree) * (yaw_p+1)/2
-        pitch_tpre = min_degree + (max_degree - min_degree) * (pitch_p+1)/2
-        roll_tpre = min_degree + (max_degree - min_degree) * (roll_p+1)/2
+        yaw_tpre = min_degree + (max_degree - min_degree) * (yaw_p + 1) / 2
+        pitch_tpre = min_degree + (max_degree - min_degree) * (pitch_p + 1) / 2
+        roll_tpre = min_degree + (max_degree - min_degree) * (roll_p + 1) / 2
 
-        output_pre = utils.draw_axis(org_img, yaw_tpre, pitch_tpre, roll_tpre, tdx=float(x1)+112, tdy=float(y1)+112, size=112)
+        output_pre = utils.draw_axis(org_img, yaw_tpre, pitch_tpre, roll_tpre, tdx=float(x1) + 112, tdy=float(y1) + 112,
+                                     size=112)
 
         labels_predict_transformed, landmark_arr_x_p, landmark_arr_y_p, img_cv2 = image_utility. \
             create_landmarks_from_normalized_original_img(output_pre, labels_predicted, 224, 224, 112, 112, float(x1),

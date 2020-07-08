@@ -41,6 +41,8 @@ class CNNModel:
             model = self.create_ASMNet(inp_tensor=train_images, inp_shape=None, output_len=output_len)
         elif arch == 'mobileNetV2':
             model = self.create_MobileNet(inp_tensor=train_images, output_len=output_len)
+        elif arch == 'mobileNetV2_nopose':
+            model = self.create_MobileNet_nopose(inp_tensor=train_images, output_len=output_len)
 
         return model
 
@@ -58,6 +60,39 @@ class CNNModel:
 
             print("{:,} --- {:,}".format(flops.total_float_ops, params.total_parameters))
             return flops.total_float_ops, params.total_parameters
+
+    def create_MobileNet_nopose(self, inp_tensor, output_len):
+        mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=None,
+                                                   alpha=1.0,
+                                                   include_top=True,
+                                                   weights=None,
+                                                   input_tensor=inp_tensor,
+                                                   pooling=None)
+        # model_json = mobilenet_model.to_json()
+        #
+        # with open("mobileNet_v2_main.json", "w") as json_file:
+        #     json_file.write(model_json)
+        #
+        # return mobilenet_model
+
+        mobilenet_model.layers.pop()
+
+        x = mobilenet_model.get_layer('global_average_pooling2d_1').output  # 1280
+        out_landmarks = Dense(output_len, name='O_L')(x)
+        out_poses = Dense(LearningConfig.pose_len, name='O_P')(x)
+
+        inp = mobilenet_model.input
+
+        revised_model = Model(inp, [out_landmarks])
+
+        revised_model.summary()
+        # plot_model(revised_model, to_file='mobileNet_v2_main.png', show_shapes=True, show_layer_names=True)
+        model_json = revised_model.to_json()
+
+        with open("mobileNet_v2_main_multi_out.json", "w") as json_file:
+            json_file.write(model_json)
+
+        return revised_model
 
     def create_MobileNet(self, inp_tensor, output_len):
         mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=None,

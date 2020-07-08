@@ -10,7 +10,7 @@ from test import Test
 # from Train_Gan import TrainGan
 
 if __name__ == '__main__':
-    tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks*2)
+    tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks*2)
     pca_utility = PCAUtility()
     cnn_model = CNNModel()
     image_utility = ImageUtility()
@@ -45,14 +45,14 @@ if __name__ == '__main__':
     # tf_record_util.test_tf_record()
 
     '''create point->imgName map'''
-    tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks * 2)
-    tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.ibug)
-
-    tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks * 2)
-    tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.cofw)
-
-    tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks * 2)
-    tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.wflw)
+    # tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks * 2)
+    # tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.ibug)
+    #
+    # tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks * 2)
+    # tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.cofw)
+    #
+    # tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks * 2)
+    # tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.wflw)
 
 
     '''--> Train GAN:'''
@@ -60,23 +60,33 @@ if __name__ == '__main__':
     # trg.create_seq_model()
 
     '''--> Evaluate Results'''
+    '''testing one-by-one'''
     # test = Test(dataset_name=DatasetName.ibug, arch='ASMNet', num_output_layers=2, weight_fname='asmnet_weights-200-0.00340.h5', has_pose=True)
-    # test = Test(dataset_name=DatasetName.wflw_test, arch='ASMNet', num_output_layers=2, weight_fname='weights-141-0.00264.h5', has_pose=True)
-    #
+    '''test all'''
+    # test = Test(dataset_name=None, arch=None, num_output_layers=2, weight_fname=None, has_pose=True)
+    # test.test_all_results('./final_weights', num_output_layers=2)
+
+    '''for testing KT'''
+    # test = Test(dataset_name=DatasetName.wflw_test, arch='mobileNetV2_nopose', num_output_layers=1,
+    #             weight_fname='weights-19--0.02211.h5', has_pose=True)
+
+    # test = Test(dataset_name=DatasetName.wflw_test, arch='mobileNetV2', num_output_layers=2,
+    #             weight_fname='weights-19--0.02211.h5', has_pose=True)
+    # #
 
     '''--> Train Model'''
-    # trainer = Train(use_tf_record=True,
-    #                 dataset_name=DatasetName.wflw,
-    #                 custom_loss=True,
-    #                 arch='ASMNet',
-    #                 # arch='mobileNetV2',
-    #                 inception_mode=False,
-    #                 num_output_layers=2,
-    #                 # weight='00-w-dasm.h5',
-    #                 weight=None,
-    #                 train_on_batch=False,
-    #                 accuracy=95)
-    #
+    trainer = Train(use_tf_record=True,
+                    dataset_name=DatasetName.wflw,
+                    custom_loss=False,
+                    arch='ASMNet',
+                    # arch='mobileNetV2',
+                    inception_mode=False,
+                    num_output_layers=2,
+                    # weight='00-w-dasm.h5',
+                    weight=None,
+                    train_on_batch=False,
+                    accuracy=95)
+
 
 
 
