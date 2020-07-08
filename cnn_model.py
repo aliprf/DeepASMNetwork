@@ -8,7 +8,7 @@ from skimage.transform import resize
 
 from keras.regularizers import l2, l1
 
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+# tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 from keras.models import Model
 from keras.applications import mobilenet_v2, mobilenet, resnet50, densenet
