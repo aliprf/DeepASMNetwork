@@ -124,8 +124,8 @@ class W300Conf:
 
 class WflwConf:
     # Wflw_prefix_path = '/media/data3/ali/FL/wflw/'  # --> Zeus
-    # Wflw_prefix_path = '/media/data2/alip/FL/wflw/'  # --> Atlas
-    Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
+    Wflw_prefix_path = '/media/data2/alip/FL/wflw/'  # --> Atlas
+    # Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
 
     img_path_prefix = Wflw_prefix_path + 'all/'
     rotated_img_path_prefix = Wflw_prefix_path + '0_rotated/'
@@ -202,8 +202,8 @@ class IbugConf:
 
     '''server_config'''
     # _Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
-    _Ibug_prefix_path = '/media/data2/alip/FL/ibug/'  # --> Atlas
-    # _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
+    # _Ibug_prefix_path = '/media/data2/alip/FL/ibug/'  # --> Atlas
+    _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
 
     img_path_prefix = _Ibug_prefix_path + 'all/'
     rotated_img_path_prefix = _Ibug_prefix_path + '0_rotated/'
