@@ -10,7 +10,7 @@ from test import Test
 # from Train_Gan import TrainGan
 
 if __name__ == '__main__':
-    tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks*2)
+    tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks*2)
     pca_utility = PCAUtility()
     cnn_model = CNNModel()
     image_utility = ImageUtility()
@@ -19,30 +19,30 @@ if __name__ == '__main__':
     # tf_record_util.create_adv_att_img_hm()
 
     '''--> Preparing Test Data process:'''
-    # tf_record_util.crop_and_save(dataset_name=DatasetName.wflw_test)
-    # tf_record_util.normalize_points_and_save(dataset_name=DatasetName.wflw_test)
-    # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.wflw_test)
-    # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw_test, dataset_type=None, heatmap=False, accuracy=100)
+    # tf_record_util.crop_and_save(dataset_name=DatasetName.ibug_test, dataset_type=DatasetType.ibug_comomn)
+    # tf_record_util.normalize_points_and_save(dataset_name=DatasetName.ibug_test)
+    # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.ibug_test)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug_test, dataset_type=DatasetType.ibug_comomn,
+    #                                 heatmap=False, accuracy=100, isTest=True)
 
     '''--> Preparing Train Data process:'''
     '''     augment, normalize, and save pts'''
     # tf_record_util.rotaate_and_save(dataset_name=DatasetName.cofw)
     # tf_record_util.random_augment_from_rotated(dataset_name=DatasetName.cofw)
     '''     normalize the points and save'''
-    # tf_record_util.normalize_points_and_save(dataset_name=DatasetName.wflw)
+    # tf_record_util.normalize_points_and_save(dataset_name=DatasetName.cofw)
     '''     generate pose using hopeNet'''
-    # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.wflw)
+    # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.cofw)
 
     '''     create and save PCA objects'''
     # pca_utility.create_pca_from_points(DatasetName.ibug, 95)
-    pca_utility.create_pca_from_npy(DatasetName.wflw, 95)
-    pca_utility.create_pca_from_npy(DatasetName.wflw, 100)
+    # pca_utility.create_pca_from_npy(DatasetName.wflw, 95)
 
     '''     create tfRecord:'''
-    # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=False, accuracy=100)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug_test, dataset_type=None, heatmap=False, accuracy=100)
     # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=100)
-    tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=100)
-    tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=95)
+    tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=100, isTest=False)
+    tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=95, isTest=False)
 
     '''--> retrive and test tfRecords'''
     # tf_record_util.test_tf_record()
@@ -64,7 +64,9 @@ if __name__ == '__main__':
 
     '''--> Evaluate Results'''
     '''testing one-by-one'''
-    # test = Test(dataset_name=DatasetName.ibug, arch='ASMNet', num_output_layers=2, weight_fname='asmnet_weights-200-0.00340.h5', has_pose=True)
+    # test = Test(dataset_name=DatasetName.cofw_test, arch='ASMNet', num_output_layers=2, weight_fname='cofw_ds_.h5', has_pose=True)
+    # test = Test(dataset_name=DatasetName.wflw_test, arch='ASMNet', num_output_layers=2, weight_fname=None, has_pose=True)
+    # test = Test(dataset_name=DatasetName.ibug_test, arch='ASMNet', num_output_layers=2, weight_fname='asmnet_weights-200-0.00340.h5', has_pose=True)
     '''test all'''
     # test = Test(dataset_name=None, arch=None, num_output_layers=2, weight_fname=None, has_pose=True)
     # test.test_all_results('./final_weights', num_output_layers=2)

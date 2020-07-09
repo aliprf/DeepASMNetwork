@@ -14,9 +14,17 @@ class DatasetName:
 
 
 class DatasetType:
-    data_type_train = 0
-    data_type_validation = 1
-    data_type_test = 2
+    ibug_challenging = 10
+    ibug_comomn = 11
+    ibug_full = 12
+
+    wflw_full = 20
+    wflw_blur = 21
+    wflw_expression = 22
+    wflw_illumination = 23
+    wflw_largepose = 24
+    wflw_makeup = 25
+    wflw_occlusion = 26
 
 
 class LearningConfig:
@@ -139,8 +147,15 @@ class WflwConf:
     test_pose_npy_dir = Wflw_prefix_path + 'test_pose_npy_dir/'
 
     tf_train_path = Wflw_prefix_path + 'train.tfrecords'
-    tf_test_path = Wflw_prefix_path + 'test_full.tfrecords'
     tf_evaluation_path = Wflw_prefix_path + 'evaluation.tfrecords'
+
+    tf_test_path = Wflw_prefix_path + 'test_full.tfrecords'
+    tf_test_path_blur = Wflw_prefix_path + 'test_blur.tfrecords'
+    tf_test_path_expression = Wflw_prefix_path + 'test_expression.tfrecords'
+    tf_test_path_illumination = Wflw_prefix_path + 'test_illumination.tfrecords'
+    tf_test_path_largepose = Wflw_prefix_path + 'test_largepose.tfrecords'
+    tf_test_path_makeup = Wflw_prefix_path + 'test_makeup.tfrecords'
+    tf_test_path_occlusion = Wflw_prefix_path + 'test_occlusion.tfrecords'
 
     tf_train_path_95 = Wflw_prefix_path + 'train_95.tfrecords'
     tf_evaluation_path_95 = Wflw_prefix_path + 'evaluation_95.tfrecords'
@@ -213,7 +228,10 @@ class IbugConf:
 
     tf_train_path = _Ibug_prefix_path + 'train.tfrecords'
     tf_evaluation_path = _Ibug_prefix_path + 'evaluation.tfrecords'
-    tf_test_path = _Ibug_prefix_path + 'test.tfrecords'
+
+    tf_test_path_full = _Ibug_prefix_path + 'test_full.tfrecords'
+    tf_test_path_common = _Ibug_prefix_path + 'test_common.tfrecords'
+    tf_test_path_challenging = _Ibug_prefix_path + 'test_challenging.tfrecords'
 
     tf_train_path_95 = _Ibug_prefix_path + 'train_95.tfrecords'
     tf_evaluation_path_95 = _Ibug_prefix_path + 'evaluation_95.tfrecords'

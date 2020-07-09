@@ -101,10 +101,10 @@ class TFRecordUtility:
         plain[under_th_indices] = 0
         return plain * (plain == maximum_filter(plain, footprint=np.ones((windowSize, windowSize))))
 
-    def create_tf_record(self, dataset_name, dataset_type, heatmap, accuracy=100):
+    def create_tf_record(self, dataset_name, dataset_type, heatmap, isTest,accuracy=100):
 
         if not heatmap:
-            self._create_tfrecord_from_npy(dataset_name, accuracy)
+            self._create_tfrecord_from_npy(dataset_name, dataset_type, isTest, accuracy)
 
         elif dataset_name == DatasetName.affectnet:
             self.__create_tfrecord_affectnet(dataset_type, need_augmentation=True)
@@ -1042,7 +1042,7 @@ class TFRecordUtility:
 
         return number_of_samples
 
-    def crop_and_save(self, dataset_name):
+    def crop_and_save(self, dataset_name, dataset_type):
         number_of_samples = 0
         img_path_prefix = ''
         num_of_landmarks = 0
@@ -1055,16 +1055,38 @@ class TFRecordUtility:
             num_of_landmarks = CofwConf.num_of_landmarks
             img_ext = "png"
         elif dataset_name == DatasetName.wflw_test:
-            number_of_samples = WflwConf.orig_number_of_test
+            if dataset_type == DatasetType.wflw_full:
+                number_of_samples = WflwConf.orig_number_of_test
+            elif dataset_type == DatasetType.wflw_blur:
+                number_of_samples = WflwConf.orig_of_all_test_blur
+            elif dataset_type == DatasetType.wflw_largepose:
+                number_of_samples = WflwConf.orig_of_all_test_largepose
+            elif dataset_type == DatasetType.wflw_occlusion:
+                number_of_samples = WflwConf.orig_of_all_test_occlusion
+            elif dataset_type == DatasetType.wflw_makeup:
+                number_of_samples = WflwConf.orig_of_all_test_makeup
+            elif dataset_type == DatasetType.wflw_expression:
+                number_of_samples = WflwConf.orig_of_all_test_expression
+            elif dataset_type == DatasetType.wflw_illumination:
+                number_of_samples = WflwConf.orig_of_all_test_illumination
+
             img_path_prefix = WflwConf.img_path_prefix  # both test and trains are in one Folder
             pts_path_prefix = WflwConf.test_img_path_prefix
             crop_img_path_prefix = WflwConf.test_images_dir
             num_of_landmarks = WflwConf.num_of_landmarks
             img_ext = "jpg"
+
         elif dataset_name == DatasetName.ibug_test:
-            number_of_samples = IbugConf.orig_number_of_test_full
+            if dataset_type == DatasetType.ibug_challenging:
+                number_of_samples = IbugConf.orig_number_of_test_challenging
+            elif dataset_type == DatasetType.ibug_full:
+                number_of_samples = IbugConf.orig_number_of_test_full
+            elif dataset_type == DatasetType.ibug_comomn:
+                number_of_samples = IbugConf.orig_number_of_test_common
+
             img_path_prefix = IbugConf.test_img_path_prefix
             pts_path_prefix = IbugConf.test_img_path_prefix
+
             crop_img_path_prefix = IbugConf.test_images_dir
             num_of_landmarks = IbugConf.num_of_landmarks
             img_ext = "jpg"
@@ -1218,6 +1240,13 @@ class TFRecordUtility:
             num_of_landmarks = WflwConf.num_of_landmarks
             augmentation_factor = WflwConf.augmentation_factor
             train_images_dir = WflwConf.train_images_dir
+
+        elif dataset_name == DatasetName.ibug_test:
+            number_of_samples = IbugConf.orig_number_of_test_challenging
+            rotated_img_path_prefix = IbugConf.test_img_path_prefix
+            num_of_landmarks = IbugConf.num_of_landmarks
+            augmentation_factor = 1
+            train_images_dir = IbugConf.test_images_dir
 
         png_file_arr = []
         for file in os.listdir(rotated_img_path_prefix):
@@ -1446,7 +1475,7 @@ class TFRecordUtility:
             file_name = "X" + file_name
         return file_name
 
-    def _create_tfrecord_from_npy(self, dataset_name, accuracy=100):
+    def _create_tfrecord_from_npy(self, dataset_name, dataset_type, isTest, accuracy=100):
         """we use this function when we have already created and nrmalzed both landmarks and poses"""
 
         if dataset_name == DatasetName.ibug:
@@ -1489,8 +1518,27 @@ class TFRecordUtility:
             img_dir = WflwConf.test_images_dir
             landmarks_dir = WflwConf.test_normalized_points_npy_dir
             pose_dir = WflwConf.test_pose_npy_dir
-            num_train_samples = WflwConf.orig_number_of_test
-            tf_train_path = WflwConf.tf_test_path
+            if dataset_type == DatasetType.wflw_full:
+                num_train_samples = WflwConf.orig_number_of_test
+                tf_train_path = WflwConf.tf_test_path
+            elif dataset_type == DatasetType.wflw_blur:
+                num_train_samples = WflwConf.orig_of_all_test_blur
+            elif dataset_type == DatasetType.wflw_largepose:
+                num_train_samples = WflwConf.orig_of_all_test_largepose
+                tf_train_path = WflwConf.tf_test_path_largepose
+            elif dataset_type == DatasetType.wflw_occlusion:
+                num_train_samples = WflwConf.orig_of_all_test_occlusion
+                tf_train_path = WflwConf.tf_test_path_occlusion
+            elif dataset_type == DatasetType.wflw_makeup:
+                num_train_samples = WflwConf.orig_of_all_test_makeup
+                tf_train_path = WflwConf.tf_test_path_makeup
+            elif dataset_type == DatasetType.wflw_expression:
+                num_train_samples = WflwConf.orig_of_all_test_expression
+                tf_train_path = WflwConf.tf_test_path_expression
+            elif dataset_type == DatasetType.wflw_illumination:
+                num_train_samples = WflwConf.orig_of_all_test_illumination
+                tf_train_path = WflwConf.tf_test_path_illumination
+
             tf_evaluation_path = None
 
         elif dataset_name == DatasetName.cofw_test:
@@ -1505,7 +1553,13 @@ class TFRecordUtility:
             img_dir = IbugConf.test_images_dir
             landmarks_dir = IbugConf.test_normalized_points_npy_dir
             pose_dir = IbugConf.test_pose_npy_dir
-            num_train_samples = IbugConf.orig_number_of_test_full
+            if dataset_type == DatasetType.ibug_challenging:
+                num_train_samples = IbugConf.orig_number_of_test_challenging
+            elif dataset_type == DatasetType.ibug_full:
+                num_train_samples = IbugConf.orig_number_of_test_full
+            elif dataset_type == DatasetType.ibug_comomn:
+                num_train_samples = IbugConf.orig_number_of_test_common
+
             tf_train_path = IbugConf.tf_test_path
             tf_evaluation_path = None
 
@@ -1546,11 +1600,18 @@ class TFRecordUtility:
                 writable_img = np.reshape(img,
                                           [InputDataSize.image_input_size * InputDataSize.image_input_size * 3])
 
-                feature = {'landmarks': self.__float_feature(landmark),
-                           'pose': self.__float_feature(pose),
-                           'image_raw': self.__float_feature(writable_img),
-                           'image_name': self.__bytes_feature(img_tf_name.encode('utf-8')),
-                           }
+                if isTest:
+                    feature = {'landmarks': self.__float_feature(landmark),
+                               'pose': self.__float_feature(pose),
+                               'image_raw': self.__float_feature(writable_img)
+                               }
+                else:
+                    feature = {'landmarks': self.__float_feature(landmark),
+                               'pose': self.__float_feature(pose),
+                               'image_raw': self.__float_feature(writable_img),
+                               'image_name': self.__bytes_feature(img_tf_name.encode('utf-8')),
+                               }
+
                 example = tf.train.Example(features=tf.train.Features(feature=feature))
 
                 if counter <= num_train_samples:

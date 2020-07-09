@@ -27,7 +27,7 @@ class Test:
         self.has_pose = has_pose
         self.num_output_layers = num_output_layers
 
-        if dataset_name == DatasetName.ibug:
+        if dataset_name == DatasetName.ibug_test:
             self.output_len = IbugConf.num_of_landmarks * 2
         elif dataset_name == DatasetName.cofw_test:
             self.output_len = CofwConf.num_of_landmarks * 2
@@ -38,9 +38,10 @@ class Test:
         detect = PoseDetector()
         model = cnn.get_model(train_images=None, arch=arch,
                               num_output_layers=num_output_layers, output_len=self.output_len)
-        model.load_weights(weight_fname)
+        if weight_fname is not None:
+            model.load_weights(weight_fname)
 
-        if dataset_name == DatasetName.ibug:
+        if dataset_name == DatasetName.ibug_test:
             self._test_on_W300(detect, model)
         elif dataset_name == DatasetName.cofw_test:
             self._test_on_COFW(detect, model)
