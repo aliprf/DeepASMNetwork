@@ -19,10 +19,10 @@ if __name__ == '__main__':
     # tf_record_util.create_adv_att_img_hm()
 
     '''--> Preparing Test Data process:'''
-    # tf_record_util.crop_and_save(dataset_name=DatasetName.ibug_test, dataset_type=DatasetType.ibug_comomn)
+    # tf_record_util.crop_and_save(dataset_name=DatasetName.ibug_test, dataset_type=DatasetType.ibug_full)
     # tf_record_util.normalize_points_and_save(dataset_name=DatasetName.ibug_test)
     # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.ibug_test)
-    # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug_test, dataset_type=DatasetType.ibug_comomn,
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug_test, dataset_type=DatasetType.ibug_full,
     #                                 heatmap=False, accuracy=100, isTest=True)
 
     '''--> Preparing Train Data process:'''
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     '''     create tfRecord:'''
     # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug_test, dataset_type=None, heatmap=False, accuracy=100)
     # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=100)
-    tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=100, isTest=False)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=100, isTest=False)
     tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=95, isTest=False)
 
     '''--> retrive and test tfRecords'''
@@ -64,8 +64,17 @@ if __name__ == '__main__':
 
     '''--> Evaluate Results'''
     '''testing one-by-one'''
-    # test = Test(dataset_name=DatasetName.cofw_test, arch='ASMNet', num_output_layers=2, weight_fname='cofw_ds_.h5', has_pose=True)
-    # test = Test(dataset_name=DatasetName.wflw_test, arch='ASMNet', num_output_layers=2, weight_fname=None, has_pose=True)
+    # test = Test(dataset_name=DatasetName.ibug_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/ibug_ds_.h5', has_pose=True, customLoss=False)
+    # test = Test(dataset_name=DatasetName.ibug_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/ibug_ds_asm.h5', has_pose=True, customLoss=True)
+    # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/ibug_mn_.h5', has_pose=True, customLoss=False)
+    # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/ibug_mn_asm.h5', has_pose=True, customLoss=True)
+
+    '''cofw'''
+    # test = Test(dataset_name=DatasetName.cofw_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/cofw_ds_.h5', has_pose=True, customLoss=False)
+    # test = Test(dataset_name=DatasetName.cofw_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/cofw_ds_asm.h5', has_pose=True, customLoss=True)
+    # test = Test(dataset_name=DatasetName.cofw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/cofw_mn_.h5', has_pose=True, customLoss=False)
+    # test = Test(dataset_name=DatasetName.cofw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/cofw_mn_asm.h5', has_pose=True, customLoss=True)
+
     # test = Test(dataset_name=DatasetName.ibug_test, arch='ASMNet', num_output_layers=2, weight_fname='asmnet_weights-200-0.00340.h5', has_pose=True)
     '''test all'''
     # test = Test(dataset_name=None, arch=None, num_output_layers=2, weight_fname=None, has_pose=True)

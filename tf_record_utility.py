@@ -118,8 +118,8 @@ class TFRecordUtility:
 
     def test_tf_record(self, ):
         image_utility = ImageUtility()
-        lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(CofwConf.tf_train_path,
-                                                             number_of_records=CofwConf.orig_number_of_training, only_label=True)
+        lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(IbugConf.tf_test_path_common,
+                                                             number_of_records=IbugConf.orig_number_of_test_common, only_label=False)
         counter = 0
         for lbl in lbl_arr:
             landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = \
@@ -131,7 +131,8 @@ class TFRecordUtility:
     def retrieve_tf_record(self, tfrecord_filename, number_of_records, only_label=True):
         with tf.Session() as sess:
             filename_queue = tf.train.string_input_producer([tfrecord_filename])
-            image_raw, landmarks, pose, img_name = self.__read_and_decode(filename_queue)
+            image_raw, landmarks, pose = self.__read_and_decode_test_set(filename_queue)
+            # image_raw, landmarks, pose, img_name = self.__read_and_decode(filename_queue)
 
             init_op = tf.initialize_all_variables()
             sess.run(init_op)
@@ -144,21 +145,22 @@ class TFRecordUtility:
             img_name_arr = []
 
             for i in tqdm(range(number_of_records)):
-                _image_raw, _landmarks, _pose, _img_name = sess.run([image_raw, landmarks, pose, img_name])
+                _image_raw, _landmarks, _pose = sess.run([image_raw, landmarks, pose])
+                # _image_raw, _landmarks, _pose, _img_name = sess.run([image_raw, landmarks, pose, img_name])
 
                 if not only_label:
                     img = np.array(_image_raw)
                     img = img.reshape(InputDataSize.image_input_size, InputDataSize.image_input_size, 3)
                     img_arr.append(img)
 
-                img_name_arr.append(_img_name)
+                # img_name_arr.append(_img_name)
                 lbl_arr.append(_landmarks)
                 pose_arr.append(_pose)
 
             coord.request_stop()
             coord.join(threads)
             """ the output image is x y x y array"""
-            return lbl_arr, img_arr, pose_arr, img_name_arr
+            return lbl_arr, img_arr, pose_arr
 
     def create_adv_att_img_hm(self):
         png_file_arr = []
@@ -1538,7 +1540,6 @@ class TFRecordUtility:
             elif dataset_type == DatasetType.wflw_illumination:
                 num_train_samples = WflwConf.orig_of_all_test_illumination
                 tf_train_path = WflwConf.tf_test_path_illumination
-
             tf_evaluation_path = None
 
         elif dataset_name == DatasetName.cofw_test:
@@ -1555,12 +1556,15 @@ class TFRecordUtility:
             pose_dir = IbugConf.test_pose_npy_dir
             if dataset_type == DatasetType.ibug_challenging:
                 num_train_samples = IbugConf.orig_number_of_test_challenging
+                tf_train_path = IbugConf.tf_test_path_challenging
             elif dataset_type == DatasetType.ibug_full:
                 num_train_samples = IbugConf.orig_number_of_test_full
+                tf_train_path = IbugConf.tf_test_path_full
             elif dataset_type == DatasetType.ibug_comomn:
                 num_train_samples = IbugConf.orig_number_of_test_common
+                tf_train_path = IbugConf.tf_test_path_common
 
-            tf_train_path = IbugConf.tf_test_path
+
             tf_evaluation_path = None
 
         counter = 0
@@ -1834,12 +1838,14 @@ class TFRecordUtility:
 
         features = tf.parse_single_example(serialized_example,
                                            features={
-                                               'landmarks': tf.FixedLenFeature([self.number_of_landmark],tf.float32),
-                                               'pose': tf.FixedLenFeature([3], tf.float32),
+                                               'landmarks': tf.FixedLenFeature([self.number_of_landmark],
+                                                                               tf.float32),
+                                               'pose': tf.FixedLenFeature([InputDataSize.pose_len], tf.float32),
                                                'image_raw': tf.FixedLenFeature(
                                                    [InputDataSize.image_input_size *
                                                     InputDataSize.image_input_size * 3]
-                                                   , tf.float32)})
+                                                   , tf.float32)
+                                           })
         landmarks = features['landmarks']
         image_raw = features['image_raw']
         pose = features['pose']

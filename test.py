@@ -19,7 +19,7 @@ from os.path import isfile, join
 
 class Test:
 
-    def __init__(self, dataset_name, arch, num_output_layers, weight_fname, has_pose=False):
+    def __init__(self, dataset_name, arch, num_output_layers, weight_fname, customLoss, has_pose=False):
         if dataset_name is None:
             return
 
@@ -42,11 +42,11 @@ class Test:
             model.load_weights(weight_fname)
 
         if dataset_name == DatasetName.ibug_test:
-            self._test_on_W300(detect, model)
+            print(dataset_name + " _ " + arch + " _ " + str(customLoss) + ": \r\n" + self._test_on_W300(detect, model))
         elif dataset_name == DatasetName.cofw_test:
-            self._test_on_COFW(detect, model)
+            print(dataset_name + " _ " + arch + " _ " + str(customLoss) + ": \r\n" + self._test_on_COFW(detect, model))
         elif dataset_name == DatasetName.wflw_test:
-            self._test_on_WFLW(detect, model)
+            print(dataset_name + " _ " + arch + " _ " + str(customLoss) + ": \r\n" + self._test_on_WFLW(detect, model))
 
     def test_all_results(self, weight_path, num_output_layers):
         self.has_pose = True
@@ -145,17 +145,18 @@ class Test:
 
     def _test_on_W300(self, detect, model):
         tf_record_utility = TFRecordUtility(self.output_len)
-        lbl_arr_challenging, img_arr_challenging = tf_record_utility.retrieve_tf_record_test_set(
-            tfrecord_filename=W300Conf.tf_challenging,
-            number_of_records=W300Conf.number_of_all_sample_challenging,
-            only_label=False)
         lbl_arr_common, img_arr_common = tf_record_utility.retrieve_tf_record_test_set(
-            tfrecord_filename=W300Conf.tf_common,
-            number_of_records=W300Conf.number_of_all_sample_common,
+            tfrecord_filename=IbugConf.tf_test_path_common,
+            number_of_records=IbugConf.orig_number_of_test_common,
             only_label=False)
+        lbl_arr_challenging, img_arr_challenging = tf_record_utility.retrieve_tf_record_test_set(
+            tfrecord_filename=IbugConf.tf_test_path_challenging,
+            number_of_records=IbugConf.orig_number_of_test_challenging,
+            only_label=False)
+
         lbl_arr_full, img_arr_full = tf_record_utility.retrieve_tf_record_test_set(
-            tfrecord_filename=W300Conf.tf_full,
-            number_of_records=W300Conf.number_of_all_sample_full,
+            tfrecord_filename=IbugConf.tf_test_path_full,
+            number_of_records=IbugConf.orig_number_of_test_full,
             only_label=False)
 
         lbl_arr_challenging = np.array(lbl_arr_challenging)
@@ -195,7 +196,7 @@ class Test:
                      'mae_yaw: ', str(mae_yaw_c), 'mae_pitch: ', str(mae_pitch_c), 'mae_roll: ', str(mae_roll_c) + '\n\r' \
                      'nme_f: ', str(nme_f), 'fr_f: ', str(fr_f), 'auc_f: ', str(auc_f) + '\n\r' \
                      'mae_yaw: ', str(mae_yaw_f), 'mae_pitch: ', str(mae_pitch_f), 'mae_roll: ', str(mae_roll_f)
-        return result_str
+        return str(result_str)
 
     def _calculate_errors(self, detect, model, number_test_set, test_img_arr, test_lbl_arr):
         fr_threshold = 0.1
@@ -334,8 +335,8 @@ class Test:
         #
         # output_pre = utils.draw_axis(img_cp_1, yaw_tpre, pitch_tpre, roll_tpre, tdx=150, tdy=150, size=150)
         # output_truth = utils.draw_axis(img_cp_2, yaw_truth, pitch_truth, roll_truth, tdx=150, tdy=150, size=150)
-        # cv2.imwrite(str(counter+1) + ".jpg", output_pre)
-        # cv2.imwrite(str((counter+1)*1000) + ".jpg", output_truth)
+        # cv2.imwrite(str(counter+1) + "_pose_pre.jpg", output_pre)
+        # cv2.imwrite(str((counter+1)*1000) + "_pose_grt.jpg", output_truth)
 
         mae_yaw = abs(yaw_tpre - yaw_truth)
         mae_pitch = abs(pitch_tpre - pitch_truth)
@@ -344,7 +345,7 @@ class Test:
         return normalized_mean_error, lt, lp, mae_yaw, mae_pitch, mae_roll
 
     def __calculate_interoccular_distance(self, labels_true):
-        if self.dataset_name == DatasetName.ibug:
+        if self.dataset_name == DatasetName.ibug or self.dataset_name == DatasetName.ibug_test:
             left_oc_x = labels_true[72]
             left_oc_y = labels_true[73]
             right_oc_x = labels_true[90]
