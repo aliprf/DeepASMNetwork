@@ -42,7 +42,7 @@ if __name__ == '__main__':
     # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug_test, dataset_type=None, heatmap=False, accuracy=100)
     # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=100)
     # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=100, isTest=False)
-    tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=95, isTest=False)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=95, isTest=False)
 
     '''--> retrive and test tfRecords'''
     # tf_record_util.test_tf_record()
@@ -89,17 +89,17 @@ if __name__ == '__main__':
     # #
 
     '''--> Train Model'''
-    # trainer = Train(use_tf_record=True,
-    #                 dataset_name=DatasetName.wflw,
-    #                 custom_loss=False,
-    #                 arch='ASMNet',
-    #                 # arch='mobileNetV2',
-    #                 inception_mode=False,
-    #                 num_output_layers=2,
-    #                 # weight='00-w-dasm.h5',
-    #                 weight=None,
-    #                 train_on_batch=False,
-    #                 accuracy=95)
+    trainer = Train(use_tf_record=True,
+                    dataset_name=DatasetName.wflw,
+                    custom_loss=False,
+                    arch='ASMNet',
+                    # arch='mobileNetV2',
+                    inception_mode=False,
+                    num_output_layers=2,
+                    # weight='00-w-dasm.h5',
+                    weight=None,
+                    train_on_batch=False,
+                    accuracy=95)
 
 
 
