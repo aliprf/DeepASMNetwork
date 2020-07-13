@@ -91,9 +91,9 @@ if __name__ == '__main__':
     '''--> Train Model'''
     trainer = Train(use_tf_record=True,
                     dataset_name=DatasetName.wflw,
-                    custom_loss=True,
-                    arch='ASMNet',
-                    # arch='mobileNetV2',
+                    custom_loss=False,
+                    # arch='ASMNet',
+                    arch='mobileNetV2',
                     inception_mode=False,
                     num_output_layers=2,
                     # weight='00-w-dasm.h5',
