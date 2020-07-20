@@ -39,19 +39,26 @@ class CNNModel:
 
         if arch == 'ASMNet':
             model = self.create_ASMNet(inp_tensor=train_images, inp_shape=None, output_len=output_len)
+            self.calculate_flops(arch)
+
         elif arch == 'mobileNetV2':
             model = self.create_MobileNet(inp_tensor=train_images, output_len=output_len)
+            self.calculate_flops(arch)
+
         elif arch == 'mobileNetV2_nopose':
             model = self.create_MobileNet_nopose(inp_tensor=train_images, output_len=output_len)
 
         return model
 
-    def calculate_flops(self, _net):
+    def calculate_flops(self, _arch):
         run_meta = tf.RunMetadata()
         with tf.Session(graph=tf.Graph()) as sess:
             K.set_session(sess)
-            # net = mobilenet_v2.MobileNetV2(alpha=.75, input_tensor=tf.placeholder('float32', shape=(1, 32, 32, 3)))
-            net = self.create_ASMNet(inp_tensor=None, inp_shape=[224,224,3], output_len=136)
+            if _arch == 'ASMNet':
+                net = self.create_ASMNet(inp_tensor=None, inp_shape=[224, 224, 3], output_len=136)
+            if _arch == 'mobileNetV2':
+                net = mobilenet_v2.MobileNetV2(alpha=.75, input_tensor=tf.placeholder('float32', shape=(1, 32, 32, 3)))
+
             opts = tf.profiler.ProfileOptionBuilder.float_operation()
             flops = tf.profiler.profile(sess.graph, run_meta=run_meta, cmd='op', options=opts)
 

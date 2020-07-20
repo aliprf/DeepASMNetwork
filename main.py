@@ -84,14 +84,14 @@ if __name__ == '__main__':
     # test = Test(dataset_name=DatasetName.wflw_test, arch='mobileNetV2_nopose', num_output_layers=1,
     #             weight_fname='weights-19--0.02211.h5', has_pose=True)
 
-    # test = Test(dataset_name=DatasetName.wflw_test, arch='mobileNetV2', num_output_layers=2,
-    #             weight_fname='weights-19--0.02211.h5', has_pose=True)
-    # #
+    # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2_nopose', num_output_layers=2,
+    #             weight_fname='weights-140-0.00063.h5', has_pose=True, customLoss=False)
+    #
 
     '''--> Train Model'''
     trainer = Train(use_tf_record=True,
                     dataset_name=DatasetName.wflw,
-                    custom_loss=False,
+                    custom_loss=True,
                     # arch='ASMNet',
                     arch='mobileNetV2',
                     inception_mode=False,
@@ -101,8 +101,8 @@ if __name__ == '__main__':
                     train_on_batch=False,
                     accuracy=95)
 
-
-
+# mn v2: flops: 16,336,517 --- #param: 2,663,064
+# mn v2: flops: 7,323,260 --- #param: 3,613,627
 
 
 

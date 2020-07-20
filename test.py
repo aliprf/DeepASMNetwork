@@ -26,6 +26,7 @@ class Test:
         self.dataset_name = dataset_name
         self.has_pose = has_pose
         self.num_output_layers = num_output_layers
+        self.arch = arch
 
         if dataset_name == DatasetName.ibug_test:
             self.output_len = IbugConf.num_of_landmarks * 2
@@ -241,8 +242,12 @@ class Test:
         image = np.expand_dims(img, axis=0)
         predict = model.predict(image)
 
-        pre_points = predict[0][0]
-        pose_predicted = predict[1][0]
+        if self.arch == 'mobileNetV2_nopose':
+            pre_points = predict[0]
+            pose_predicted = [0, 0, 0]
+        else:
+            pre_points = predict[0][0]
+            pose_predicted = predict[1][0]
 
         labels_true_transformed, landmark_arr_x_t, landmark_arr_y_t = image_utility. \
             create_landmarks_from_normalized(labels_true, 224, 224, 112, 112)

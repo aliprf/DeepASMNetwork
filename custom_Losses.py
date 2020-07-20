@@ -14,18 +14,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
-import  cv2
+import cv2
 import os.path
 from keras.utils.vis_utils import plot_model
 from scipy.spatial import distance
 import scipy.io as sio
 import img_printer as imgpr
-from numpy import load,save
+from numpy import load, save
+
 
 class Custom_losses:
     def __init__(self, dataset_name, accuracy):
         self.dataset_name = dataset_name
         self.accuracy = accuracy
+
 
     def asm_assisted_loss(self, yTrue, yPred):
         '''def::
@@ -41,7 +43,8 @@ class Custom_losses:
         pca_percentage = self.accuracy
 
         eigenvalues = load('pca_obj/' + self.dataset_name + pca_util.eigenvalues_prefix + str(pca_percentage) + ".npy")
-        eigenvectors = load('pca_obj/' + self.dataset_name + pca_util.eigenvectors_prefix + str(pca_percentage) + ".npy")
+        eigenvectors = load(
+            'pca_obj/' + self.dataset_name + pca_util.eigenvectors_prefix + str(pca_percentage) + ".npy")
         meanvector = load('pca_obj/' + self.dataset_name + pca_util.meanvector_prefix + str(pca_percentage) + ".npy")
 
         # yTrue = tf.constant([[1.0, 2.0, 3.0], [5.0, 4.0, 7.0]])
@@ -100,7 +103,6 @@ class Custom_losses:
         # print('total_loss  ' + str(total_loss[0]))
         # print('      ')
         return tensor_total_loss
-
 
     # def asm_assisted_loss(self, hmp_85, hmp_90, hmp_95):
     #     def loss(y_true, y_pred):
@@ -179,9 +181,8 @@ class Custom_losses:
         tensor_total_loss = tf.add(tensor_mean_square_error, tensor_indices_mean_square_error)
         return tensor_total_loss
 
-
     def custom_loss_hm_distance(self, ten_hm_t, ten_hm_p):
-        print(ten_hm_t.get_shape().as_list())  #  [None, 56, 56, 68]
+        print(ten_hm_t.get_shape().as_list())  # [None, 56, 56, 68]
         print(ten_hm_p.get_shape())
 
         tf_utility = TFRecordUtility()
@@ -269,7 +270,7 @@ class Custom_losses:
     def __inceptionLoss_3(self, yTrue, yPred):
         return self.__soft_MSE(yTrue, yPred, 5)
 
-    def __soft_MSE(self,  yTrue, yPred, boundary_count, radius=0.01):
+    def __soft_MSE(self, yTrue, yPred, boundary_count, radius=0.01):
         yTrue_vector_batch = K.eval(yTrue)
         yPred_vector_batch = K.eval(yPred)
 
@@ -277,7 +278,7 @@ class Custom_losses:
         for i in range(LearningConfig.batch_size):
             out_vector = []  # 136
             for j in range(LearningConfig.batch_size):
-                if abs(yTrue_vector_batch[i,j] - yPred_vector_batch[i,j]) <= boundary_count * radius:
+                if abs(yTrue_vector_batch[i, j] - yPred_vector_batch[i, j]) <= boundary_count * radius:
                     out_vector.append(0)
                 else:
                     out_vector.append(1)
@@ -576,7 +577,8 @@ class Custom_losses:
         tf_record_utility = TFRecordUtility()
         image_utility = ImageUtility()
 
-        eigenvalues, eigenvectors, meanvector = pca_utility.load_pca_obj(dataset_name=DatasetName.ibug, pca_postfix=pca_postfix)
+        eigenvalues, eigenvectors, meanvector = pca_utility.load_pca_obj(dataset_name=DatasetName.ibug,
+                                                                         pca_postfix=pca_postfix)
 
         lbl_arr, img_arr, pose_arr = tf_record_utility.retrieve_tf_record(tfrecord_filename=IbugConf.tf_train_path,
                                                                           number_of_records=30, only_label=False)
@@ -584,7 +586,7 @@ class Custom_losses:
             b_vector_p = self.calculate_b_vector(lbl_arr[i], True, eigenvalues, eigenvectors, meanvector)
             lbl_new = meanvector + np.dot(eigenvectors, b_vector_p)
 
-            labels_true_transformed, landmark_arr_x_t, landmark_arr_y_t = image_utility.\
+            labels_true_transformed, landmark_arr_x_t, landmark_arr_y_t = image_utility. \
                 create_landmarks_from_normalized(lbl_arr[i], 224, 224, 112, 112)
 
             labels_true_transformed_pca, landmark_arr_x_pca, landmark_arr_y_pca = image_utility. \
