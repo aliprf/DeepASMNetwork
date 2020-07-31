@@ -1,12 +1,13 @@
 ibug: DeepAsm , mseLoss:
-	nme_ch: 10.930678589657722 fr_ch:  57.77777777777778
-	nme_c:  7.388115977316351 fr_c:  5.234657039711191
-	nme_f:  8.051507000661982 fr_f:  14.804063860667634
+	nme_ch:  fr_ch:  
+	nme_c:   fr_c:  
+	nme_f:   fr_f:  
 
 ibug: DeepAsm , ASMLoss:
 	nme_ch: ', '8.20084408826524', 'fr_ch: ', '19.25925925925926', 'auc_ch: ', '[]
 	nme_c: ', '4.821308592382219', 'fr_c: ', '0.36101083032490977', 'auc_c: ', '[]
 	nme_f: ', '5.50888974795795', 'fr_f: ', '3.918722786647315', 'auc_f: ', '[]
+
 ibug: MNv2 , mseLoss:
 	nme_ch:  7.523923608635701 fr_ch:  14.074074074074074 auc_ch:  []
 	nme_c:  3.935847629111235 fr_c:  0.18050541516245489 auc_c:  []
@@ -18,13 +19,13 @@ ibug: MNv2 , ASMLoss:
 
 
 -------------------------cofw-----------
-ibug: DeepAsm , mseLoss:
+cofw: DeepAsm , mseLoss:
 	nme:  7.102623074373608 fr:  7.495069033530572 auc:  []
-ibug: DeepAsm , ASMLoss:
+cofw: DeepAsm , ASMLoss:
 	nme:  6.6923249215846 fr:  6.508875739644971 auc:  []
-ibug: MNv2 , mseLoss:
+cofw: MNv2 , mseLoss:
 	nme:  6.398373224685369 fr:  7.100591715976331 auc:  []
-ibug: MNv2 , ASMLoss:
+cofw: MNv2 , ASMLoss:
 	nme:  5.856720875861241 fr:  4.733727810650888 auc:  []
 
 

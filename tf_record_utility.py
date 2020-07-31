@@ -118,8 +118,8 @@ class TFRecordUtility:
 
     def test_tf_record(self, ):
         image_utility = ImageUtility()
-        lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(IbugConf.tf_test_path_common,
-                                                             number_of_records=IbugConf.orig_number_of_test_common, only_label=False)
+        lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(WflwConf.tf_test_path,
+                                                             number_of_records=WflwConf.orig_number_of_test, only_label=False)
         counter = 0
         for lbl in lbl_arr:
             landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = \

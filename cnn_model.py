@@ -32,32 +32,55 @@ import os.path
 from keras.utils.vis_utils import plot_model
 from scipy.spatial import distance
 import scipy.io as sio
-
+from keras.engine import InputLayer
+import coremltools
 
 class CNNModel:
     def get_model(self, train_images, arch, num_output_layers, output_len):
 
         if arch == 'ASMNet':
+            # self.calculate_flops(arch, output_len)
             model = self.create_ASMNet(inp_tensor=train_images, inp_shape=None, output_len=output_len)
-            self.calculate_flops(arch)
 
         elif arch == 'mobileNetV2':
-            model = self.create_MobileNet(inp_tensor=train_images, output_len=output_len)
-            self.calculate_flops(arch)
+            # self.calculate_flops(arch, output_len)
+            model = self.create_MobileNet(inp_tensor=train_images, output_len=output_len, inp_shape=None)
 
         elif arch == 'mobileNetV2_nopose':
             model = self.create_MobileNet_nopose(inp_tensor=train_images, output_len=output_len)
 
         return model
 
-    def calculate_flops(self, _arch):
-        run_meta = tf.RunMetadata()
+    def calculate_flops(self, _arch, _output_len):
+
+        # net = tf.keras.models.load_model('./final_weights/ibug_ds_asm.h5')
+        # net = keras.models.load_model('./final_weights/ibug_ds_asm.h5')
+        # net.summary()
+
         with tf.Session(graph=tf.Graph()) as sess:
             K.set_session(sess)
             if _arch == 'ASMNet':
-                net = self.create_ASMNet(inp_tensor=None, inp_shape=[224, 224, 3], output_len=136)
-            if _arch == 'mobileNetV2':
-                net = mobilenet_v2.MobileNetV2(alpha=.75, input_tensor=tf.placeholder('float32', shape=(1, 32, 32, 3)))
+                net = keras.models.load_model('./final_weights/ibug_ds_asm.h5')
+
+                x = net.get_layer('O_L').output  # 1280
+                inp = net.input
+                revised_model = Model(inp, [x])
+                revised_model.build(tf.placeholder('float32', shape=(1, 448, 448, 3)))
+                revised_model.summary()
+
+                # net = tf.keras.models.load_model('./final_weights/ibug_ds_asm.h5')
+                # net = self.create_ASMNet(inp_tensor=None, inp_shape=(224, 224, 3), output_len=_output_len)
+                # net = self.create_ASMNet(inp_tensor=tf.placeholder('float32', shape=(1, 224, 224, 3)), inp_shape=None, output_len=_output_len)
+            elif _arch == 'mobileNetV2':
+                # net = tf.keras.models.load_model('./final_weights/ibug_mn_.h5')
+
+                # net = self.create_MobileNet(inp_tensor=None, inp_shape=(224, 224, 3), output_len=_output_len)
+                # net = resnet50.ResNet50(input_shape=(224, 224, 3),  weights=None)
+                # net = resnet50.ResNet50(input_tensor=tf.placeholder('float32', shape=(1, 224, 224, 3)),  weights=None)
+                net = mobilenet_v2.MobileNetV2(alpha=1,  weights=None, input_tensor=tf.placeholder('float32', shape=(1, 224, 224, 3)))
+                net.summary()
+
+            run_meta = tf.RunMetadata()
 
             opts = tf.profiler.ProfileOptionBuilder.float_operation()
             flops = tf.profiler.profile(sess.graph, run_meta=run_meta, cmd='op', options=opts)
@@ -65,7 +88,7 @@ class CNNModel:
             opts = tf.profiler.ProfileOptionBuilder.trainable_variables_parameter()
             params = tf.profiler.profile(sess.graph, run_meta=run_meta, cmd='op', options=opts)
 
-            print("{:,} --- {:,}".format(flops.total_float_ops, params.total_parameters))
+            print("FLOPS: {:,} --- Params: {:,}".format(flops.total_float_ops, params.total_parameters))
             return flops.total_float_ops, params.total_parameters
 
     def create_MobileNet_nopose(self, inp_tensor, output_len):
@@ -101,8 +124,8 @@ class CNNModel:
 
         return revised_model
 
-    def create_MobileNet(self, inp_tensor, output_len):
-        mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=None,
+    def create_MobileNet(self, inp_tensor, output_len, inp_shape):
+        mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=inp_shape,
                                                    alpha=1.0,
                                                    include_top=True,
                                                    weights=None,

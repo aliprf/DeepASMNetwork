@@ -15,7 +15,7 @@ from pose_detection.code.PoseDetector import PoseDetector, utils
 from tqdm import tqdm
 from os import listdir
 from os.path import isfile, join
-
+from scipy.integrate import simps
 
 class Test:
 
@@ -201,7 +201,7 @@ class Test:
 
     def _calculate_errors(self, detect, model, number_test_set, test_img_arr, test_lbl_arr):
         fr_threshold = 0.1
-        ACU = []
+        ACU =0
 
         fail_counter = 0
         sum_loss = 0
@@ -210,10 +210,12 @@ class Test:
         sum_mae_yaw = 0
         sum_mae_pitch = 0
         sum_mae_roll = 0
+        nme_arr = []
         for i in tqdm(range(number_test_set)):
             loss, lt, lp, yaw, pitch, roll = \
                 self._test_result_per_image(i, model, test_img_arr[i], test_lbl_arr[i], detect)
             sum_loss += loss
+            nme_arr.append(loss)
 
             sum_mae_yaw += yaw
             sum_mae_pitch += pitch
@@ -225,6 +227,9 @@ class Test:
             all_true.append(lt)
             all_predicted.append(lp)
 
+        '''calculate auc'''
+        ACU = self.calculate_AUC(nme_arr)
+
         sio.savemat('all_true.mat', {'ground_truth_all': np.array(all_true)})
         sio.savemat('all_pridicted.mat', {'detected_points_all': np.array(all_predicted)})
 
@@ -235,6 +240,7 @@ class Test:
         mae_roll = sum_mae_roll * 100 / number_test_set
 
         fr = 100 * fail_counter / number_test_set
+
         return nme, fr, ACU, mae_yaw, mae_pitch, mae_roll
 
     def _test_result_per_image(self, counter, model, img, labels_true, detect):
@@ -254,8 +260,6 @@ class Test:
 
         labels_predict_transformed, landmark_arr_x_p, landmark_arr_y_p = \
             image_utility.create_landmarks_from_normalized(pre_points, 224, 224, 112, 112)
-
-        # auc = self.calculate_AUC(labels_true, pre_points)
 
         '''asm pp'''
         # xy_h_p_asm = self.__post_process_correction(xy_h_p, True)
@@ -348,6 +352,37 @@ class Test:
         mae_roll = abs(roll_tpre - roll_truth)
         "================================="
         return normalized_mean_error, lt, lp, mae_yaw, mae_pitch, mae_roll
+
+    def calculate_AUC(self, nme_arr, threshold=0.1):
+        '''remove items bigger than threshold'''
+        x_nme = []
+        n_start = 0
+        step = 0.01
+        for i in range(0, len(nme_arr)):
+            if nme_arr[i] <= threshold:
+                x_nme.append(nme_arr[i])
+        ped = []
+        ced = []
+        sum_error= 0
+        for i in range(0, 10):
+            pr = self._cal_prob(i*step, (i+1)*step, x_nme)
+            ped.append(pr)
+            sum_error += pr
+            ced.append(sum_error)
+
+        print(ped)
+        print(ced)
+
+        y1 = np.linspace(0, 11, 10)
+        I1 = simps(y1, ced)
+        return I1
+
+    def _cal_prob(self, _from, _to, arr):
+        pr = 0
+        for i in range(len(arr)):
+            if _from <= arr[i] < _to:
+                pr += 1
+        return pr/len(arr)
 
     def __calculate_interoccular_distance(self, labels_true):
         if self.dataset_name == DatasetName.ibug or self.dataset_name == DatasetName.ibug_test:
