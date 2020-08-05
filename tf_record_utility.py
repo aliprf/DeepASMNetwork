@@ -128,10 +128,9 @@ class TFRecordUtility:
             imgpr.print_image_arr(str(counter), img_arr[counter], landmark_arr_x_n, landmark_arr_y_n)
             counter += 1
 
-    def retrieve_tf_record(self, tfrecord_filename, number_of_records, only_label=True):
+    def retrieve_tf_record_train(self, tfrecord_filename, number_of_records, only_label=True):
         with tf.Session() as sess:
             filename_queue = tf.train.string_input_producer([tfrecord_filename])
-            # image_raw, landmarks, pose = self.__read_and_decode_test_set(filename_queue)
             image_raw, landmarks, pose, img_name = self.__read_and_decode(filename_queue)
 
             init_op = tf.initialize_all_variables()
@@ -145,8 +144,8 @@ class TFRecordUtility:
             img_name_arr = []
 
             for i in tqdm(range(number_of_records)):
-                # _image_raw, _landmarks, _pose = sess.run([image_raw, landmarks, pose])
                 _image_raw, _landmarks, _pose, _img_name = sess.run([image_raw, landmarks, pose, img_name])
+                print(np.array(_landmarks).shape)
 
                 if not only_label:
                     img = np.array(_image_raw)
@@ -161,6 +160,40 @@ class TFRecordUtility:
             coord.join(threads)
             """ the output image is x y x y array"""
             return lbl_arr, img_arr, pose_arr, img_name_arr
+
+    def retrieve_tf_record(self, tfrecord_filename, number_of_records, only_label=True):
+        with tf.Session() as sess:
+            filename_queue = tf.train.string_input_producer([tfrecord_filename])
+            image_raw, landmarks, pose = self.__read_and_decode_test_set(filename_queue)
+            # image_raw, landmarks, pose, img_name = self.__read_and_decode(filename_queue)
+
+            init_op = tf.initialize_all_variables()
+            sess.run(init_op)
+            coord = tf.train.Coordinator()
+            threads = tf.train.start_queue_runners(coord=coord)
+
+            img_arr = []
+            lbl_arr = []
+            pose_arr = []
+            img_name_arr = []
+
+            for i in tqdm(range(number_of_records)):
+                _image_raw, _landmarks, _pose = sess.run([image_raw, landmarks, pose])
+                # _image_raw, _landmarks, _pose, _img_name = sess.run([image_raw, landmarks, pose, img_name])
+
+                if not only_label:
+                    img = np.array(_image_raw)
+                    img = img.reshape(InputDataSize.image_input_size, InputDataSize.image_input_size, 3)
+                    img_arr.append(img)
+
+                # img_name_arr.append(_img_name)
+                lbl_arr.append(_landmarks)
+                pose_arr.append(_pose)
+
+            coord.request_stop()
+            coord.join(threads)
+            """ the output image is x y x y array"""
+            return lbl_arr, img_arr, pose_arr
 
     def create_adv_att_img_hm(self):
         png_file_arr = []
@@ -1390,9 +1423,9 @@ class TFRecordUtility:
             landmarks_dir = WflwConf.normalized_points_npy_dir
 
         # sample_counts = 1708
-        lbl_arr, img_arr, pose_arr, img_name_arr = self.retrieve_tf_record(tf_path,
-                                                             number_of_records=sample_counts,
-                                                             only_label=True)
+        lbl_arr, img_arr, pose_arr, img_name_arr = self.retrieve_tf_record_train(tf_path,
+                                                                                 number_of_records=sample_counts,
+                                                                                 only_label=True)
         counter = 0
         # f = open("key_"+dataset_name, "a")
         for lbl in lbl_arr:
