@@ -54,9 +54,8 @@ if __name__ == '__main__':
     # tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks * 2)
     # tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.cofw)
     #
-    # tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks * 2)
-    # tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.wflw)
-
+    tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks * 2)
+    tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.wflw)
 
     '''--> Train GAN:'''
     # trg = TrainGan()
@@ -64,22 +63,23 @@ if __name__ == '__main__':
 
     '''--> Evaluate Results'''
     '''testing one-by-one'''
-    # test = Test(dataset_name=DatasetName.ibug_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/ibug_ds_.h5', has_pose=True, customLoss=False)
-    test = Test(dataset_name=DatasetName.ibug_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/ibug_ds_asm.h5', has_pose=True, customLoss=True)
-    # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/ibug_mn_.h5', has_pose=True, customLoss=False)
-    # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/ibug_mn_asm.h5', has_pose=True, customLoss=True)
+    # test = Test(dataset_name=DatasetName.ibug_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/ibug_ds_.h5', has_pose=False, customLoss=False)
+    # test = Test(dataset_name=DatasetName.ibug_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/ibug_ds_asm.h5', has_pose=False, customLoss=True)
+    # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/weights-200-0.01521.h5', has_pose=False, customLoss=False)
+    # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/ibug_mn_asm.h5', has_pose=False, customLoss=True)
 
     '''cofw'''
     # test = Test(dataset_name=DatasetName.cofw_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/cofw_ds_.h5', has_pose=True, customLoss=False)
     # test = Test(dataset_name=DatasetName.cofw_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/cofw_ds_asm.h5', has_pose=True, customLoss=True)
     # test = Test(dataset_name=DatasetName.cofw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/cofw_mn_.h5', has_pose=True, customLoss=False)
     # test = Test(dataset_name=DatasetName.cofw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/cofw_mn_asm.h5', has_pose=True, customLoss=True)
+    # test = Test(dataset_name=DatasetName.cofw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/weights-120-0.00021.h5', has_pose=True, customLoss=True)
 
     '''wflw'''
-    # test = Test(dataset_name=DatasetName.wflw_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/wflw_ds_.h5', has_pose=True, customLoss=False)
-    # test = Test(dataset_name=DatasetName.wflw_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/wflw_ds_asm.h5', has_pose=True, customLoss=True)
-    # test = Test(dataset_name=DatasetName.wflw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/wflw_mn_.h5', has_pose=True, customLoss=False)
-    # test = Test(dataset_name=DatasetName.wflw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/wflw_mn_asm.h5', has_pose=True, customLoss=True)
+    # test = Test(dataset_name=DatasetName.wflw_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/wflw_ds_.h5', has_pose=False, customLoss=False)
+    # test = Test(dataset_name=DatasetName.wflw_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/wflw_ds_asm.h5', has_pose=False, customLoss=True)
+    # test = Test(dataset_name=DatasetName.wflw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/weights-01-0.00063.h5', has_pose=False, customLoss=False)
+    # test = Test(dataset_name=DatasetName.wflw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/wflw_mn_asm.h5', has_pose=False, customLoss=True)
 
     # test = Test(dataset_name=DatasetName.ibug_test, arch='ASMNet', num_output_layers=2, weight_fname='asmnet_weights-200-0.00340.h5', has_pose=True)
     '''test all'''
