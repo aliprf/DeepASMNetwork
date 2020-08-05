@@ -33,7 +33,7 @@ from keras.utils.vis_utils import plot_model
 from scipy.spatial import distance
 import scipy.io as sio
 from keras.engine import InputLayer
-import coremltools
+# import coremltools
 
 class CNNModel:
     def get_model(self, train_images, arch, num_output_layers, output_len):
