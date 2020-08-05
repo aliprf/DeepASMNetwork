@@ -145,7 +145,7 @@ class TFRecordUtility:
 
             for i in tqdm(range(number_of_records)):
                 _image_raw, _landmarks, _pose, _img_name = sess.run([image_raw, landmarks, pose, img_name])
-                print(np.array(_landmarks).shape)
+                # print(np.array(_landmarks).shape)
 
                 if not only_label:
                     img = np.array(_image_raw)
