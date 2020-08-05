@@ -1830,7 +1830,7 @@ class TFRecordUtility:
         pose = features['pose']
         image_raw = features['image_raw']
         image_name = features['image_name']
-        return image_raw, landmarks, pose,image_name
+        return image_raw, landmarks, pose, image_name
 
     def __read_and_decode_test_set(self, filename_queue):
         reader = tf.TFRecordReader()
