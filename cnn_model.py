@@ -39,11 +39,11 @@ class CNNModel:
     def get_model(self, train_images, arch, num_output_layers, output_len):
 
         if arch == 'ASMNet':
-            # self.calculate_flops(arch, output_len)
+            self.calculate_flops(arch, output_len)
             model = self.create_ASMNet(inp_tensor=train_images, inp_shape=None, output_len=output_len)
 
         elif arch == 'mobileNetV2':
-            # self.calculate_flops(arch, output_len)
+            self.calculate_flops(arch, output_len)
             model = self.create_MobileNet(inp_tensor=train_images, output_len=output_len, inp_shape=None)
 
         elif arch == 'mobileNetV2_nopose':
@@ -53,32 +53,33 @@ class CNNModel:
 
     def calculate_flops(self, _arch, _output_len):
 
-        # net = tf.keras.models.load_model('./final_weights/ibug_ds_asm.h5')
-        # net = keras.models.load_model('./final_weights/ibug_ds_asm.h5')
-        # net.summary()
+        if _arch == 'ASMNet':
+            net = keras.models.load_model('./final_weights/wflw_ds_.h5', compile=False)
+        elif _arch == 'mobileNetV2':
+            net = keras.models.load_model('./final_weights/wflw_mn_.h5', compile=False)
+        net._layers[0].batch_input_shape = (1, 224, 224, 3)
 
         with tf.Session(graph=tf.Graph()) as sess:
             K.set_session(sess)
-            if _arch == 'ASMNet':
-                net = keras.models.load_model('./final_weights/ibug_ds_asm.h5')
+            model_new = keras.models.model_from_json(net.to_json())
+            model_new.summary()
 
-                x = net.get_layer('O_L').output  # 1280
-                inp = net.input
-                revised_model = Model(inp, [x])
-                revised_model.build(tf.placeholder('float32', shape=(1, 448, 448, 3)))
-                revised_model.summary()
-
-                # net = tf.keras.models.load_model('./final_weights/ibug_ds_asm.h5')
-                # net = self.create_ASMNet(inp_tensor=None, inp_shape=(224, 224, 3), output_len=_output_len)
-                # net = self.create_ASMNet(inp_tensor=tf.placeholder('float32', shape=(1, 224, 224, 3)), inp_shape=None, output_len=_output_len)
-            elif _arch == 'mobileNetV2':
-                # net = tf.keras.models.load_model('./final_weights/ibug_mn_.h5')
-
-                # net = self.create_MobileNet(inp_tensor=None, inp_shape=(224, 224, 3), output_len=_output_len)
-                # net = resnet50.ResNet50(input_shape=(224, 224, 3),  weights=None)
-                # net = resnet50.ResNet50(input_tensor=tf.placeholder('float32', shape=(1, 224, 224, 3)),  weights=None)
-                net = mobilenet_v2.MobileNetV2(alpha=1,  weights=None, input_tensor=tf.placeholder('float32', shape=(1, 224, 224, 3)))
-                net.summary()
+            #     x = net.get_layer('O_L').output  # 1280
+            #     inp = net.input
+            #     revised_model = Model(inp, [x])
+            #     revised_model.build(tf.placeholder('float32', shape=(1, 448, 448, 3)))
+            #     revised_model.summary()
+            #     net = tf.keras.models.load_model('./final_weights/ibug_ds_asm.h5')
+            #     net = self.create_ASMNet(inp_tensor=None, inp_shape=(224, 224, 3), output_len=_output_len)
+            #     net = self.create_ASMNet(inp_tensor=tf.placeholder('float32', shape=(1, 224, 224, 3)), inp_shape=None, output_len=_output_len)
+            # elif _arch == 'mobileNetV2':
+            #     # net = tf.keras.models.load_model('./final_weights/ibug_mn_.h5')
+            #
+            #     # net = self.create_MobileNet(inp_tensor=None, inp_shape=(224, 224, 3), output_len=_output_len)
+            #     # net = resnet50.ResNet50(input_shape=(224, 224, 3),  weights=None)
+            #     # net = resnet50.ResNet50(input_tensor=tf.placeholder('float32', shape=(1, 224, 224, 3)),  weights=None)
+            #     net = mobilenet_v2.MobileNetV2(alpha=1,  weights=None, input_tensor=tf.placeholder('float32', shape=(1, 224, 224, 3)))
+            #     net.summary()
 
             run_meta = tf.RunMetadata()
 

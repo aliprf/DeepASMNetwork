@@ -54,8 +54,8 @@ if __name__ == '__main__':
     # tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks * 2)
     # tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.cofw)
     #
-    tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks * 2)
-    tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.wflw)
+    # tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks * 2)
+    # tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.wflw)
 
     '''--> Train GAN:'''
     # trg = TrainGan()
@@ -63,22 +63,24 @@ if __name__ == '__main__':
 
     '''--> Evaluate Results'''
     '''testing one-by-one'''
-    # test = Test(dataset_name=DatasetName.ibug_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/ibug_ds_.h5', has_pose=False, customLoss=False)
-    # test = Test(dataset_name=DatasetName.ibug_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/ibug_ds_asm.h5', has_pose=False, customLoss=True)
-    # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/weights-200-0.01521.h5', has_pose=False, customLoss=False)
-    # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/ibug_mn_asm.h5', has_pose=False, customLoss=True)
+    # FLOPS: 2,058,952,561 --- Params: 2,879,014
+    # test = Test(dataset_name=DatasetName.ibug_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/ibug_ds_.h5', has_pose=True, customLoss=False)
+    # test = Test(dataset_name=DatasetName.ibug_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/ibug_ds_asm.h5', has_pose=True, customLoss=True)
+    # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/ibug_mn_.h5', has_pose=True, customLoss=False)
+    # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/ibug_mn_asm.h5', has_pose=True, customLoss=True)
 
     '''cofw'''
     # test = Test(dataset_name=DatasetName.cofw_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/cofw_ds_.h5', has_pose=True, customLoss=False)
     # test = Test(dataset_name=DatasetName.cofw_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/cofw_ds_asm.h5', has_pose=True, customLoss=True)
     # test = Test(dataset_name=DatasetName.cofw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/cofw_mn_.h5', has_pose=True, customLoss=False)
     # test = Test(dataset_name=DatasetName.cofw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/cofw_mn_asm.h5', has_pose=True, customLoss=True)
+
     # test = Test(dataset_name=DatasetName.cofw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/weights-120-0.00021.h5', has_pose=True, customLoss=True)
 
     '''wflw'''
     # test = Test(dataset_name=DatasetName.wflw_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/wflw_ds_.h5', has_pose=False, customLoss=False)
     # test = Test(dataset_name=DatasetName.wflw_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/wflw_ds_asm.h5', has_pose=False, customLoss=True)
-    # test = Test(dataset_name=DatasetName.wflw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/weights-01-0.00063.h5', has_pose=False, customLoss=False)
+    # test = Test(dataset_name=DatasetName.wflw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/wflw_mn_.h5', has_pose=False, customLoss=False)
     # test = Test(dataset_name=DatasetName.wflw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/wflw_mn_asm.h5', has_pose=False, customLoss=True)
 
     # test = Test(dataset_name=DatasetName.ibug_test, arch='ASMNet', num_output_layers=2, weight_fname='asmnet_weights-200-0.00340.h5', has_pose=True)
@@ -107,12 +109,11 @@ if __name__ == '__main__':
     #                 train_on_batch=False,
     #                 accuracy=95)
 
-# ASMNet v2: FLOPS: 3,348,211 --- Params: 1,412,435
-# mn v2:     FLOPS: 4,804,728 --- Params: 2,401,931
 
-#
-# Mul                      2.40m float_ops (100.00%, 49.99%)
-# Add                      2.37m float_ops (50.01%, 49.28%)
+# FLOPS: 604,444,425 --- Params: 2,436,043
+# FLOPS: 604,034,745 --- Params: 2,333,563
+# FLOPS: 604,751,685 --- Params: 2,512,903
 
-# Mul                      1.56m float_ops (100.00%, 46.64%)
-# Add                      1.39m float_ops (53.36%, 41.38%)
+# FLOPS: 516,345,794 --- Params: 1,439,507
+# FLOPS: 516,088,274 --- Params: 1,396,547
+# FLOPS: 516,538,934 --- Params: 1,471,727
