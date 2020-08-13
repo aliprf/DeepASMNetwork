@@ -1580,7 +1580,7 @@ class TFRecordUtility:
             if accuracy == 100:
                 tf_train_path = IbugConf.tf_train_path
                 tf_evaluation_path = IbugConf.tf_evaluation_path
-            elif accuracy == 95:
+            elif accuracy == 90:
                 tf_train_path = IbugConf.tf_train_path_95
                 tf_evaluation_path = IbugConf.tf_evaluation_path_95
 
@@ -1592,7 +1592,7 @@ class TFRecordUtility:
             if accuracy == 100:
                 tf_train_path = CofwConf.tf_train_path
                 tf_evaluation_path = CofwConf.tf_evaluation_path
-            elif accuracy == 95:
+            elif accuracy == 90:
                 tf_train_path = CofwConf.tf_train_path_95
                 tf_evaluation_path = CofwConf.tf_evaluation_path_95
 
@@ -1604,7 +1604,7 @@ class TFRecordUtility:
             if accuracy == 100:
                 tf_train_path = WflwConf.tf_train_path
                 tf_evaluation_path = WflwConf.tf_evaluation_path
-            elif accuracy == 95:
+            elif accuracy == 90:
                 tf_train_path = WflwConf.tf_train_path_95
                 tf_evaluation_path = WflwConf.tf_evaluation_path_95
 

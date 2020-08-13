@@ -36,9 +36,9 @@ if __name__ == '__main__':
 
     '''     create and save PCA objects'''
     # pca_utility.create_pca_from_points(DatasetName.wflw, 80)
-    pca_utility.create_pca_from_npy(DatasetName.cofw, 90)
-    pca_utility.create_pca_from_npy(DatasetName.ibug, 90)
-    pca_utility.create_pca_from_npy(DatasetName.wflw, 90)
+    # pca_utility.create_pca_from_npy(DatasetName.cofw, 90)
+    # pca_utility.create_pca_from_npy(DatasetName.ibug, 90)
+    # pca_utility.create_pca_from_npy(DatasetName.wflw, 90)
     # pca_utility.test_pca_validity(DatasetName.wflw, 95)
 
     '''     create tfRecord:'''
