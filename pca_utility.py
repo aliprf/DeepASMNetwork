@@ -55,6 +55,11 @@ class PCAUtility:
         path = None
         if dataset_name == DatasetName.ibug:
             path = IbugConf.rotated_img_path_prefix  # rotated is ok, since advs_aug is the same as rotated
+            num_of_landmarks = IbugConf.num_of_landmarks
+
+        elif dataset_name == DatasetName.wflw:
+            path = WflwConf.train_images_dir  # rotated is ok, since advs_aug is the same as rotated
+            num_of_landmarks = WflwConf.num_of_landmarks
 
         for file in tqdm(os.listdir(path)):
             if file.endswith(".pts"):
@@ -65,7 +70,7 @@ class PCAUtility:
                     line = fp.readline()
                     cnt = 1
                     while line:
-                        if 3 < cnt < 72:
+                        if 3 < cnt <= num_of_landmarks + 3:
                             x_y_pnt = line.strip()
                             x = float(x_y_pnt.split(" ")[0])
                             y = float(x_y_pnt.split(" ")[1])
@@ -80,7 +85,7 @@ class PCAUtility:
         print('PCA calculation started')
 
         ''' no normalization is needed, since we want to generate hm'''
-        reduced_lbl_arr, eigenvalues, eigenvectors = self.__func_PCA(lbl_arr, pca_postfix)
+        reduced_lbl_arr, eigenvalues, eigenvectors = self._func_PCA(lbl_arr, pca_postfix)
         mean_lbl_arr = np.mean(lbl_arr, axis=0)
         eigenvectors = eigenvectors.T
         #
@@ -105,6 +110,10 @@ class PCAUtility:
         path = None
         if dataset_name == DatasetName.ibug:
             path = IbugConf.rotated_img_path_prefix  # rotated is ok, since advs_aug is the same as rotated
+            num_of_landmarks = IbugConf.num_of_landmarks
+        elif dataset_name == DatasetName.wflw:
+            path = WflwConf.rotated_img_path_prefix  # rotated is ok, since advs_aug is the same as rotated
+            num_of_landmarks = WflwConf.num_of_landmarks
 
         for file in tqdm(os.listdir(path)):
             if file.endswith(".pts"):
@@ -118,7 +127,7 @@ class PCAUtility:
                     line = fp.readline()
                     cnt = 1
                     while line:
-                        if 3 < cnt < 72:
+                        if 3 < cnt <= num_of_landmarks + 3:
                             x_y_pnt = line.strip()
                             x = float(x_y_pnt.split(" ")[0])
                             y = float(x_y_pnt.split(" ")[1])
@@ -138,10 +147,10 @@ class PCAUtility:
                 create_landmarks(lbl_arr[i], 1, 1)
 
             labels_true_transformed_pca, landmark_arr_x_pca, landmark_arr_y_pca = image_utility. \
-                create_landmarks(lbl_new, 1, 1)
+                create_landmarks_from_normalized(lbl_new, 224, 224, 112, 112)
 
-            image_utility.print_image_arr(i, img_arr[i], landmark_arr_x_t, landmark_arr_y_t)
-            image_utility.print_image_arr(i * 1000, img_arr[i], landmark_arr_x_pca, landmark_arr_y_pca)
+            image_utility.print_image_arr(i+1, img_arr[i], landmark_arr_x_t, landmark_arr_y_t)
+            image_utility.print_image_arr((i+1) * 1000, img_arr[i], landmark_arr_x_pca, landmark_arr_y_pca)
 
     def calculate_b_vector(self, predicted_vector, correction, eigenvalues, eigenvectors, meanvector):
         tmp1 = predicted_vector - meanvector

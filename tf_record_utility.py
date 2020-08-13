@@ -105,6 +105,8 @@ class TFRecordUtility:
 
         if not heatmap:
             self._create_tfrecord_from_npy(dataset_name, dataset_type, isTest, accuracy)
+        elif heatmap:
+            self._create_tfrecord_from_npy_hm(dataset_name, dataset_type, isTest, accuracy)
 
         elif dataset_name == DatasetName.affectnet:
             self.__create_tfrecord_affectnet(dataset_type, need_augmentation=True)
@@ -115,6 +117,22 @@ class TFRecordUtility:
                 self._create_tfrecord_ibug_all_heatmap(dataset_name)
         elif dataset_name == DatasetName.aflw:
             self.__create_tfrecord_aflw()
+
+    def test_tf_record_hm(self, ):
+        image_utility = ImageUtility()
+        lbl_arr, img_arr, pose_arr, hm_arr = self.retrieve_tf_record_hm(CofwConf.tf_train_path,
+                                                            number_of_records=10,
+                                                             # number_of_records=WflwConf.orig_number_of_test,
+                                                             only_label=False)
+        counter = 0
+        for lbl in lbl_arr:
+            landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = \
+                image_utility.create_landmarks_from_normalized(lbl_arr[counter], 224, 224, 112, 112)
+
+            imgpr.print_image_arr(str(counter), img_arr[counter], landmark_arr_x_n, landmark_arr_y_n)
+            imgpr.print_image_arr_heat(str(counter+1000), hm_arr[counter], print_single=False)
+
+            counter += 1
 
     def test_tf_record(self, ):
         image_utility = ImageUtility()
@@ -160,6 +178,41 @@ class TFRecordUtility:
             coord.join(threads)
             """ the output image is x y x y array"""
             return lbl_arr, img_arr, pose_arr, img_name_arr
+
+    def retrieve_tf_record_hm(self, tfrecord_filename, number_of_records, only_label=True):
+        with tf.Session() as sess:
+            filename_queue = tf.train.string_input_producer([tfrecord_filename])
+            image_raw, landmarks, pose, heatmap, img_name = self.__read_and_decode_hm(filename_queue)
+
+            init_op = tf.initialize_all_variables()
+            sess.run(init_op)
+            coord = tf.train.Coordinator()
+            threads = tf.train.start_queue_runners(coord=coord)
+
+            img_arr = []
+            lbl_arr = []
+            pose_arr = []
+            img_name_arr = []
+            hm_arr = []
+
+            for i in tqdm(range(number_of_records)):
+                # _image_raw, _landmarks, _pose = sess.run([image_raw, landmarks, pose])
+                _image_raw, _landmarks, _pose, _heatmap, _img_name = sess.run([image_raw, landmarks, pose, heatmap, img_name])
+
+                if not only_label:
+                    img = np.array(_image_raw)
+                    img = img.reshape(InputDataSize.image_input_size, InputDataSize.image_input_size, 3)
+                    img_arr.append(img)
+
+                img_name_arr.append(_img_name)
+                lbl_arr.append(_landmarks)
+                pose_arr.append(_pose)
+                hm_arr.append(_heatmap)
+
+            coord.request_stop()
+            coord.join(threads)
+            """ the output image is x y x y array"""
+            return lbl_arr, img_arr, pose_arr, hm_arr
 
     def retrieve_tf_record(self, tfrecord_filename, number_of_records, only_label=True):
         with tf.Session() as sess:
@@ -1082,7 +1135,15 @@ class TFRecordUtility:
         img_path_prefix = ''
         num_of_landmarks = 0
 
-        if dataset_name == DatasetName.cofw_test:
+        if dataset_name == DatasetName.wflw:
+            number_of_samples = WflwConf.orig_number_of_training
+            img_path_prefix = WflwConf.img_path_prefix
+            crop_img_path_prefix = WflwConf.train_images_dir
+            pts_path_prefix = WflwConf.img_path_prefix
+            num_of_landmarks = WflwConf.num_of_landmarks
+            img_ext = "jpg"
+
+        elif dataset_name == DatasetName.cofw_test:
             number_of_samples = CofwConf.orig_number_of_test
             img_path_prefix = CofwConf.test_img_path_prefix
             crop_img_path_prefix = CofwConf.test_images_dir
@@ -1510,6 +1571,164 @@ class TFRecordUtility:
             file_name = "X" + file_name
         return file_name
 
+    def _create_tfrecord_from_npy_hm(self, dataset_name, dataset_type, isTest, accuracy=100):
+        if dataset_name == DatasetName.ibug:
+            img_dir = IbugConf.train_images_dir
+            landmarks_dir = IbugConf.normalized_points_npy_dir
+            pose_dir = IbugConf.pose_npy_dir
+            num_train_samples = IbugConf.number_of_train_sample
+            if accuracy == 100:
+                tf_train_path = IbugConf.tf_train_path
+                tf_evaluation_path = IbugConf.tf_evaluation_path
+            elif accuracy == 95:
+                tf_train_path = IbugConf.tf_train_path_95
+                tf_evaluation_path = IbugConf.tf_evaluation_path_95
+
+        elif dataset_name == DatasetName.cofw:
+            img_dir = CofwConf.train_images_dir
+            landmarks_dir = CofwConf.normalized_points_npy_dir
+            pose_dir = CofwConf.pose_npy_dir
+            num_train_samples = CofwConf.number_of_train_sample  # 95%
+            if accuracy == 100:
+                tf_train_path = CofwConf.tf_train_path
+                tf_evaluation_path = CofwConf.tf_evaluation_path
+            elif accuracy == 95:
+                tf_train_path = CofwConf.tf_train_path_95
+                tf_evaluation_path = CofwConf.tf_evaluation_path_95
+
+        elif dataset_name == DatasetName.wflw:
+            img_dir = WflwConf.train_images_dir
+            landmarks_dir = WflwConf.normalized_points_npy_dir
+            pose_dir = WflwConf.pose_npy_dir
+            num_train_samples = WflwConf.number_of_train_sample  # 95%
+            if accuracy == 100:
+                tf_train_path = WflwConf.tf_train_path
+                tf_evaluation_path = WflwConf.tf_evaluation_path
+            elif accuracy == 95:
+                tf_train_path = WflwConf.tf_train_path_95
+                tf_evaluation_path = WflwConf.tf_evaluation_path_95
+
+        elif dataset_name == DatasetName.wflw_test:
+            img_dir = WflwConf.test_images_dir
+            landmarks_dir = WflwConf.test_normalized_points_npy_dir
+            pose_dir = WflwConf.test_pose_npy_dir
+            if dataset_type == DatasetType.wflw_full:
+                num_train_samples = WflwConf.orig_number_of_test
+                tf_train_path = WflwConf.tf_test_path
+            elif dataset_type == DatasetType.wflw_blur:
+                num_train_samples = WflwConf.orig_of_all_test_blur
+            elif dataset_type == DatasetType.wflw_largepose:
+                num_train_samples = WflwConf.orig_of_all_test_largepose
+                tf_train_path = WflwConf.tf_test_path_largepose
+            elif dataset_type == DatasetType.wflw_occlusion:
+                num_train_samples = WflwConf.orig_of_all_test_occlusion
+                tf_train_path = WflwConf.tf_test_path_occlusion
+            elif dataset_type == DatasetType.wflw_makeup:
+                num_train_samples = WflwConf.orig_of_all_test_makeup
+                tf_train_path = WflwConf.tf_test_path_makeup
+            elif dataset_type == DatasetType.wflw_expression:
+                num_train_samples = WflwConf.orig_of_all_test_expression
+                tf_train_path = WflwConf.tf_test_path_expression
+            elif dataset_type == DatasetType.wflw_illumination:
+                num_train_samples = WflwConf.orig_of_all_test_illumination
+                tf_train_path = WflwConf.tf_test_path_illumination
+            tf_evaluation_path = None
+
+        elif dataset_name == DatasetName.cofw_test:
+            img_dir = CofwConf.test_images_dir
+            landmarks_dir = CofwConf.test_normalized_points_npy_dir
+            pose_dir = CofwConf.test_pose_npy_dir
+            num_train_samples = CofwConf.orig_number_of_test
+            tf_train_path = CofwConf.tf_test_path
+            tf_evaluation_path = None
+
+        elif dataset_name == DatasetName.ibug_test:
+            img_dir = IbugConf.test_images_dir
+            landmarks_dir = IbugConf.test_normalized_points_npy_dir
+            pose_dir = IbugConf.test_pose_npy_dir
+            if dataset_type == DatasetType.ibug_challenging:
+                num_train_samples = IbugConf.orig_number_of_test_challenging
+                tf_train_path = IbugConf.tf_test_path_challenging
+            elif dataset_type == DatasetType.ibug_full:
+                num_train_samples = IbugConf.orig_number_of_test_full
+                tf_train_path = IbugConf.tf_test_path_full
+            elif dataset_type == DatasetType.ibug_comomn:
+                num_train_samples = IbugConf.orig_number_of_test_common
+                tf_train_path = IbugConf.tf_test_path_common
+
+            tf_evaluation_path = None
+
+        counter = 0
+
+        writer_train = tf.python_io.TFRecordWriter(tf_train_path)
+        if tf_evaluation_path is not None:
+            writer_evaluate = tf.python_io.TFRecordWriter(tf_evaluation_path)
+
+        for file in os.listdir(img_dir):
+            if file.endswith(".jpg") or file.endswith(".png"):
+                img_tf_name = self._encode_tf_file_name(file)
+                img_file_name = os.path.join(img_dir, file)
+
+                '''load img and normalize it'''
+                img = Image.open(img_file_name)
+                img = np.array(img) / 255.0
+
+                '''load landmark npy, (has been augmented already)'''
+                landmark_file_name = os.path.join(landmarks_dir, file[:-3] + "npy")
+                if not os.path.exists(landmark_file_name):
+                    continue
+                landmark = load(landmark_file_name)
+
+                '''load pose npy'''
+                pose_file_name = os.path.join(pose_dir, file[:-3] + "npy")
+                if not os.path.exists(pose_file_name):
+                    continue
+                pose = load(pose_file_name)
+                '''create new landmark using accuracy'''
+                if accuracy != 100:
+                    landmark = self._get_asm(landmark, dataset_name, accuracy)
+                    '''test image after ASM: '''
+
+                '''prepare img'''
+                writable_img = np.reshape(img, [InputDataSize.image_input_size * InputDataSize.image_input_size * 3])
+
+                '''create hm'''
+                heatmap_landmark = self.generate_hm(56, 56, landmark, s=2.0)
+                writable_heatmap = np.reshape(heatmap_landmark, [56 * 56 * self.number_of_landmark//2])
+
+                '''create tf_record:'''
+                if isTest: # no need for hm in test
+                    feature = {'landmarks': self.__float_feature(landmark),
+                               'pose': self.__float_feature(pose),
+                               'image_raw': self.__float_feature(writable_img),
+                               }
+                else:
+                    feature = {'landmarks': self.__float_feature(landmark),
+                               'pose': self.__float_feature(pose),
+                               'image_raw': self.__float_feature(writable_img),
+                               'heatmap': self.__float_feature(writable_heatmap),
+                               'image_name': self.__bytes_feature(img_tf_name.encode('utf-8'))
+                               }
+
+                example = tf.train.Example(features=tf.train.Features(feature=feature))
+
+                if counter <= num_train_samples:
+                    writer_train.write(example.SerializeToString())
+                    msg = 'train --> \033[92m' + " sample number " + str(counter + 1) + \
+                          " created." + '\033[94m' + "remains " + str(num_train_samples - counter - 1)
+                    sys.stdout.write('\r' + msg)
+
+                elif tf_evaluation_path is not None:
+                    writer_evaluate.write(example.SerializeToString())
+                    msg = 'eval --> \033[92m' + " sample number " + str(counter + 1) + \
+                          " created." + '\033[94m' + "remains " + str(num_train_samples - counter - 1)
+                    sys.stdout.write('\r' + msg)
+                counter += 1
+
+        writer_train.close()
+        if tf_evaluation_path is not None:
+            writer_evaluate.close()
+
     def _create_tfrecord_from_npy(self, dataset_name, dataset_type, isTest, accuracy=100):
         """we use this function when we have already created and nrmalzed both landmarks and poses"""
 
@@ -1843,6 +2062,30 @@ class TFRecordUtility:
         if isinstance(value, type(tf.constant(0))):
             value = value.numpy()
         return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
+
+    def __read_and_decode_hm(self, filename_queue):
+        reader = tf.TFRecordReader()
+        _, serialized_example = reader.read(filename_queue)
+
+        features = tf.parse_single_example(serialized_example,
+                                           features={
+                                               'landmarks': tf.FixedLenFeature([self.number_of_landmark],
+                                                                               tf.float32),
+                                               'pose': tf.FixedLenFeature([InputDataSize.pose_len], tf.float32),
+                                               'image_raw': tf.FixedLenFeature([InputDataSize.image_input_size *
+                                                                                InputDataSize.image_input_size * 3]
+                                                                                , tf.float32),
+                                               'heatmap': tf.FixedLenFeature([56 ,56 , self.number_of_landmark // 2],tf.float32),
+                                               'image_name': tf.FixedLenFeature([], tf.string),
+
+                                           })
+        landmarks = features['landmarks']
+        pose = features['pose']
+        image_raw = features['image_raw']
+        heatmap = features['heatmap']
+        image_name = features['image_name']
+
+        return image_raw, landmarks, pose,  heatmap, image_name
 
     def __read_and_decode(self, filename_queue):
         reader = tf.TFRecordReader()

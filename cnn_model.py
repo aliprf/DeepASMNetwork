@@ -39,11 +39,11 @@ class CNNModel:
     def get_model(self, train_images, arch, num_output_layers, output_len):
 
         if arch == 'ASMNet':
-            self.calculate_flops(arch, output_len)
+            # self.calculate_flops(arch, output_len)
             model = self.create_ASMNet(inp_tensor=train_images, inp_shape=None, output_len=output_len)
 
         elif arch == 'mobileNetV2':
-            self.calculate_flops(arch, output_len)
+            # self.calculate_flops(arch, output_len)
             model = self.create_MobileNet(inp_tensor=train_images, output_len=output_len, inp_shape=None)
 
         elif arch == 'mobileNetV2_nopose':

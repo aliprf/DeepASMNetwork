@@ -1,6 +1,10 @@
 import random
 import numpy as np
+
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
+
 import math
 from skimage.transform import warp, AffineTransform
 import cv2
@@ -46,7 +50,7 @@ class ImageUtility:
 
             min_b = 0.0
             max_b = 224
-            if True or not(min(landmark_arr_x) < min_b or min(landmark_arr_y) < min_b or
+            if not(min(landmark_arr_x) < min_b or min(landmark_arr_y) < min_b or
                    max(landmark_arr_x) > max_b or max(landmark_arr_y) > max_b):
 
                 # self.print_image_arr(str(landmark_arr_x[0]), resized_img, landmark_arr_x, landmark_arr_y)

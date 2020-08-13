@@ -10,7 +10,7 @@ from test import Test
 # from Train_Gan import TrainGan
 
 if __name__ == '__main__':
-    tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks*2)
+    tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks*2)
     pca_utility = PCAUtility()
     cnn_model = CNNModel()
     image_utility = ImageUtility()
@@ -19,8 +19,8 @@ if __name__ == '__main__':
     # tf_record_util.create_adv_att_img_hm()
 
     '''--> Preparing Test Data process:'''
-    # tf_record_util.crop_and_save(dataset_name=DatasetName.ibug_test, dataset_type=DatasetType.ibug_full)
-    # tf_record_util.normalize_points_and_save(dataset_name=DatasetName.ibug_test)
+    # tf_record_util.crop_and_save(dataset_name=DatasetName.wflw, dataset_type=DatasetType.wflw_full)
+    # tf_record_util.normalize_points_and_save(dataset_name=DatasetName.wflw)
     # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.ibug_test)
     # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug_test, dataset_type=DatasetType.ibug_full,
     #                                 heatmap=False, accuracy=100, isTest=True)
@@ -35,17 +35,29 @@ if __name__ == '__main__':
     # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.cofw)
 
     '''     create and save PCA objects'''
-    # pca_utility.create_pca_from_points(DatasetName.ibug, 95)
-    # pca_utility.create_pca_from_npy(DatasetName.wflw, 95)
+    # pca_utility.create_pca_from_points(DatasetName.wflw, 80)
+    # pca_utility.create_pca_from_npy(DatasetName.wflw, 80)
+    # pca_utility.test_pca_validity(DatasetName.wflw, 95)
 
     '''     create tfRecord:'''
     # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug_test, dataset_type=None, heatmap=False, accuracy=100)
+
+    tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks * 2)
+    tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=True, accuracy=100, isTest=False)
+
+    tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks * 2)
+    tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=True, accuracy=100, isTest=False)
+
+    tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks * 2)
+    tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=True, accuracy=100, isTest=False)
+
     # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=100)
     # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=100, isTest=False)
     # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=95, isTest=False)
 
     '''--> retrive and test tfRecords'''
     # tf_record_util.test_tf_record()
+    # tf_record_util.test_tf_record_hm()
 
     '''create point->imgName map'''
     # tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks * 2)
@@ -75,7 +87,7 @@ if __name__ == '__main__':
     # test = Test(dataset_name=DatasetName.cofw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/cofw_mn_.h5', has_pose=True, customLoss=False)
     # test = Test(dataset_name=DatasetName.cofw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/cofw_mn_asm.h5', has_pose=True, customLoss=True)
 
-    # test = Test(dataset_name=DatasetName.cofw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/weights-120-0.00021.h5', has_pose=True, customLoss=True)
+    # test = Test(dataset_name=DatasetName.cofw_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/0t_cofw_mn.h5', has_pose=False, customLoss=False)
 
     '''wflw'''
     # test = Test(dataset_name=DatasetName.wflw_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/wflw_ds_.h5', has_pose=False, customLoss=False)

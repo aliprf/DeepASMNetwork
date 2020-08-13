@@ -131,9 +131,9 @@ class W300Conf:
 
 
 class WflwConf:
-    # Wflw_prefix_path = '/media/data3/ali/FL/wflw/'  # --> Zeus
+    Wflw_prefix_path = '/media/data3/ali/FL/wflw/'  # --> Zeus
     # Wflw_prefix_path = '/media/data2/alip/FL/wflw/'  # --> Atlas
-    Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
+    # Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
 
     img_path_prefix = Wflw_prefix_path + 'all/'
     rotated_img_path_prefix = Wflw_prefix_path + '0_rotated/'
@@ -179,9 +179,9 @@ class WflwConf:
     num_of_landmarks = 98
 
 class CofwConf:
-    # Cofw_prefix_path = '/media/data3/ali/FL/cofw/'  # --> Zeus
+    Cofw_prefix_path = '/media/data3/ali/FL/cofw/'  # --> Zeus
     # Cofw_prefix_path = '/media/data2/alip/FL/cofw/'  # --> Atlas
-    Cofw_prefix_path = '/media/ali/data/cofw/'  # --> local
+    # Cofw_prefix_path = '/media/ali/data/cofw/'  # --> local
 
     img_path_prefix = Cofw_prefix_path + 'all/'
     rotated_img_path_prefix = Cofw_prefix_path + '0_rotated/'
@@ -216,9 +216,9 @@ class CofwConf:
 class IbugConf:
 
     '''server_config'''
-    # _Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
+    _Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
     # _Ibug_prefix_path = '/media/data2/alip/FL/ibug/'  # --> Atlas
-    _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
+    # _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
 
     img_path_prefix = _Ibug_prefix_path + 'all/'
     rotated_img_path_prefix = _Ibug_prefix_path + '0_rotated/'
