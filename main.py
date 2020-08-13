@@ -36,20 +36,22 @@ if __name__ == '__main__':
 
     '''     create and save PCA objects'''
     # pca_utility.create_pca_from_points(DatasetName.wflw, 80)
-    # pca_utility.create_pca_from_npy(DatasetName.wflw, 80)
+    pca_utility.create_pca_from_npy(DatasetName.cofw, 90)
+    pca_utility.create_pca_from_npy(DatasetName.ibug, 90)
+    pca_utility.create_pca_from_npy(DatasetName.wflw, 90)
     # pca_utility.test_pca_validity(DatasetName.wflw, 95)
 
     '''     create tfRecord:'''
     # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug_test, dataset_type=None, heatmap=False, accuracy=100)
 
     tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks * 2)
-    tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=True, accuracy=100, isTest=False)
+    tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=True, accuracy=90, isTest=False)
 
     tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks * 2)
-    tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=True, accuracy=100, isTest=False)
+    tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=True, accuracy=90, isTest=False)
 
     tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks * 2)
-    tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=True, accuracy=100, isTest=False)
+    tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=True, accuracy=90, isTest=False)
 
     # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=100)
     # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=100, isTest=False)
