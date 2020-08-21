@@ -120,8 +120,8 @@ class TFRecordUtility:
 
     def test_tf_record_hm(self, ):
         image_utility = ImageUtility()
-        lbl_arr, img_arr, pose_arr, hm_arr = self.retrieve_tf_record_hm(CofwConf.tf_train_path,
-                                                            number_of_records=10,
+        lbl_arr, img_arr, pose_arr, hm_arr = self.retrieve_tf_record_hm(IbugConf.tf_test_path_challenging,
+                                                            number_of_records=20,
                                                              # number_of_records=WflwConf.orig_number_of_test,
                                                              only_label=False)
         counter = 0
@@ -137,14 +137,58 @@ class TFRecordUtility:
     def test_tf_record(self, ):
         image_utility = ImageUtility()
         lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(WflwConf.tf_test_path,
-                                                             number_of_records=WflwConf.orig_number_of_test, only_label=False)
+                                                             # number_of_records=100,
+                                                             number_of_records=WflwConf.orig_number_of_test,
+                                                             only_label=False)
+        lbl_arr_norm = []
+        lbl_arr_norm_asm = []
+
         counter = 0
         for lbl in lbl_arr:
             landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = \
                 image_utility.create_landmarks_from_normalized(lbl_arr[counter], 224, 224, 112, 112)
 
-            imgpr.print_image_arr(str(counter), img_arr[counter], landmark_arr_x_n, landmark_arr_y_n)
+            # imgpr.print_image_arr(str(counter), img_arr[counter], landmark_arr_x_n, landmark_arr_y_n)
+            # imgpr.print_histogram1(counter, np.array(landmark_arr_flat_n).reshape([98, 2]))
+
+            lbl_arr_norm.append(landmark_arr_flat_n)
+            # lbl_arr_norm.append(lbl)
+            # lbl_arr_norm_asm.append(self._get_asm(lbl, 'wflw', 80))
+            lbl_arr_norm_asm.append(self._get_asm(landmark_arr_flat_n, 'wflw', 80))
+
             counter += 1
+
+        imgpr.print_histogram_plt('main', 'full', lbl_arr_norm)
+        imgpr.print_histogram_plt('asm', 'full', lbl_arr_norm_asm)
+
+        imgpr.print_histogram_plt('main', 'face', lbl_arr_norm)
+        imgpr.print_histogram_plt('asm', 'face', lbl_arr_norm_asm)
+
+        return
+
+        imgpr.print_arr('main', 'full', lbl_arr_norm)
+        imgpr.print_arr('asm', 'full', lbl_arr_norm_asm)
+
+        imgpr.print_arr('main', 'face', lbl_arr_norm)
+        imgpr.print_arr('asm', 'face', lbl_arr_norm_asm)
+
+        imgpr.print_arr('main', 'eyes', lbl_arr_norm)
+        imgpr.print_arr('asm', 'eyes', lbl_arr_norm_asm)
+
+        imgpr.print_arr('main', 'nose', lbl_arr_norm)
+        imgpr.print_arr('asm', 'nose', lbl_arr_norm_asm)
+
+        imgpr.print_arr('main', 'mouth', lbl_arr_norm)
+        imgpr.print_arr('asm', 'mouth', lbl_arr_norm_asm)
+
+        imgpr.print_arr('main', 'eyebrow', lbl_arr_norm)
+        imgpr.print_arr('asm', 'eyebrow', lbl_arr_norm_asm)
+
+        # lbl_arr_norm = np.mean(np.array(lbl_arr_norm), axis=0)
+        # lbl_arr_norm_asm = np.mean(np.array(lbl_arr_norm_asm), axis=0)
+        # imgpr.print_histogram1('main_', lbl_arr_norm.reshape([self.number_of_landmark//2, 2]))
+        # imgpr.print_histogram1('ASM_', lbl_arr_norm_asm.reshape([self.number_of_landmark//2, 2]))
+
 
     def retrieve_tf_record_train(self, tfrecord_filename, number_of_records, only_label=True):
         with tf.Session() as sess:
@@ -2076,8 +2120,7 @@ class TFRecordUtility:
                                                                                 InputDataSize.image_input_size * 3]
                                                                                 , tf.float32),
                                                'heatmap': tf.FixedLenFeature([56 ,56 , self.number_of_landmark // 2],tf.float32),
-                                               'image_name': tf.FixedLenFeature([], tf.string),
-
+                                               'image_name': tf.FixedLenFeature([], tf.string)
                                            })
         landmarks = features['landmarks']
         pose = features['pose']

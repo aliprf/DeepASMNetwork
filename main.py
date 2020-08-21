@@ -9,7 +9,16 @@ from test import Test
 
 # from Train_Gan import TrainGan
 
+import img_printer as imgp
+
 if __name__ == '__main__':
+
+    # x = np.random.normal(size=100)
+    # imgp.print_histogram(x)
+    # imgp.print_histogram2d(data[0], data[1])
+    # imgp.print_histogram1()
+
+
     tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks*2)
     pca_utility = PCAUtility()
     cnn_model = CNNModel()
@@ -39,25 +48,26 @@ if __name__ == '__main__':
     # pca_utility.create_pca_from_npy(DatasetName.cofw, 90)
     # pca_utility.create_pca_from_npy(DatasetName.ibug, 90)
     # pca_utility.create_pca_from_npy(DatasetName.wflw, 90)
-    # pca_utility.test_pca_validity(DatasetName.wflw, 95)
+    # pca_utility.test_pca_validity(DatasetName.wflw, 80)
 
     '''     create tfRecord:'''
     # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug_test, dataset_type=None, heatmap=False, accuracy=100)
 
-    tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks * 2)
-    tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=True, accuracy=90, isTest=False)
-
-    tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks * 2)
-    tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=True, accuracy=90, isTest=False)
-
-    tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks * 2)
-    tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=True, accuracy=90, isTest=False)
+    # tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks * 2)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=True, accuracy=90, isTest=False)
+    #
+    # tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks * 2)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=True, accuracy=90, isTest=False)
+    #
+    # tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks * 2)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=True, accuracy=90, isTest=False)
 
     # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=False, accuracy=100)
     # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=100, isTest=False)
     # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=95, isTest=False)
 
     '''--> retrive and test tfRecords'''
+    # tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks*2)
     # tf_record_util.test_tf_record()
     # tf_record_util.test_tf_record_hm()
 
@@ -65,8 +75,8 @@ if __name__ == '__main__':
     # tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks * 2)
     # tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.ibug)
     #
-    # tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks * 2)
-    # tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.cofw)
+    tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks * 2)
+    tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.cofw)
     #
     # tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks * 2)
     # tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.wflw)
@@ -104,7 +114,13 @@ if __name__ == '__main__':
 
     '''for testing KT'''
     # test = Test(dataset_name=DatasetName.wflw_test, arch='mobileNetV2_nopose', num_output_layers=1,
+    #             weight_fname='weights-19--0.02211.h5', has_pose=True, )
+
+    # test = Test(dataset_name=DatasetName.wflw_test, arch='mobileNetV2_nopose', num_output_layers=1,
     #             weight_fname='weights-19--0.02211.h5', has_pose=True)
+
+    # test = Test(dataset_name=DatasetName.cofw_test, arch='mobileNetV2_nopose', num_output_layers=1,
+    #             weight_fname='cofw-noposeweights-41.h5', has_pose=True, customLoss=False)
 
     # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2_nopose', num_output_layers=2,
     #             weight_fname='weights-94--0.01342.h5', has_pose=True, customLoss=False)

@@ -138,7 +138,7 @@ class PCAUtility:
                 lbl_arr.append(points_arr)
                 img_arr.append(Image.open(img_file))
 
-        for i in range(20):
+        for i in range(100):
             b_vector_p = self.calculate_b_vector(lbl_arr[i], True, eigenvalues, eigenvectors, meanvector)
             lbl_new = meanvector + np.dot(eigenvectors, b_vector_p)
             lbl_new = lbl_new.tolist()

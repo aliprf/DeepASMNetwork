@@ -131,9 +131,9 @@ class W300Conf:
 
 
 class WflwConf:
-    Wflw_prefix_path = '/media/data3/ali/FL/wflw/'  # --> Zeus
+    # Wflw_prefix_path = '/media/data3/ali/FL/wflw/'  # --> Zeus
     # Wflw_prefix_path = '/media/data2/alip/FL/wflw/'  # --> Atlas
-    # Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
+    Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
 
     img_path_prefix = Wflw_prefix_path + 'all/'
     rotated_img_path_prefix = Wflw_prefix_path + '0_rotated/'
@@ -157,8 +157,8 @@ class WflwConf:
     tf_test_path_makeup = Wflw_prefix_path + 'test_makeup.tfrecords'
     tf_test_path_occlusion = Wflw_prefix_path + 'test_occlusion.tfrecords'
 
-    tf_train_path_95 = Wflw_prefix_path + 'train_95.tfrecords'
-    tf_evaluation_path_95 = Wflw_prefix_path + 'evaluation_95.tfrecords'
+    tf_train_path_95 = Wflw_prefix_path + 'train_90.tfrecords'
+    tf_evaluation_path_95 = Wflw_prefix_path + 'evaluation_90.tfrecords'
 
     orig_number_of_training = 7500
     orig_number_of_test = 2500
@@ -216,9 +216,9 @@ class CofwConf:
 class IbugConf:
 
     '''server_config'''
-    _Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
+    # _Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
     # _Ibug_prefix_path = '/media/data2/alip/FL/ibug/'  # --> Atlas
-    # _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
+    _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
 
     img_path_prefix = _Ibug_prefix_path + 'all/'
     rotated_img_path_prefix = _Ibug_prefix_path + '0_rotated/'
