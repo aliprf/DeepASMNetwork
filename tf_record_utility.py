@@ -1533,7 +1533,7 @@ class TFRecordUtility:
                                                                                  only_label=True)
         counter = 0
         # f = open("key_"+dataset_name, "a")
-        for lbl in lbl_arr:
+        for lbl in tqdm(lbl_arr):
             img_name = self._decode_tf_file_name(img_name_arr[counter].decode("utf-8"))
             landmark_key = lbl.tostring()
             # img_name = os.path.join(landmarks_dir, img_name)
