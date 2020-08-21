@@ -1513,6 +1513,7 @@ class TFRecordUtility:
         return out
 
     def create_point_imgpath_map_tf_record(self, dataset_name):
+        print('create_point_imgpath_map_tf_record')
         map = {}
         if dataset_name == DatasetName.ibug:
             tf_path = IbugConf.tf_train_path
