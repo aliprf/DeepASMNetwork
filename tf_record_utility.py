@@ -191,6 +191,8 @@ class TFRecordUtility:
 
 
     def retrieve_tf_record_train(self, tfrecord_filename, number_of_records, only_label=True):
+        print('retrieve_tf_record_train')
+
         with tf.Session() as sess:
             filename_queue = tf.train.string_input_producer([tfrecord_filename])
             image_raw, landmarks, pose, img_name = self.__read_and_decode(filename_queue)
@@ -2131,6 +2133,8 @@ class TFRecordUtility:
         return image_raw, landmarks, pose,  heatmap, image_name
 
     def __read_and_decode(self, filename_queue):
+        print('__read_and_decode')
+
         reader = tf.TFRecordReader()
         _, serialized_example = reader.read(filename_queue)
 
