@@ -75,7 +75,13 @@ if __name__ == '__main__':
     # tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks * 2)
     # tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.ibug)
     #
+    print("HI")
+
     tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks * 2)
+
+    print('fggg')
+    print("f")
+
     tf_record_util.create_point_imgpath_map_tf_record(dataset_name=DatasetName.cofw)
     #
     # tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks * 2)
