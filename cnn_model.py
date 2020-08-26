@@ -35,6 +35,9 @@ import scipy.io as sio
 from keras.engine import InputLayer
 # import coremltools
 
+import efficientnet.keras as efn
+
+
 class CNNModel:
     def get_model(self, train_images, arch, num_output_layers, output_len):
 
@@ -48,6 +51,9 @@ class CNNModel:
 
         elif arch == 'mobileNetV2_nopose':
             model = self.create_MobileNet_nopose(inp_tensor=train_images, output_len=output_len)
+
+        elif arch == 'efficientNet':
+            model = self.create_efficientNet(inp_shape=[224,224,3], input_tensor=train_images, output_len=output_len)
 
         return model
 
@@ -124,6 +130,50 @@ class CNNModel:
             json_file.write(model_json)
 
         return revised_model
+
+    def create_efficientNet(self, inp_shape, input_tensor, output_len, is_teacher=True):
+        if is_teacher:  # for teacher we use a heavier network
+            eff_net = efn.EfficientNetB3(include_top=True,
+                                         weights=None,
+                                         input_tensor=input_tensor,
+                                         input_shape=inp_shape,
+                                         pooling=None,
+                                         classes=output_len)
+            # return self._create_efficientNet_3deconv(inp_shape, input_tensor, output_len)
+        else:  # for student we use the small network
+            eff_net = efn.EfficientNetB0(include_top=True,
+                                         weights=None,
+                                         input_tensor=input_tensor,
+                                         input_shape=inp_shape,
+                                         pooling=None,
+                                         classes=output_len)  # or weights='noisy-student'
+
+        eff_net.layers.pop()
+        inp = eff_net.input
+
+        x = eff_net.get_layer('top_activation').output
+        x = GlobalAveragePooling2D()(x)
+        x = keras.layers.Dropout(rate=0.3)(x)
+        output = Dense(output_len, activation='linear', name='out')(x)
+
+        eff_net = Model(inp, output)
+
+        eff_net.summary()
+
+        # plot_model(eff_net, to_file='eff_net.png', show_shapes=True, show_layer_names=True)
+
+        # tf.keras.utils.plot_model(
+        #     eff_net,
+        #     to_file="eff_net.png",
+        #     show_shapes=False,
+        #     show_layer_names=True,
+        #     rankdir="TB"
+        # )
+
+        # model_json = eff_net.to_json()
+        # with open("eff_net.json", "w") as json_file:
+        #     json_file.write(model_json)
+        return eff_net
 
     def create_MobileNet(self, inp_tensor, output_len, inp_shape):
         mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=inp_shape,

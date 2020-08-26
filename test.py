@@ -339,12 +339,14 @@ class Test:
         image = np.expand_dims(img, axis=0)
         predict = model.predict(image)
 
-        if self.arch == 'mobileNetV2_nopose':
+        if self.arch == 'mobileNetV2_nopose' or 'efficientNet':
             pre_points = predict[0]
             pose_predicted = [0, 0, 0]
         else:
             pre_points = predict[0][0]
             pose_predicted = predict[1][0]
+
+        # pre_points = pre_points.reshape([196])
 
         labels_true_transformed, landmark_arr_x_t, landmark_arr_y_t = image_utility. \
             create_landmarks_from_normalized(labels_true, 224, 224, 112, 112)
@@ -360,7 +362,10 @@ class Test:
         ''''''
 
         '''test print'''
-        # imgpr.print_image_arr((counter + 1) * 1000, img, landmark_arr_x_p, landmark_arr_y_p)
+        # imgpr.print_image_arr(str((counter + 1))+'_img', img, [], [])
+        # imgpr.print_image_arr(str((counter + 1))+'_pred', img, landmark_arr_x_p, landmark_arr_y_p)
+        # imgpr.print_image_arr(str((counter + 1))+'_true', img, landmark_arr_x_t, landmark_arr_y_t)
+
         # imgpr.print_image_arr((counter + 1), img, landmark_arr_x_t, landmark_arr_y_t)
 
         # print("landmark_arr_x_t: " + str(landmark_arr_x_t))

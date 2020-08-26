@@ -9,8 +9,27 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy import stats
 import numpy as np
+import random
 
 from image_utility import ImageUtility
+
+def print_partial(counter, image, landmarks_arr):
+    image_utility = ImageUtility()
+    plt.figure()
+    plt.imshow(image)
+    implot = plt.imshow(image)
+
+    for lndm in landmarks_arr:
+        color = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
+        landmark_arr_xy, landmark_arr_x, landmark_arr_y = image_utility.create_landmarks_from_normalized(lndm, 224, 224, 112, 112)
+
+        plt.scatter(x=landmark_arr_x[:], y=landmark_arr_y[:], c=color, s=20)
+        plt.plot(landmark_arr_x, landmark_arr_y, '-ok', c=color)
+
+    plt.axis('off')
+    plt.savefig('name_' + str(counter) + '.png', bbox_inches='tight')
+    # plt.show()
+    plt.clf()
 
 def print_histogram2(counter, landmarks_arr):
     for data in landmarks_arr:
@@ -190,8 +209,8 @@ def print_image_arr(k, image, landmarks_x, landmarks_y):
     #              horizontalalignment='center', verticalalignment='center',
     #              bbox={'facecolor': 'blue', 'alpha': 0.3, 'pad': 0.0})
 
-    plt.scatter(x=landmarks_x[:], y=landmarks_y[:], c='black', s=50)
-    plt.scatter(x=landmarks_x[:], y=landmarks_y[:], c='green', s=45)
+    plt.scatter(x=landmarks_x[:], y=landmarks_y[:], c='#440047', s=60)
+    plt.scatter(x=landmarks_x[:], y=landmarks_y[:], c='#fbecec', s=10)
     plt.axis('off')
     plt.savefig('name_' + str(k) + '.png', bbox_inches='tight')
     # plt.show()

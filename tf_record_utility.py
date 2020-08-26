@@ -121,7 +121,7 @@ class TFRecordUtility:
     def test_tf_record_hm(self, ):
         image_utility = ImageUtility()
         lbl_arr, img_arr, pose_arr, hm_arr = self.retrieve_tf_record_hm(IbugConf.tf_test_path_challenging,
-                                                            number_of_records=20,
+                                                            number_of_records=100,
                                                              # number_of_records=WflwConf.orig_number_of_test,
                                                              only_label=False)
         counter = 0
@@ -136,9 +136,9 @@ class TFRecordUtility:
 
     def test_tf_record(self, ):
         image_utility = ImageUtility()
-        lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(WflwConf.tf_test_path,
-                                                             # number_of_records=100,
-                                                             number_of_records=WflwConf.orig_number_of_test,
+        lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(IbugConf.tf_test_path_challenging,
+                                                             number_of_records=10,
+                                                             # number_of_records=IbugConf.orig_number_of_training,
                                                              only_label=False)
         lbl_arr_norm = []
         lbl_arr_norm_asm = []
@@ -148,21 +148,21 @@ class TFRecordUtility:
             landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = \
                 image_utility.create_landmarks_from_normalized(lbl_arr[counter], 224, 224, 112, 112)
 
-            # imgpr.print_image_arr(str(counter), img_arr[counter], landmark_arr_x_n, landmark_arr_y_n)
+            imgpr.print_image_arr(str(counter), img_arr[counter], landmark_arr_x_n, landmark_arr_y_n)
             # imgpr.print_histogram1(counter, np.array(landmark_arr_flat_n).reshape([98, 2]))
 
-            lbl_arr_norm.append(landmark_arr_flat_n)
-            # lbl_arr_norm.append(lbl)
-            # lbl_arr_norm_asm.append(self._get_asm(lbl, 'wflw', 80))
-            lbl_arr_norm_asm.append(self._get_asm(landmark_arr_flat_n, 'wflw', 80))
+            # lbl_arr_norm.append(landmark_arr_flat_n)
+            # # lbl_arr_norm.append(lbl)
+            # # lbl_arr_norm_asm.append(self._get_asm(lbl, 'wflw', 80))
+            # lbl_arr_norm_asm.append(self._get_asm(landmark_arr_flat_n, 'wflw', 80))
 
             counter += 1
 
-        imgpr.print_histogram_plt('main', 'full', lbl_arr_norm)
-        imgpr.print_histogram_plt('asm', 'full', lbl_arr_norm_asm)
-
-        imgpr.print_histogram_plt('main', 'face', lbl_arr_norm)
-        imgpr.print_histogram_plt('asm', 'face', lbl_arr_norm_asm)
+        # imgpr.print_histogram_plt('main', 'full', lbl_arr_norm)
+        # imgpr.print_histogram_plt('asm', 'full', lbl_arr_norm_asm)
+        #
+        # imgpr.print_histogram_plt('main', 'face', lbl_arr_norm)
+        # imgpr.print_histogram_plt('asm', 'face', lbl_arr_norm_asm)
 
         return
 
@@ -1775,6 +1775,52 @@ class TFRecordUtility:
         writer_train.close()
         if tf_evaluation_path is not None:
             writer_evaluate.close()
+
+    def _create_face_graph(self, dataset_name, dataset_type):
+        if dataset_name == DatasetName.ibug:
+            img_dir = IbugConf.train_images_dir
+            landmarks_dir = IbugConf.normalized_points_npy_dir
+            pose_dir = IbugConf.pose_npy_dir
+            num_train_samples = IbugConf.number_of_train_sample
+
+        counter= 0
+        for file in os.listdir(img_dir):
+            if file.endswith(".jpg") or file.endswith(".png"):
+                img_file_name = os.path.join(img_dir, file)
+
+                '''load img and normalize it'''
+                img = Image.open(img_file_name)
+                # img = np.array(img) / 255.0
+
+                '''load landmark npy, (has been augmented already)'''
+                landmark_file_name = os.path.join(landmarks_dir, file[:-3] + "npy")
+                if not os.path.exists(landmark_file_name):
+                    continue
+                landmark = load(landmark_file_name)
+                self._create_ibug_graph(counter, img, landmark)
+                counter += 1
+
+    def _create_ibug_graph(self, counter, img, landmark):
+        face = landmark[0:34]
+        l_ebrow = landmark[34:44]
+        r_ebrow = landmark[44:54]
+        nose = landmark[54:72]
+        l_eye = landmark[72:84]
+        r_eye = landmark[84:96]
+        u_lip = np.append(landmark[96:110], landmark[120:130])
+        l_lip = np.append(landmark[110:120], landmark[130:136])
+
+        landmark_arr = []
+        landmark_arr.append(face)
+        landmark_arr.append(l_ebrow)
+        landmark_arr.append(r_ebrow)
+        landmark_arr.append(nose)
+        landmark_arr.append(l_eye)
+        landmark_arr.append(r_eye)
+        landmark_arr.append(u_lip)
+        landmark_arr.append(l_lip)
+        imgpr.print_partial(counter, img, landmark_arr)
+
 
     def _create_tfrecord_from_npy(self, dataset_name, dataset_type, isTest, accuracy=100):
         """we use this function when we have already created and nrmalzed both landmarks and poses"""
