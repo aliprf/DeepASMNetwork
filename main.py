@@ -43,7 +43,7 @@ if __name__ == '__main__':
     # tf_record_util.random_augment_from_rotated(dataset_name=DatasetName.wflw)
     '''     normalize the points and save'''
     # tf_record_util.normalize_points_and_save(dataset_name=DatasetName.wflw)
-    tf_record_util.test_normalize_points(dataset_name=DatasetName.wflw)
+    tf_record_util.test_normalize_points(dataset_name=DatasetName.ibug)
     '''     generate pose using hopeNet'''
     # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.cofw)
 
