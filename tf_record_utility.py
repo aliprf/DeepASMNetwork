@@ -120,7 +120,7 @@ class TFRecordUtility:
 
     def test_tf_record_hm(self, ):
         image_utility = ImageUtility()
-        lbl_arr, img_arr, pose_arr, hm_arr = self.retrieve_tf_record_hm(IbugConf.tf_train_path,
+        lbl_arr, img_arr, pose_arr, hm_arr = self.retrieve_tf_record_hm(WflwConf.tf_train_path,
                                                             number_of_records=100,
                                                              # number_of_records=WflwConf.orig_number_of_test,
                                                              only_label=False)

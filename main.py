@@ -69,8 +69,8 @@ if __name__ == '__main__':
     # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=False, accuracy=95, isTest=False)
 
     '''--> retrive and test tfRecords'''
-    # tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks*2)
-    tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks*2)
+    tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks*2)
+    # tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks*2)
     # tf_record_util.test_tf_record()
     tf_record_util.test_tf_record_hm()
 
