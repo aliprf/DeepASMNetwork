@@ -132,8 +132,8 @@ class W300Conf:
 
 class WflwConf:
     # Wflw_prefix_path = '/media/data3/ali/FL/wflw/'  # --> Zeus
-    Wflw_prefix_path = '/media/data2/alip/FL/wflw/'  # --> Atlas
-    # Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
+    # Wflw_prefix_path = '/media/data2/alip/FL/wflw/'  # --> Atlas
+    Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
 
     img_path_prefix = Wflw_prefix_path + 'all/'
     rotated_img_path_prefix = Wflw_prefix_path + '0_rotated/'
@@ -175,8 +175,8 @@ class WflwConf:
     # number_of_train_sample = int(number_of_all_sample * 0.95)  # 95 % for train
     number_of_evaluation_sample = int(number_of_all_sample * 0.05) # 5% for evaluation
 
-    augmentation_factor = 4  # create . image from 1
-    augmentation_factor_rotate = 15  # create . image from 1
+    augmentation_factor = 1  # create . image from 4
+    augmentation_factor_rotate = 3  # create . image from 15
     num_of_landmarks = 98
 
 class CofwConf:
@@ -218,8 +218,8 @@ class IbugConf:
 
     '''server_config'''
     # _Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
-    _Ibug_prefix_path = '/media/data2/alip/FL/ibug/'  # --> Atlas
-    # _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
+    # _Ibug_prefix_path = '/media/data2/alip/FL/ibug/'  # --> Atlas
+    _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
 
     img_path_prefix = _Ibug_prefix_path + 'all/'
     rotated_img_path_prefix = _Ibug_prefix_path + '0_rotated/'

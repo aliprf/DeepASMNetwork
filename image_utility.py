@@ -454,10 +454,10 @@ class ImageUtility:
 
 
     def cropImg_2time(self, img, x_s, y_s):
-        min_x = max(0, int(min(x_s) - 50))
-        max_x = int(max(x_s) + 50)
-        min_y = max(0, int(min(y_s) - 50))
-        max_y = int(max(y_s) + 50)
+        min_x = max(0, int(min(x_s) - 10))
+        max_x = int(max(x_s) + 10)
+        min_y = max(0, int(min(y_s) - 10))
+        max_y = int(max(y_s) + 10)
 
         crop = img[min_y:max_y, min_x:max_x]
 
@@ -473,10 +473,10 @@ class ImageUtility:
         return crop, new_xy_s
 
     def cropImg(self, img, x_s, y_s, no_padding=False):
-        margin1 = random.randint(5, 20)
-        margin2 = random.randint(5, 20)
-        margin3 = random.randint(5, 20)
-        margin4 = random.randint(5, 20)
+        margin1 = random.randint(0, 10)
+        margin2 = random.randint(0, 10)
+        margin3 = random.randint(0, 10)
+        margin4 = random.randint(0, 10)
 
         if no_padding:
             min_x = max(0, int(min(x_s)))

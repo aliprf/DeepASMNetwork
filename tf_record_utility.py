@@ -653,6 +653,48 @@ class TFRecordUtility:
                 counter += 1
         print("detect_pose_and_save DONE.")
 
+    def test_normalize_points(self, dataset_name):
+        img_util = ImageUtility()
+
+        if dataset_name == DatasetName.ibug:
+            images_dir = IbugConf.train_images_dir
+            normalized_points_npy_dir = IbugConf.normalized_points_npy_dir
+            num_of_landmarks = IbugConf.num_of_landmarks
+        elif dataset_name == DatasetName.cofw:
+            images_dir = CofwConf.train_images_dir
+            normalized_points_npy_dir = CofwConf.normalized_points_npy_dir
+            num_of_landmarks = CofwConf.num_of_landmarks
+        elif dataset_name == DatasetName.wflw:
+            images_dir = WflwConf.train_images_dir
+            normalized_points_npy_dir = WflwConf.normalized_points_npy_dir
+            num_of_landmarks = WflwConf.num_of_landmarks
+        elif dataset_name == DatasetName.cofw_test:
+            images_dir = CofwConf.test_images_dir
+            normalized_points_npy_dir = CofwConf.test_normalized_points_npy_dir
+            num_of_landmarks = CofwConf.num_of_landmarks
+
+        elif dataset_name == DatasetName.wflw_test:
+            images_dir = WflwConf.test_images_dir
+            normalized_points_npy_dir = WflwConf.test_normalized_points_npy_dir
+            num_of_landmarks = WflwConf.num_of_landmarks
+        elif dataset_name == DatasetName.ibug_test:
+            images_dir = IbugConf.test_images_dir
+            normalized_points_npy_dir = IbugConf.test_normalized_points_npy_dir
+            num_of_landmarks = IbugConf.num_of_landmarks
+
+        counter = 1
+        for file in tqdm(os.listdir(normalized_points_npy_dir)):
+            img_name = os.path.join(images_dir, str(file)[:-3] + "jpg")
+            img = Image.open(img_name)
+            if file.endswith(".npy"):
+                points_arr = []
+                file_name = os.path.join(normalized_points_npy_dir, file)
+                points_arr = load(file_name)
+
+                landmark_arr_xy, landmark_arr_x, landmark_arr_y = img_util.create_landmarks_from_normalized(points_arr, 224, 224, 112, 112)
+                imgpr.print_image_arr(counter + 1, img, landmark_arr_x, landmark_arr_y)
+                counter += 1
+
     def normalize_points_and_save(self, dataset_name):
         img_util = ImageUtility()
 
