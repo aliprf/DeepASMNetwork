@@ -136,7 +136,8 @@ class WflwConf:
     Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
 
     img_path_prefix = Wflw_prefix_path + 'all/'
-    rotated_img_path_prefix = Wflw_prefix_path + '0_rotated/'
+    # rotated_img_path_prefix = Wflw_prefix_path + '0_rotated/'
+    rotated_img_path_prefix = Wflw_prefix_path + '1_train_images_pts_dir/'
     train_images_dir = Wflw_prefix_path + '1_train_images_pts_dir/'
     normalized_points_npy_dir = Wflw_prefix_path + '2_normalized_npy_dir/'
     pose_npy_dir = Wflw_prefix_path + '4_pose_npy_dir/'
@@ -175,8 +176,8 @@ class WflwConf:
     # number_of_train_sample = int(number_of_all_sample * 0.95)  # 95 % for train
     number_of_evaluation_sample = int(number_of_all_sample * 0.05) # 5% for evaluation
 
-    augmentation_factor = 1  # create . image from 4
-    augmentation_factor_rotate = 3  # create . image from 15
+    augmentation_factor = 4  # create . image from 4
+    augmentation_factor_rotate = 15  # create . image from 15
     num_of_landmarks = 98
 
 class CofwConf:
@@ -185,7 +186,8 @@ class CofwConf:
     Cofw_prefix_path = '/media/ali/data/cofw/'  # --> local
 
     img_path_prefix = Cofw_prefix_path + 'all/'
-    rotated_img_path_prefix = Cofw_prefix_path + '0_rotated/'
+    # rotated_img_path_prefix = Cofw_prefix_path + '0_rotated/'
+    rotated_img_path_prefix = Cofw_prefix_path + '1_train_images_pts_dir/'
     train_images_dir = Cofw_prefix_path + '1_train_images_pts_dir/'
     normalized_points_npy_dir = Cofw_prefix_path + '2_normalized_npy_dir/'
     pose_npy_dir = Cofw_prefix_path + '4_pose_npy_dir/'
@@ -216,12 +218,13 @@ class CofwConf:
 
 class IbugConf:
     '''server_config'''
-    _Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
+    # _Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
     # _Ibug_prefix_path = '/media/data2/alip/FL/ibug/'  # --> Atlas
-    # _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
+    _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
 
     img_path_prefix = _Ibug_prefix_path + 'all/'
-    rotated_img_path_prefix = _Ibug_prefix_path + '0_rotated/'
+    # rotated_img_path_prefix = _Ibug_prefix_path + '0_rotated/'
+    rotated_img_path_prefix = _Ibug_prefix_path + '1_train_images_pts_dir/'
     train_images_dir = _Ibug_prefix_path + '1_train_images_pts_dir/'
     normalized_points_npy_dir = _Ibug_prefix_path + '2_normalized_npy_dir/'
     pose_npy_dir = _Ibug_prefix_path + '4_pose_npy_dir/'

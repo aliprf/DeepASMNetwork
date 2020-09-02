@@ -10,25 +10,43 @@ from scipy import stats
 import numpy as np
 import random
 
+import PIL.ImageDraw as ImageDraw
+import PIL.Image as Image
+from configuration import InputDataSize
 from image_utility import ImageUtility
 
-def print_partial(counter, image, landmarks_arr):
+def print_partial(counter, img, landmarks_arr):
     image_utility = ImageUtility()
-    plt.figure()
-    plt.imshow(image)
-    implot = plt.imshow(image)
+    # plt.figure()
+    # plt.imshow(img)
+    # implot = plt.imshow(img)
 
+    index =0
     for lndm in landmarks_arr:
-        color = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
+        image = Image.new("L", (InputDataSize.image_input_size // 4, InputDataSize.image_input_size // 4))
+        draw = ImageDraw.Draw(image)
+
+        # color = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
         landmark_arr_xy, landmark_arr_x, landmark_arr_y = image_utility.create_landmarks_from_normalized(lndm, 224, 224, 112, 112)
 
-        plt.scatter(x=landmark_arr_x[:], y=landmark_arr_y[:], c=color, s=20)
-        plt.plot(landmark_arr_x, landmark_arr_y, '-ok', c=color)
+        # plt.scatter(x=landmark_arr_x[:], y=landmark_arr_y[:], c=color, s=20)
+        # plt.plot(landmark_arr_x, landmark_arr_y, '-ok', c=color)
 
-    plt.axis('off')
-    plt.savefig('name_' + str(counter) + '.png', bbox_inches='tight')
-    # plt.show()
-    plt.clf()
+        # if index == 4 or index == 5 or index == 6 or index == 7:
+        #     draw.polygon((landmark_arr_xy), fill='#ffffff')
+
+        landmark_arr_xy = (np.array(landmark_arr_xy) // 4).tolist()
+        draw.line((landmark_arr_xy), fill='#ffffff', width=2)
+
+        img_np = np.asarray(image)
+        plt.imshow(img_np)
+        image.save('0_name_' + str(counter) + '_' + str(index) + '.png')
+        index += 1
+
+    # plt.axis('off')
+    # plt.savefig('name_' + str(counter) + '.png', bbox_inches='tight')
+    # # plt.show()
+    # plt.clf()
 
 def print_histogram2(counter, landmarks_arr):
     for data in landmarks_arr:
@@ -203,10 +221,10 @@ def print_image_arr(k, image, landmarks_x, landmarks_y):
     plt.imshow(image)
     implot = plt.imshow(image)
 
-    # for i in range(len(landmarks_x)):
-    #     plt.text(landmarks_x[i], landmarks_y[i], str(i), fontsize=12, c='red',
-    #              horizontalalignment='center', verticalalignment='center',
-    #              bbox={'facecolor': 'blue', 'alpha': 0.3, 'pad': 0.0})
+    for i in range(len(landmarks_x)):
+        plt.text(landmarks_x[i], landmarks_y[i], str(i), fontsize=12, c='red',
+                 horizontalalignment='center', verticalalignment='center',
+                 bbox={'facecolor': 'blue', 'alpha': 0.3, 'pad': 0.0})
 
     plt.scatter(x=landmarks_x[:], y=landmarks_y[:], c='#440047', s=60)
     plt.scatter(x=landmarks_x[:], y=landmarks_y[:], c='#fbecec', s=10)

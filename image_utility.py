@@ -81,7 +81,9 @@ class ImageUtility:
 
             _image, _label = self.cropImg_2time(_image, x_points, y_points)
 
-            scale = (np.random.uniform(0.7, 1.3), np.random.uniform(0.7, 1.3))
+            _image = self.__noisy(_image)
+
+            scale = (np.random.uniform(0.8, 1.0), np.random.uniform(0.8, 1.0))
             # scale = (1, 1)
 
             rot = np.random.uniform(-1 * 0.55, 0.55)
@@ -256,11 +258,12 @@ class ImageUtility:
         shear = 0
 
         # rot = 0.0
-        # scale = (1, 1)
+        '''this scale has problem'''
+        # scale = (random.uniform(0.8, 1.00), random.uniform(0.8, 1.00))
 
-        rot = np.random.uniform(-1 * 0.009, 0.009)
+        scale = (1, 1)
 
-        scale = (random.uniform(0.9, 1.00), random.uniform(0.9, 1.00))
+        rot = np.random.uniform(-1 * 0.008, 0.008)
 
         tform = AffineTransform(scale=scale, rotation=rot, shear=shear,
                                 translation=(0, 0))
@@ -285,20 +288,20 @@ class ImageUtility:
         return t_label, output_img
 
     def __noisy(self, image):
-        noise_typ = random.randint(0, 3)
-        if noise_typ == 0 :#"gauss":
-            row, col, ch = image.shape
-            mean = 0
-            var = 0.1
-            sigma = var ** 0.5
-            gauss = np.random.normal(mean, sigma, (row, col, ch))
-            gauss = gauss.reshape(row, col, ch)
-            noisy = image + gauss
-            return noisy
-        elif noise_typ == 1 :# "s&p":
+        noise_typ = random.randint(0, 5)
+        # if True or noise_typ == 0 :#"gauss":
+        #     row, col, ch = image.shape
+        #     mean = 0
+        #     var = 0.001
+        #     sigma = var ** 0.1
+        #     gauss = np.random.normal(mean, sigma, (row, col, ch))
+        #     gauss = gauss.reshape(row, col, ch)
+        #     noisy = image + gauss
+        #     return noisy
+        if 1 <= noise_typ <= 2:# "s&p":
             row, col, ch = image.shape
             s_vs_p = 0.5
-            amount = 0.004
+            amount = 0.04
             out = np.copy(image)
             # Salt mode
             num_salt = np.ceil(amount * image.size * s_vs_p)
@@ -313,12 +316,12 @@ class ImageUtility:
             out[coords] = 0
             return out
 
-        elif noise_typ == 2: #"speckle":
-            row, col, ch = image.shape
-            gauss = np.random.randn(row, col, ch)
-            gauss = gauss.reshape(row, col, ch)
-            noisy = image + image * gauss
-            return noisy
+        # elif 5 <=noise_typ <= 7: #"speckle":
+        #     row, col, ch = image.shape
+        #     gauss = np.random.randn(row, col, ch)
+        #     gauss = gauss.reshape(row, col, ch)
+        #     noisy = image + image * gauss
+        #     return noisy
         else:
             return image
 
@@ -428,11 +431,12 @@ class ImageUtility:
         return landmark_arr_xy, landmark_arr_x, landmark_arr_y
 
     def random_augmentation(self, lbl, img, number_of_landmark):
-        # a = random.randint(0, 1)
+        # a = random.randint(0, 2)
         # if a == 0:
         #     img, lbl = self.__add_margin(img, img.shape[0], lbl)
 
-        img, lbl = self.__add_margin(img, img.shape[0], lbl)
+        '''this function has problem!!!'''
+        # img, lbl = self.__add_margin(img, img.shape[0], lbl)
 
         # else:
         #     img, lbl = self.__negative_crop(img, lbl)
@@ -445,19 +449,21 @@ class ImageUtility:
         # else:
         #     img, lbl = self.__rotate(img, lbl, 270, img.shape[0], img.shape[1])
 
-        k = random.randint(0, 3)
-        if k > 0:
-            img = self.__change_color(img)
+        # k = random.randint(0, 3)
+        # if k > 0:
+        #     img = self.__change_color(img)
+        #
+        img = self.__noisy(img)
 
         lbl = np.reshape(lbl, [number_of_landmark*2])
         return lbl, img
 
 
     def cropImg_2time(self, img, x_s, y_s):
-        min_x = max(0, int(min(x_s) - 10))
-        max_x = int(max(x_s) + 10)
-        min_y = max(0, int(min(y_s) - 10))
-        max_y = int(max(y_s) + 10)
+        min_x = max(0, int(min(x_s) - 100))
+        max_x = int(max(x_s) + 100)
+        min_y = max(0, int(min(y_s) - 100))
+        max_y = int(max(y_s) + 100)
 
         crop = img[min_y:max_y, min_x:max_x]
 

@@ -19,12 +19,12 @@ if __name__ == '__main__':
     # imgp.print_histogram1()
 
 
-    tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks*2)
     pca_utility = PCAUtility()
     cnn_model = CNNModel()
     image_utility = ImageUtility()
 
-    # tf_record_util._create_face_graph(dataset_name=DatasetName.ibug, dataset_type=None)
+    tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks*2)
+    tf_record_util._create_face_graph(dataset_name=DatasetName.wflw, dataset_type=None)
 
     # tf_record_util.test_hm_accuracy()
     # tf_record_util.create_adv_att_img_hm()
@@ -38,12 +38,12 @@ if __name__ == '__main__':
 
     '''--> Preparing Train Data process:'''
     '''     augment, normalize, and save pts'''
-    tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks*2)
-    # tf_record_util.rotaate_and_save(dataset_name=DatasetName.wflw)
-    # tf_record_util.random_augment_from_rotated(dataset_name=DatasetName.wflw)
+    tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks*2)
+    # tf_record_util.rotaate_and_save(dataset_name=DatasetName.ibug)
+    # we dont need to use this now# tf_record_util.random_augment_from_rotated(dataset_name=DatasetName.ibug)
     '''     normalize the points and save'''
-    # tf_record_util.normalize_points_and_save(dataset_name=DatasetName.wflw)
-    tf_record_util.test_normalize_points(dataset_name=DatasetName.ibug)
+    # tf_record_util.normalize_points_and_save(dataset_name=DatasetName.ibug)
+    # tf_record_util.test_normalize_points(dataset_name=DatasetName.ibug)
     '''     generate pose using hopeNet'''
     # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.cofw)
 
@@ -58,10 +58,10 @@ if __name__ == '__main__':
     # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug_test, dataset_type=None, heatmap=False, accuracy=100)
 
     # tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks * 2)
-    # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=True, accuracy=90, isTest=False)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug, dataset_type=None, heatmap=True, accuracy=100, isTest=False)
     #
     # tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks * 2)
-    # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=True, accuracy=90, isTest=False)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw, dataset_type=None, heatmap=True, accuracy=100, isTest=False)
     #
     # tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks * 2)
     # tf_record_util.create_tf_record(dataset_name=DatasetName.wflw, dataset_type=None, heatmap=True, accuracy=100, isTest=False)
@@ -72,7 +72,7 @@ if __name__ == '__main__':
 
     '''--> retrive and test tfRecords'''
     # tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks*2)
-    # tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks*2)
+    tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks*2)
     # tf_record_util.test_tf_record()
     # tf_record_util.test_tf_record_hm()
 

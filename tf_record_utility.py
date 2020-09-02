@@ -24,7 +24,8 @@ from pca_utility import PCAUtility
 import pickle
 
 from pose_detection.code.PoseDetector import PoseDetector
-
+import PIL.ImageDraw as ImageDraw
+import PIL.Image as Image
 
 class TFRecordUtility:
     def __init__(self, number_of_landmark):
@@ -137,7 +138,7 @@ class TFRecordUtility:
     def test_tf_record(self, ):
         image_utility = ImageUtility()
         lbl_arr, img_arr, pose_arr = self.retrieve_tf_record(IbugConf.tf_test_path_challenging,
-                                                             number_of_records=10,
+                                                             number_of_records=50,
                                                              # number_of_records=IbugConf.orig_number_of_training,
                                                              only_label=False)
         lbl_arr_norm = []
@@ -148,7 +149,18 @@ class TFRecordUtility:
             landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = \
                 image_utility.create_landmarks_from_normalized(lbl_arr[counter], 224, 224, 112, 112)
 
-            imgpr.print_image_arr(str(counter), img_arr[counter], landmark_arr_x_n, landmark_arr_y_n)
+            # imgpr.print_image_arr(str(counter), np.zeros([224,224]) , landmark_arr_x_n, landmark_arr_y_n)
+            # imgpr.print_image_arr(str(counter)+'_img_', img_arr[counter], [], [])
+            # imgpr.print_image_arr(str(counter)+'_img_',img_arr[counter], landmark_arr_x_n, landmark_arr_y_n)
+
+            # landmark_90 = self._get_asm(lbl_arr[counter], 'ibug', 85)
+
+            '''test image '''
+            # landmark_arr_xy, landmark_arr_x, landmark_arr_y = image_utility.\
+            #     create_landmarks_from_normalized(landmark_90, 224, 224, 112, 112)
+            # imgpr.print_image_arr(str(counter)+'_90_', np.zeros([224,224]), landmark_arr_x, landmark_arr_y)
+
+
             # imgpr.print_histogram1(counter, np.array(landmark_arr_flat_n).reshape([98, 2]))
 
             # lbl_arr_norm.append(landmark_arr_flat_n)
@@ -687,6 +699,8 @@ class TFRecordUtility:
             img_name = os.path.join(images_dir, str(file)[:-3] + "jpg")
             img = Image.open(img_name)
             if file.endswith(".npy"):
+                # if file != '2050002.npy':
+                #     continue
                 points_arr = []
                 file_name = os.path.join(normalized_points_npy_dir, file)
                 points_arr = load(file_name)
@@ -730,6 +744,9 @@ class TFRecordUtility:
                 points_arr = []
                 file_name = os.path.join(images_dir, file)
                 file_name_save = str(file)[:-3] + "npy"
+
+                img_name_save = os.path.join(images_dir, str(file)[:-3] + "jpg")
+                img = Image.open(img_name_save)
                 with open(file_name) as fp:
                     line = fp.readline()
                     cnt = 1
@@ -749,15 +766,15 @@ class TFRecordUtility:
                 np_path = normalized_points_npy_dir + file_name_save
 
                 '''these are for test'''
-                # image_utility = ImageUtility()
-                # landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = image_utility.\
-                #     create_landmarks_from_normalized(normalized_points,
-                #                                      InputDataSize.image_input_size,
-                #                                      InputDataSize.image_input_size,
-                #                                      InputDataSize.image_input_size/2,
-                #                                      InputDataSize.image_input_size/2
-                #                                      )
-                # imgpr.print_image_arr(counter+1, np.zeros([224, 224]), landmark_arr_x_n, landmark_arr_y_n)
+                image_utility = ImageUtility()
+                landmark_arr_flat_n, landmark_arr_x_n, landmark_arr_y_n = image_utility.\
+                    create_landmarks_from_normalized(normalized_points,
+                                                     InputDataSize.image_input_size,
+                                                     InputDataSize.image_input_size,
+                                                     InputDataSize.image_input_size/2,
+                                                     InputDataSize.image_input_size/2
+                                                     )
+                imgpr.print_image_arr(counter+1, img, landmark_arr_x_n, landmark_arr_y_n)
                 ''''''
                 save(np_path, normalized_points)
                 counter += 1
@@ -1366,6 +1383,10 @@ class TFRecordUtility:
                 img_file = pts_file_arr[i].split('#')[0] + ".jpg"
             else:
                 img_file = pts_file_arr[i][:-3] + "jpg"
+                if not os.path.exists(img_file):
+                    img_file = pts_file_arr[i][:-3] + "png"
+                    if not os.path.exists(img_file):
+                        continue
 
             points_arr = []
             with open(pts_file) as fp:
@@ -1429,7 +1450,7 @@ class TFRecordUtility:
             number_of_samples = IbugConf.orig_number_of_test_challenging
             rotated_img_path_prefix = IbugConf.test_img_path_prefix
             num_of_landmarks = IbugConf.num_of_landmarks
-            augmentation_factor = 1
+            augmentation_factor = IbugConf.augmentation_factor
             train_images_dir = IbugConf.test_images_dir
 
         png_file_arr = []
@@ -1661,6 +1682,8 @@ class TFRecordUtility:
         return file_name
 
     def _create_tfrecord_from_npy_hm(self, dataset_name, dataset_type, isTest, accuracy=100):
+        img_utils =ImageUtility()
+
         if dataset_name == DatasetName.ibug:
             img_dir = IbugConf.train_images_dir
             landmarks_dir = IbugConf.normalized_points_npy_dir
@@ -1763,6 +1786,7 @@ class TFRecordUtility:
                 img = np.array(img) / 255.0
 
                 '''load landmark npy, (has been augmented already)'''
+                #
                 landmark_file_name = os.path.join(landmarks_dir, file[:-3] + "npy")
                 if not os.path.exists(landmark_file_name):
                     continue
@@ -1771,12 +1795,16 @@ class TFRecordUtility:
                 '''load pose npy'''
                 pose_file_name = os.path.join(pose_dir, file[:-3] + "npy")
                 if not os.path.exists(pose_file_name):
-                    continue
-                pose = load(pose_file_name)
+                    pose = [0, 0, 0]
+                else:
+                    pose = load(pose_file_name)
                 '''create new landmark using accuracy'''
                 if accuracy != 100:
                     landmark = self._get_asm(landmark, dataset_name, accuracy)
-                    '''test image after ASM: '''
+
+                '''test image '''
+                landmark_arr_xy, landmark_arr_x, landmark_arr_y = img_utils.create_landmarks_from_normalized(landmark, 224, 224, 112, 112)
+                imgpr.print_image_arr(counter + 1, img, landmark_arr_x, landmark_arr_y)
 
                 '''prepare img'''
                 writable_img = np.reshape(img, [InputDataSize.image_input_size * InputDataSize.image_input_size * 3])
@@ -1822,8 +1850,17 @@ class TFRecordUtility:
         if dataset_name == DatasetName.ibug:
             img_dir = IbugConf.train_images_dir
             landmarks_dir = IbugConf.normalized_points_npy_dir
-            pose_dir = IbugConf.pose_npy_dir
             num_train_samples = IbugConf.number_of_train_sample
+
+        if dataset_name == DatasetName.wflw:
+            img_dir = WflwConf.train_images_dir
+            landmarks_dir = WflwConf.normalized_points_npy_dir
+            num_train_samples = WflwConf.number_of_train_sample
+
+        if dataset_name == DatasetName.cofw:
+            img_dir = CofwConf.train_images_dir
+            landmarks_dir = CofwConf.normalized_points_npy_dir
+            num_train_samples = CofwConf.number_of_train_sample
 
         counter= 0
         for file in os.listdir(img_dir):
@@ -1832,30 +1869,95 @@ class TFRecordUtility:
 
                 '''load img and normalize it'''
                 img = Image.open(img_file_name)
-                # img = np.array(img) / 255.0
 
                 '''load landmark npy, (has been augmented already)'''
                 landmark_file_name = os.path.join(landmarks_dir, file[:-3] + "npy")
                 if not os.path.exists(landmark_file_name):
                     continue
                 landmark = load(landmark_file_name)
-                self._create_ibug_graph(counter, img, landmark)
+
+                if dataset_name == DatasetName.ibug:
+                    self._create_ibug_graph(counter, img, landmark)
+
+                if dataset_name == DatasetName.cofw:
+                    self._create_cofw_graph(counter, img, landmark)
+
+                if dataset_name == DatasetName.wflw:
+                    self._create_wflw_graph(counter, img, landmark)
+
                 counter += 1
 
+    def _create_wflw_graph(self, counter, img, landmark):
+        face = np.array(landmark[0:66])
+        l_ebrow = np.append(landmark[66:84], landmark[66:68])
+        r_ebrow = np.append(landmark[84:102], landmark[84:86])
+        l_eye = np.append(landmark[120:136], landmark[120:122])
+        r_eye = np.append(landmark[136:152], landmark[136:138])
+        nose = np.append(landmark[102:120], landmark[108:110])
+        u_mouth = np.append(landmark[152:166], np.array([landmark[184:186], landmark[182:184], landmark[180:182],
+                                                         landmark[178:180], landmark[176:178], landmark[152:154]]))
+
+        l_mouth = np.append(landmark[164:176], np.array([landmark[152:154], landmark[176:178], landmark[190:192],
+                                                         landmark[188:190], landmark[186:188], landmark[184:186]]))
+
+        landmark_arr = []
+
+        landmark_arr.append(face)
+        landmark_arr.append(l_ebrow)
+        landmark_arr.append(r_ebrow)
+        landmark_arr.append(l_eye)
+        landmark_arr.append(r_eye)
+        landmark_arr.append(nose)
+        landmark_arr.append(u_mouth)
+        landmark_arr.append(l_mouth)
+
+        imgpr.print_partial(counter, img, landmark_arr)
+
+    def _create_cofw_graph(self, counter, img, landmark):
+
+        l_ebrow = np.array([landmark[0:2], landmark[8:10], landmark[4:6], landmark[10:12], landmark[0:2]]).reshape([10])
+        r_ebrow = np.array([landmark[2:4], landmark[12:14], landmark[6:8], landmark[14:16], landmark[2:4]]).reshape([10])
+
+        r_eye = np.array([landmark[16:18], landmark[24:26], landmark[20:22], landmark[26:28], landmark[16:18]]).reshape([10])
+        l_eye = np.array([landmark[18:20], landmark[28:30], landmark[22:24], landmark[30:32], landmark[18:20]]).reshape([10])
+        nose = np.array([landmark[36:38], landmark[40:42], landmark[38:40], landmark[36:38]]).reshape([8])
+        mouth = np.array([landmark[44:46], landmark[48:50], landmark[46:48],
+                          landmark[54:56], landmark[44:46], landmark[52:54], landmark[46:48]]).reshape([14])
+
+        landmark_arr = []
+
+        landmark_arr.append(l_ebrow)
+        landmark_arr.append(r_ebrow)
+        landmark_arr.append(l_eye)
+        landmark_arr.append(r_eye)
+        landmark_arr.append(nose)
+        landmark_arr.append(mouth)
+
+        imgpr.print_partial(counter, img, landmark_arr)
+
     def _create_ibug_graph(self, counter, img, landmark):
-        face = landmark[0:34]
-        l_ebrow = landmark[34:44]
-        r_ebrow = landmark[44:54]
-        nose = landmark[54:72]
-        l_eye = landmark[72:84]
-        r_eye = landmark[84:96]
-        u_lip = np.append(landmark[96:110], landmark[120:130])
-        l_lip = np.append(landmark[110:120], landmark[130:136])
+
+        face = landmark[0:34] # line
+        l_ebrow = landmark[34:44] # line
+        r_ebrow = landmark[44:54] # line
+
+        nose_bridge = landmark[54:62] # line
+        nose = np.append(landmark[60:72], landmark[60:62])
+        nose = np.append(nose, np.array([landmark[54:56], landmark[62:64]]))
+        nose = np.append(nose, np.array([landmark[54:56], landmark[70:72]]))
+
+        l_eye = np.append(landmark[72:84], landmark[72:74])
+        r_eye = np.append(landmark[84:96], landmark[84:86])
+        u_lip = np.append(landmark[96:110], np.array([landmark[128:130], landmark[126:128],
+                                                      landmark[124:126], landmark[122:124],landmark[120:122]]))
+        l_lip = np.append(landmark[110:120], np.array([landmark[134:136],
+                                                       landmark[132:134],landmark[130:132], landmark[110:112]]))
 
         landmark_arr = []
         landmark_arr.append(face)
         landmark_arr.append(l_ebrow)
         landmark_arr.append(r_ebrow)
+        landmark_arr.append(nose_bridge)
         landmark_arr.append(nose)
         landmark_arr.append(l_eye)
         landmark_arr.append(r_eye)
