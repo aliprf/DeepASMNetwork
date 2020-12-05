@@ -29,10 +29,10 @@ class Train:
 
         if dataset_name == DatasetName.ibug or dataset_name == DatasetName.w300:
             self.num_landmark = IbugConf.num_of_landmarks * 2
-            self.img_path = IbugConf.no_aug_train_image
-            self.annotation_path = IbugConf.no_aug_train_annotation
-            # self.img_path = IbugConf.augmented_train_image
-            # self.annotation_path = IbugConf.augmented_train_annotation
+            # self.img_path = IbugConf.no_aug_train_image
+            # self.annotation_path = IbugConf.no_aug_train_annotation
+            self.img_path = IbugConf.augmented_train_image
+            self.annotation_path = IbugConf.augmented_train_annotation
 
         if dataset_name == DatasetName.cofw:
             self.num_landmark = CofwConf.num_of_landmarks * 2
