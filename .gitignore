@@ -2,7 +2,9 @@
 __pycache__/
 *.csv
 *.mat
-*.npy
+#*.npy
+train_logs/fit/*
+/file_names/*
 *.pyc
 *.tmp
 *.json
