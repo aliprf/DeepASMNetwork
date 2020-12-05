@@ -5,20 +5,16 @@ from cnn_model import CNNModel
 from pca_utility import PCAUtility
 from image_utility import ImageUtility
 from Data_custom_generator import CustomHeatmapGenerator
-import tensorflow as tf
-import keras
+from test import Test
 
-tf.logging.set_verbosity(tf.logging.ERROR)
-from keras import backend as K
+import tensorflow as tf
+import tensorflow.keras as keras
+
+from tensorflow.keras import backend as K
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-
-import cv2
-import os.path
-from keras.utils.vis_utils import plot_model
 from scipy.spatial import distance
-import scipy.io as sio
 import img_printer as imgpr
 from numpy import load, save
 
@@ -28,8 +24,83 @@ class Custom_losses:
         self.dataset_name = dataset_name
         self.accuracy = accuracy
 
+    def asm_assisted_loss(self, x_pr, x_gt, x_asm, x_asm_prime, main_loss_weight, asm_loss_weight, fw_loss_weight,
+                          ds_name, bold_landmarks_point_map):
+        loss_main = 20 * main_loss_weight * tf.reduce_mean(
+            tf.math.multiply(bold_landmarks_point_map, tf.square(x_gt - x_pr)))
+        loss_asm = 20 * asm_loss_weight * tf.abs(tf.reduce_mean(tf.math.multiply(bold_landmarks_point_map, tf.square(x_asm - x_pr))) -
+                                              tf.reduce_mean(tf.math.multiply(bold_landmarks_point_map, tf.square(x_asm_prime - x_pr))))
 
-    def asm_assisted_loss(self, yTrue, yPred):
+        loss_fw = fw_loss_weight * self.calculate_fw_loss(x_pr=x_pr, x_gt=x_gt, ds_name=ds_name)
+
+        loss_total = loss_main + loss_asm + loss_fw
+        return loss_total, loss_main, loss_asm, loss_fw
+
+    def calculate_fw_loss(self, x_pr, x_gt, ds_name):
+        # inter_ocular_dist = np.array(
+        #     [np.float64(self.calculate_inter_occular_distance(anno_GT=x_gt[i], ds_name=ds_name))
+        #      for i in range(LearningConfig.batch_size)])
+
+        if ds_name == DatasetName.cofw:
+            inter_fwd_pnt = [(0, 8), (1, 9), (2, 10), (3, 11), (2, 3), (10, 11), (10, 21), (11, 21), (21, 24), (27, 28),
+                             (8, 22), (9, 23), (22, 28), (23, 28)]
+            intra_fwd_pnt = [(4, 5), (6, 7), (12, 13), (14, 15), (24, 25), (26, 27), (20, 21), (8, 10), (11, 9),
+                             (18, 21), (19, 21), (22, 24), (25, 26), (23, 24), (22, 27), (23, 27)]
+
+        elif ds_name == DatasetName.ibug:
+            inter_fwd_pnt = [(0, 3), (0, 17), (0, 36), (3, 36), (3, 48), (3, 8), (8, 57), (8, 13), (13, 54),
+                             (13, 16),
+                             (13, 45), (16, 45), (16, 26), (51, 33), (39, 33), (42, 33), (39, 42), (21, 39),
+                             (22, 42),
+                             (21, 22), (26, 45), (17, 36)]
+            intra_fwd_pnt = [(37, 41), (38, 40,), (43, 47), (44, 46), (30, 33), (31, 33), (35, 33), (57, 66),
+                             (51, 62), (62, 66), (27, 31), (27, 35), (36, 39), (42, 45), (17, 21), (22, 26),
+                             (19, 17), (19, 21),
+                             (24, 22), (24, 26), (0, 1), (0, 2), (4, 3), (4, 5), (8, 6), (8, 7), (8, 9), (8, 10),
+                             (12, 11), (12, 13), (16, 15), (16, 14), (48, 57), (48, 51), (54, 51), (54, 57)]
+
+        # elif ds_name == DatasetName.wflw:
+
+        t_fw_pnts = inter_fwd_pnt + intra_fwd_pnt
+        sum_dis_gt = np.zeros(shape=[LearningConfig.batch_size], dtype=np.float32)
+        sum_dis_pr = np.zeros(shape=[LearningConfig.batch_size], dtype=np.float32)
+        for item in t_fw_pnts:
+            x_1_gt = x_gt[:, item[0] * 2]
+            y_1_gt = x_gt[:, item[0] * 2 + 1]
+            x_2_gt = x_gt[:, item[1] * 2]
+            y_2_gt = x_gt[:, item[1] * 2 + 1]
+            dis_gt = np.sqrt((x_2_gt - x_1_gt) ** 2 + (y_2_gt - y_1_gt) ** 2)
+            sum_dis_gt += dis_gt
+            '''pr'''
+            x_1_pr = x_pr[:, item[0] * 2]
+            y_1_pr = x_pr[:, item[0] * 2 + 1]
+            x_2_pr = x_pr[:, item[1] * 2]
+            y_2_pr = x_pr[:, item[1] * 2 + 1]
+            dis_pr = np.sqrt((x_2_pr - x_1_pr) ** 2 + (y_2_pr - y_1_pr) ** 2)
+            sum_dis_pr += dis_pr
+        return np.mean(np.abs(sum_dis_gt - sum_dis_pr))
+
+    def calculate_inter_occular_distance(self, anno_GT, ds_name):
+        if ds_name == DatasetName.ibug:
+            left_oc_x = anno_GT[72]
+            left_oc_y = anno_GT[73]
+            right_oc_x = anno_GT[90]
+            right_oc_y = anno_GT[91]
+        elif ds_name == DatasetName.cofw:
+            left_oc_x = anno_GT[16]
+            left_oc_y = anno_GT[17]
+            right_oc_x = anno_GT[18]
+            right_oc_y = anno_GT[19]
+        elif ds_name == DatasetName.wflw:
+            left_oc_x = anno_GT[192]
+            left_oc_y = anno_GT[193]
+            right_oc_x = anno_GT[194]
+            right_oc_y = anno_GT[195]
+
+        distance = math.sqrt(((left_oc_x - right_oc_x) ** 2) + ((left_oc_y - right_oc_y) ** 2))
+        return distance
+
+    def _asm_assisted_loss(self, yTrue, yPred):
         '''def::
              l_1 = mse(yTrue, yPre)
              yPre_asm = ASM (yPred)

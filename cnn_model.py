@@ -1,6 +1,6 @@
 from configuration import DatasetName, DatasetType, \
     AffectnetConf, IbugConf, W300Conf, InputDataSize, LearningConfig
-from hg_Class import HourglassNet
+# from hg_Class import HourglassNet
 
 import tensorflow as tf
 import keras
@@ -13,33 +13,14 @@ from keras.regularizers import l2, l1
 from keras.models import Model
 from keras.applications import mobilenet_v2, mobilenet, resnet50, densenet
 from keras.layers import Dense, MaxPooling2D, Conv2D, Flatten, \
-    BatchNormalization, Activation, GlobalAveragePooling2D, DepthwiseConv2D, Dropout, ReLU, Concatenate, \
-    Deconvolution2D, Input, GlobalMaxPool2D
+    BatchNormalization, Activation, GlobalAveragePooling2D, DepthwiseConv2D, Dropout, ReLU, Concatenate, Input, GlobalMaxPool2D
 
-from keras.callbacks import ModelCheckpoint
 from keras import backend as K
-
-from keras.optimizers import adam
-import numpy as np
-import matplotlib.pyplot as plt
-import math
-from keras.callbacks import CSVLogger
-from clr_callback import CyclicLR
-from datetime import datetime
-
-import cv2
-import os.path
-from keras.utils.vis_utils import plot_model
-from scipy.spatial import distance
-import scipy.io as sio
-from keras.engine import InputLayer
-# import coremltools
-
 import efficientnet.keras as efn
 
 
 class CNNModel:
-    def get_model(self, train_images, arch, num_output_layers, output_len):
+    def get_model(self, arch, output_len):
 
         if arch == 'ASMNet':
             # self.calculate_flops(arch, output_len)
@@ -50,7 +31,7 @@ class CNNModel:
             model = self.create_MobileNet(inp_tensor=train_images, output_len=output_len, inp_shape=None)
 
         elif arch == 'mobileNetV2_nopose':
-            model = self.create_MobileNet_nopose(inp_tensor=train_images, output_len=output_len)
+            model = self.create_MobileNet_nopose(inp_shape=[224,224,3], output_len=output_len)
 
         elif arch == 'efficientNet':
             model = self.create_efficientNet(inp_shape=[224,224,3], input_tensor=train_images, output_len=output_len)
@@ -98,12 +79,12 @@ class CNNModel:
             print("FLOPS: {:,} --- Params: {:,}".format(flops.total_float_ops, params.total_parameters))
             return flops.total_float_ops, params.total_parameters
 
-    def create_MobileNet_nopose(self, inp_tensor, output_len):
-        mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=None,
+    def create_MobileNet_nopose(self, inp_shape, output_len):
+        mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=inp_shape,
                                                    alpha=1.0,
                                                    include_top=True,
                                                    weights=None,
-                                                   input_tensor=inp_tensor,
+                                                   input_tensor=None,
                                                    pooling=None)
         # model_json = mobilenet_model.to_json()
         #
@@ -114,10 +95,8 @@ class CNNModel:
 
         mobilenet_model.layers.pop()
 
-        x = mobilenet_model.get_layer('global_average_pooling2d_1').output  # 1280
+        x = mobilenet_model.get_layer('global_average_pooling2d').output  # 1280
         out_landmarks = Dense(output_len, name='O_L')(x)
-        out_poses = Dense(LearningConfig.pose_len, name='O_P')(x)
-
         inp = mobilenet_model.input
 
         revised_model = Model(inp, [out_landmarks])
@@ -196,17 +175,33 @@ class CNNModel:
         out_poses = Dense(LearningConfig.pose_len, name='O_P')(x)
 
         inp = mobilenet_model.input
+        revised_model = Model(inp, [out_landmarks])
 
-        revised_model = Model(inp, [out_landmarks, out_poses])
-
+        # revised_model = Model(inp, [out_landmarks, out_poses])
         revised_model.summary()
-        # plot_model(revised_model, to_file='mobileNet_v2_main.png', show_shapes=True, show_layer_names=True)
-        model_json = revised_model.to_json()
-
-        with open("mobileNet_v2_main_multi_out.json", "w") as json_file:
-            json_file.write(model_json)
-
         return revised_model
+
+        # ''''''
+        # revised_model.load_weights('wflw_mn_base_pose.h5')
+        # revised_model.layers.pop()
+        # # revised_model.summary()
+        # # revised_model.save('ibug_mn_base.h5')
+        #
+        # out_landmarks = revised_model.get_layer('O_L').output  # 1280
+        # inp = revised_model.input
+        # revised_model = Model(inp, [out_landmarks])
+        # revised_model.summary()
+        # revised_model.save('wflw_mn_base.h5')
+        #
+        # ''''''
+        # revised_model.summary()
+        # # plot_model(revised_model, to_file='mobileNet_v2_main.png', show_shapes=True, show_layer_names=True)
+        # model_json = revised_model.to_json()
+        #
+        # with open("mobileNet_v2_main_multi_out.json", "w") as json_file:
+        #     json_file.write(model_json)
+        #
+        # return revised_model
 
 
     def create_ASMNet(self, output_len, inp_tensor=None, inp_shape=None):

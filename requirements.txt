@@ -3,13 +3,13 @@
 #
 torch
 torchvision
-bottleneck
+#bottleneck
 keras
-tensorflow==1.14
+tensorflow==1.14.0
 numpy
 matplotlib
-opencv-python
-opencv-contrib-python
+#opencv-python
+#opencv-contrib-python
 scipy
 scikit-learn
 scikit-image

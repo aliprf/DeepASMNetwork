@@ -48,42 +48,6 @@ def print_partial(counter, img, landmarks_arr):
     # # plt.show()
     # plt.clf()
 
-def print_histogram2(counter, landmarks_arr):
-    for data in landmarks_arr:
-        data = np.array(data).reshape([98, 2])
-        df = pd.DataFrame(data, columns=["y", "x"])
-        x1 = sns.jointplot(x="y", y="x", data=df)
-        x2 = sns.jointplot(x="y", y="x", data=df, kind="kde")
-
-    x1.savefig('out1_' + str(counter) + '.png')
-    x2.savefig('out2_' + str(counter) + '.png')
-
-def print_histogram1(counter, data):
-    if data is None:
-        mean, cov = [0, 1], [(1, .5), (.5, 1)]
-        data = np.random.multivariate_normal(mean, cov, 200)
-
-    df = pd.DataFrame(data, columns=["y", "x"])
-    x1 = sns.jointplot(x="y", y="x", data=df)
-    x2 = sns.jointplot(x="y", y="x", data=df, kind="kde")
-    x1.savefig('out1_'+str(counter)+'.png')
-    x2.savefig('out2_'+str(counter)+'.png')
-
-
-def print_histogram2d(x,y, data):
-    with sns.axes_style("white"):
-        x = sns.jointplot(x=x, y=y, kind="hex", color="k")
-        x = sns.jointplot(x="x", y="y", data=data, kind="kde")
-        x.savefig('out_1.png')
-
-def print_histogram(data):
-    sns.set(color_codes=True)
-    sns.distplot(data)
-    sns_plot = sns.distplot(data, kde=False, rug=True)
-    sns_plot1 = sns.distplot(data, kde=False, fit=stats.gamma)
-    sns_plot1.get_figure().savefig("output.png")
-
-
 def print_image(image_name, landmarks_x, landmarks_y):
 
     my_file = Path(image_name)
@@ -216,18 +180,33 @@ def print_arr(k, type, landmarks_arr):
     plt.clf()
 
 
+def print_image_arr_multi(k, image, landmarks_x_arr, landmarks_y_arr):
+    plt.figure()
+    plt.imshow(image)
+    implot = plt.imshow(image)
+
+    c=[('#000000','#fddb3a'), ('#000000','#ff0000'), ('#000000','#00ff00'), ('#000000','#0000FF')]
+    for i in range(len(landmarks_x_arr)):
+
+        plt.scatter(x=landmarks_x_arr[i][:], y=landmarks_y_arr[i][:], c=c[i][0], s=15)
+        plt.scatter(x=landmarks_x_arr[i][:], y=landmarks_y_arr[i][:], c=c[i][1], s=8)
+    plt.axis('off')
+    plt.savefig('name_' + str(k) + '.png', bbox_inches='tight')
+    # plt.show()
+    plt.clf()
+
 def print_image_arr(k, image, landmarks_x, landmarks_y):
     plt.figure()
     plt.imshow(image)
     implot = plt.imshow(image)
 
-    for i in range(len(landmarks_x)):
-        plt.text(landmarks_x[i], landmarks_y[i], str(i), fontsize=12, c='red',
-                 horizontalalignment='center', verticalalignment='center',
-                 bbox={'facecolor': 'blue', 'alpha': 0.3, 'pad': 0.0})
+    # for i in range(len(landmarks_x)):
+    #     plt.text(landmarks_x[i], landmarks_y[i], str(i), fontsize=12, c='red',
+    #              horizontalalignment='center', verticalalignment='center',
+    #              bbox={'facecolor': 'blue', 'alpha': 0.3, 'pad': 0.0})
 
-    plt.scatter(x=landmarks_x[:], y=landmarks_y[:], c='#440047', s=60)
-    plt.scatter(x=landmarks_x[:], y=landmarks_y[:], c='#fbecec', s=10)
+    plt.scatter(x=landmarks_x[:], y=landmarks_y[:], c='#000000', s=15)
+    plt.scatter(x=landmarks_x[:], y=landmarks_y[:], c='#fddb3a', s=8)
     plt.axis('off')
     plt.savefig('name_' + str(k) + '.png', bbox_inches='tight')
     # plt.show()

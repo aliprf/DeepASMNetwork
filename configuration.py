@@ -7,24 +7,12 @@ class DatasetName:
     cofw = 'cofw'
     wflw = 'wflw'
 
-    wflw_test = 'wflw_test'
-    cofw_test = 'cofw_test'
-    ibug_test = 'ibug_test'
-
 
 
 class DatasetType:
-    ibug_challenging = 10
-    ibug_comomn = 11
-    ibug_full = 12
-
-    wflw_full = 20
-    wflw_blur = 21
-    wflw_expression = 22
-    wflw_illumination = 23
-    wflw_largepose = 24
-    wflw_makeup = 25
-    wflw_occlusion = 26
+    data_type_train = 0
+    data_type_validation = 1
+    data_type_test = 2
 
 
 class LearningConfig:
@@ -65,13 +53,14 @@ class LearningConfig:
     loss_weight_mouth = 1
 
     CLR_METHOD = "triangular"
-    MIN_LR = 1e-7
+    MIN_LR = 1e-5
     MAX_LR = 1e-2
     STEP_SIZE = 10
-    batch_size = 70
-    steps_per_validation_epochs = 5
+    batch_size = 10
+    # batch_size = 130
+    # steps_per_validation_epochs = 5
 
-    epochs = 200
+    epochs = 500
     # landmark_len = 136
     # point_len = 68
     pose_len = 3
@@ -131,123 +120,85 @@ class W300Conf:
 
 
 class WflwConf:
-    # Wflw_prefix_path = '/media/data3/ali/FL/wflw/'  # --> Zeus
-    # Wflw_prefix_path = '/media/data2/alip/FL/wflw/'  # --> Atlas
-    Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
+    Wflw_prefix_path = '/media/data3/ali/FL/new_data/wflw/'  # --> Zeus
+    # Wflw_prefix_path = '/media/data2/alip/FL/new_data/wflw/'  # --> Atlas
+    # Wflw_prefix_path = '/media/ali/data/wflw/'  # --> local
 
     img_path_prefix = Wflw_prefix_path + 'all/'
-    # rotated_img_path_prefix = Wflw_prefix_path + '0_rotated/'
-    rotated_img_path_prefix = Wflw_prefix_path + '1_train_images_pts_dir/'
+    rotated_img_path_prefix = Wflw_prefix_path + '0_rotated/'
     train_images_dir = Wflw_prefix_path + '1_train_images_pts_dir/'
     normalized_points_npy_dir = Wflw_prefix_path + '2_normalized_npy_dir/'
     pose_npy_dir = Wflw_prefix_path + '4_pose_npy_dir/'
 
-    test_img_path_prefix = Wflw_prefix_path + 'test_all/'
-    test_images_dir = Wflw_prefix_path + 'test_images_pts_dir/'
-    test_normalized_points_npy_dir = Wflw_prefix_path + 'test_normalized_npy_dir/'
-    test_pose_npy_dir = Wflw_prefix_path + 'test_pose_npy_dir/'
-
-    tf_train_path = Wflw_prefix_path + 'train.tfrecords'
-    tf_evaluation_path = Wflw_prefix_path + 'evaluation.tfrecords'
-
-    tf_test_path = Wflw_prefix_path + 'test_full.tfrecords'
-    tf_test_path_blur = Wflw_prefix_path + 'test_blur.tfrecords'
-    tf_test_path_expression = Wflw_prefix_path + 'test_expression.tfrecords'
-    tf_test_path_illumination = Wflw_prefix_path + 'test_illumination.tfrecords'
-    tf_test_path_largepose = Wflw_prefix_path + 'test_largepose.tfrecords'
-    tf_test_path_makeup = Wflw_prefix_path + 'test_makeup.tfrecords'
-    tf_test_path_occlusion = Wflw_prefix_path + 'test_occlusion.tfrecords'
-
-    tf_train_path_95 = Wflw_prefix_path + 'train_90.tfrecords'
-    tf_evaluation_path_95 = Wflw_prefix_path + 'evaluation_90.tfrecords'
+    '''     augmented version'''
+    augmented_train_pose = Wflw_prefix_path + 'training_set/augmented/pose/'
+    augmented_train_annotation = Wflw_prefix_path + 'training_set/augmented/annotations/'
+    augmented_train_atr = Wflw_prefix_path + 'training_set/augmented/atrs/'
+    augmented_train_image = Wflw_prefix_path + 'training_set/augmented/images/'
+    augmented_train_tf_path = Wflw_prefix_path + 'training_set/augmented/tf/'
+    '''     original version'''
+    no_aug_train_annotation = Wflw_prefix_path + 'training_set/no_aug/annotations/'
+    no_aug_train_atr = Wflw_prefix_path + 'training_set/no_aug/atrs/'
+    no_aug_train_pose = Wflw_prefix_path + 'training_set/no_aug/pose/'
+    no_aug_train_image = Wflw_prefix_path + 'training_set/no_aug/images/'
+    no_aug_train_tf_path = Wflw_prefix_path + 'training_set/no_aug/tf/'
 
     orig_number_of_training = 7500
     orig_number_of_test = 2500
 
-    orig_of_all_test_blur = 773
-    orig_of_all_test_expression = 314
-    orig_of_all_test_illumination = 689
-    orig_of_all_test_largepose = 326
-    orig_of_all_test_makeup = 206
-    orig_of_all_test_occlusion = 736
-
     number_of_all_sample = 270956  # just images. dont count both img and lbls
-    number_of_train_sample = 200000  # 95 % for train
-    # number_of_train_sample = int(number_of_all_sample * 0.95)  # 95 % for train
-    number_of_evaluation_sample = int(number_of_all_sample * 0.05) # 5% for evaluation
+    number_of_train_sample = number_of_all_sample * 0.95  # 95 % for train
+    number_of_evaluation_sample = number_of_all_sample * 0.05  # 5% for evaluation
 
-    augmentation_factor = 4  # create . image from 4
-    augmentation_factor_rotate = 15  # create . image from 15
+    augmentation_factor = 4  # create . image from 1
+    augmentation_factor_rotate = 15  # create . image from 1
     num_of_landmarks = 98
 
 class CofwConf:
-    # Cofw_prefix_path = '/media/data3/ali/FL/cofw/'  # --> Zeus
-    # Cofw_prefix_path = '/media/data2/alip/FL/cofw/'  # --> Atlas
-    Cofw_prefix_path = '/media/ali/data/cofw/'  # --> local
+    # Cofw_prefix_path = '/media/data3/ali/FL/new_data/cofw/'  # --> zeus
+    # Cofw_prefix_path = '/media/data2/alip/FL/new_data/cofw/'  # --> atlas
+    Cofw_prefix_path = '/media/ali/data/new_data/cofw/'  # --> local
 
-    img_path_prefix = Cofw_prefix_path + 'all/'
-    # rotated_img_path_prefix = Cofw_prefix_path + '0_rotated/'
-    rotated_img_path_prefix = Cofw_prefix_path + '1_train_images_pts_dir/'
-    train_images_dir = Cofw_prefix_path + '1_train_images_pts_dir/'
-    normalized_points_npy_dir = Cofw_prefix_path + '2_normalized_npy_dir/'
-    pose_npy_dir = Cofw_prefix_path + '4_pose_npy_dir/'
+    augmented_train_pose = Cofw_prefix_path + 'training_set/augmented/pose/'
+    augmented_train_annotation = Cofw_prefix_path + 'training_set/augmented/annotations/'
+    augmented_train_image = Cofw_prefix_path + 'training_set/augmented/images/'
 
-    test_img_path_prefix = Cofw_prefix_path + 'test_all/'
-    test_images_dir = Cofw_prefix_path + 'test_images_pts_dir/'
-    test_normalized_points_npy_dir = Cofw_prefix_path + 'test_normalized_npy_dir/'
-    test_pose_npy_dir = Cofw_prefix_path + 'test_pose_npy_dir/'
+    no_aug_train_annotation = Cofw_prefix_path + 'training_set/no_aug/annotations/'
+    no_aug_train_pose = Cofw_prefix_path + 'training_set/no_aug/pose/'
+    no_aug_train_image = Cofw_prefix_path + 'training_set/no_aug/images/'
+    no_aug_train_tf_path = Cofw_prefix_path + 'training_set/no_aug/tf/'
 
-    tf_train_path = Cofw_prefix_path + 'train.tfrecords'
-    tf_test_path = Cofw_prefix_path + 'test.tfrecords'
-    tf_evaluation_path = Cofw_prefix_path + 'evaluation.tfrecords'
-
-    tf_train_path_95 = Cofw_prefix_path + 'train_95.tfrecords'
-    tf_evaluation_path_95 = Cofw_prefix_path + 'evaluation_95.tfrecords'
+    tf_train_path_95 = Cofw_prefix_path + 'train_90.tfrecords'
+    tf_evaluation_path_95 = Cofw_prefix_path + 'evaluation_90.tfrecords'
 
     orig_number_of_training = 1345
     orig_number_of_test = 507
 
-    number_of_all_sample = 108820  # afw, train_helen, train_lfpw
-    number_of_train_sample = int(number_of_all_sample * 0.95)  # 95 % for train
-    number_of_evaluation_sample = int(number_of_all_sample * 0.05)  # 5% for evaluation
+    augmentation_factor = 10
+    number_of_all_sample = orig_number_of_training * augmentation_factor  # afw, train_helen, train_lfpw
+    number_of_train_sample = number_of_all_sample * 0.95  # 95 % for train
+    number_of_evaluation_sample = number_of_all_sample * 0.05  # 5% for evaluation
 
     augmentation_factor = 5  # create . image from 1
     augmentation_factor_rotate = 30  # create . image from 1
-    num_of_landmarks = 28
+    num_of_landmarks = 29
 
 
 class IbugConf:
-    '''server_config'''
-    # _Ibug_prefix_path = '/media/data3/ali/FL/ibug/'  # --> Zeus
-    # _Ibug_prefix_path = '/media/data2/alip/FL/ibug/'  # --> Atlas
-    _Ibug_prefix_path = '/media/ali/data/ibug/'  # --> local
+    # w300w_prefix_path = '/media/data3/ali/FL/new_data/300W/'  # --> zeus
+    # w300w_prefix_path = '/media/data2/alip/FL/new_data/300W/'  # --> atlas
+    w300w_prefix_path = '/media/ali/data/new_data/300W/'  # --> local
 
-    img_path_prefix = _Ibug_prefix_path + 'all/'
-    # rotated_img_path_prefix = _Ibug_prefix_path + '0_rotated/'
-    rotated_img_path_prefix = _Ibug_prefix_path + '1_train_images_pts_dir/'
-    train_images_dir = _Ibug_prefix_path + '1_train_images_pts_dir/'
-    normalized_points_npy_dir = _Ibug_prefix_path + '2_normalized_npy_dir/'
-    pose_npy_dir = _Ibug_prefix_path + '4_pose_npy_dir/'
+    orig_300W_train = w300w_prefix_path + 'orig_300W_train/'
+    augmented_train_pose = w300w_prefix_path + 'training_set/augmented/pose/'
+    augmented_train_annotation = w300w_prefix_path + 'training_set/augmented/annotations/'
+    augmented_train_image = w300w_prefix_path + 'training_set/augmented/images/'
+    augmented_train_tf_path = w300w_prefix_path + 'training_set/augmented/tf/'
 
-    tf_train_path = _Ibug_prefix_path + 'train.tfrecords'
-    tf_evaluation_path = _Ibug_prefix_path + 'evaluation.tfrecords'
-
-    tf_test_path_full = _Ibug_prefix_path + 'test_full.tfrecords'
-    tf_test_path_common = _Ibug_prefix_path + 'test_common.tfrecords'
-    tf_test_path_challenging = _Ibug_prefix_path + 'test_challenging.tfrecords'
-
-    tf_train_path_95 = _Ibug_prefix_path + 'train_95.tfrecords'
-    tf_evaluation_path_95 = _Ibug_prefix_path + 'evaluation_95.tfrecords'
-
-    test_img_path_prefix = _Ibug_prefix_path + 'test_all/'
-    test_images_dir = _Ibug_prefix_path + 'test_images_pts_dir/'
-    test_normalized_points_npy_dir = _Ibug_prefix_path + 'test_normalized_npy_dir/'
-    test_pose_npy_dir = _Ibug_prefix_path + 'test_pose_npy_dir/'
-
-    # train_hm_dir = '/media/data2/alip/fala/ibug/train_hm_dir/'
-    # train_hm_dir_85 = '/media/data2/alip/fala/ibug/train_hm_dir_85/'
-    # train_hm_dir_90 = '/media/data2/alip/fala/ibug/train_hm_dir_90/'
-    # train_hm_dir_97 = '/media/data2/alip/fala/ibug/train_hm_dir_97/'
+    no_aug_train_annotation = w300w_prefix_path + 'training_set/no_aug/annotations/'
+    no_aug_train_pose = w300w_prefix_path + 'training_set/no_aug/pose/'
+    no_aug_train_image = w300w_prefix_path + 'training_set/no_aug/images/'
+    no_aug_train_tf_path = w300w_prefix_path + 'training_set/no_aug/tf/'
 
     orig_number_of_training = 3148
     orig_number_of_test_full = 689
@@ -256,8 +207,8 @@ class IbugConf:
 
     '''after augmentation'''
     number_of_all_sample = 134688   # afw, train_helen, train_lfpw
-    number_of_train_sample = int(number_of_all_sample * 0.95)  # 95 % for train
-    number_of_evaluation_sample = int(number_of_all_sample * 0.05)  # 5% for evaluation
+    number_of_train_sample = number_of_all_sample * 0.95  # 95 % for train
+    number_of_evaluation_sample = number_of_all_sample * 0.05  # 5% for evaluation
 
     augmentation_factor = 4  # create . image from 1
     augmentation_factor_rotate = 20  # create . image from 1

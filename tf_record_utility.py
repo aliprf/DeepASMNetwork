@@ -23,7 +23,7 @@ from tqdm import tqdm
 from pca_utility import PCAUtility
 import pickle
 
-from pose_detection.code.PoseDetector import PoseDetector
+# from pose_detection.code.PoseDetector import PoseDetector
 import PIL.ImageDraw as ImageDraw
 import PIL.Image as Image
 
@@ -578,19 +578,14 @@ class TFRecordUtility:
 
     # def retrive_hm_and_test(self):
 
-    def create_image_and_labels_name(self):
-        images_dir = IbugConf.train_images_dir
-        lbls_dir = IbugConf.train_hm_dir
-
+    def create_image_and_labels_name(self, img_path, annotation_path):
         img_filenames = []
         lbls_filenames = []
 
-        for file in os.listdir(images_dir):
+        for file in os.listdir(img_path):
             if file.endswith(".jpg") or file.endswith(".png"):
-                # lbl_file = lbls_dir + str(file)[:-3] + "npy"  # filename and address
                 lbl_file = str(file)[:-3] + "npy"  # just name
-                if os.path.exists(lbls_dir + lbl_file):
-                    # img_filenames.append(images_dir + str(file)) # filename and address
+                if os.path.exists(annotation_path + lbl_file):
                     img_filenames.append(str(file))
                     lbls_filenames.append(lbl_file)
 
@@ -774,7 +769,7 @@ class TFRecordUtility:
                                                      InputDataSize.image_input_size/2,
                                                      InputDataSize.image_input_size/2
                                                      )
-                imgpr.print_image_arr(counter+1, img, landmark_arr_x_n, landmark_arr_y_n)
+                # imgpr.print_image_arr(counter+1, img, landmark_arr_x_n, landmark_arr_y_n)
                 ''''''
                 save(np_path, normalized_points)
                 counter += 1
@@ -787,8 +782,10 @@ class TFRecordUtility:
         y_center = height / 2
         landmark_arr_flat_normalized = []
         for p in range(0, len(points_arr), 2):
-            landmark_arr_flat_normalized.append((x_center - points_arr[p]) / width)
-            landmark_arr_flat_normalized.append((y_center - points_arr[p + 1]) / height)
+            # landmark_arr_flat_normalized.append((x_center - points_arr[p]) / width)
+            # landmark_arr_flat_normalized.append((y_center - points_arr[p + 1]) / height)
+            landmark_arr_flat_normalized.append((points_arr[p] - x_center) / width)
+            landmark_arr_flat_normalized.append((points_arr[p + 1] - y_center) / height)
         return landmark_arr_flat_normalized
 
     def generate_hm_and_save(self, dataset_name, pca_percentage=100):
@@ -1564,7 +1561,7 @@ class TFRecordUtility:
         print("random_augment_from_rotated DONE.")
         return number_of_samples
 
-    def _get_asm(self, input, dataset_name, accuracy):
+    def get_asm(self, input, dataset_name, accuracy):
         pca_utils = PCAUtility()
 
         eigenvalues = load('pca_obj/' + dataset_name + pca_utils.eigenvalues_prefix + str(accuracy) + ".npy")
@@ -1800,7 +1797,7 @@ class TFRecordUtility:
                     pose = load(pose_file_name)
                 '''create new landmark using accuracy'''
                 if accuracy != 100:
-                    landmark = self._get_asm(landmark, dataset_name, accuracy)
+                    landmark = self.get_asm(landmark, dataset_name, accuracy)
 
                 '''test image '''
                 landmark_arr_xy, landmark_arr_x, landmark_arr_y = img_utils.create_landmarks_from_normalized(landmark, 224, 224, 112, 112)
@@ -1848,18 +1845,18 @@ class TFRecordUtility:
 
     def _create_face_graph(self, dataset_name, dataset_type):
         if dataset_name == DatasetName.ibug:
-            img_dir = IbugConf.train_images_dir
-            landmarks_dir = IbugConf.normalized_points_npy_dir
+            img_dir = IbugConf.no_aug_train_image
+            landmarks_dir = IbugConf.no_aug_train_annotation
             num_train_samples = IbugConf.number_of_train_sample
 
-        if dataset_name == DatasetName.wflw:
-            img_dir = WflwConf.train_images_dir
-            landmarks_dir = WflwConf.normalized_points_npy_dir
+        elif dataset_name == DatasetName.wflw:
+            img_dir = WflwConf.no_aug_train_image
+            landmarks_dir = WflwConf.no_aug_train_annotation
             num_train_samples = WflwConf.number_of_train_sample
 
-        if dataset_name == DatasetName.cofw:
-            img_dir = CofwConf.train_images_dir
-            landmarks_dir = CofwConf.normalized_points_npy_dir
+        elif dataset_name == DatasetName.cofw:
+            img_dir = CofwConf.no_aug_train_image
+            landmarks_dir = CofwConf.no_aug_train_annotation
             num_train_samples = CofwConf.number_of_train_sample
 
         counter= 0
@@ -1911,7 +1908,7 @@ class TFRecordUtility:
         landmark_arr.append(u_mouth)
         landmark_arr.append(l_mouth)
 
-        imgpr.print_partial(counter, img, landmark_arr)
+        # imgpr.print_partial(counter, img, landmark_arr)
 
     def _create_cofw_graph(self, counter, img, landmark):
 
@@ -2086,7 +2083,7 @@ class TFRecordUtility:
                 pose = load(pose_file_name)
                 '''create new landmark using accuracy'''
                 if accuracy != 100:
-                    landmark = self._get_asm(landmark, dataset_name, accuracy)
+                    landmark = self.get_asm(landmark, dataset_name, accuracy)
                     '''test image after ASM: '''
 
                 '''create tf_record:'''

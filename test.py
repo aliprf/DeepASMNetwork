@@ -11,7 +11,6 @@ import os.path
 import scipy.io as sio
 from cnn_model import CNNModel
 import img_printer as imgpr
-from pose_detection.code.PoseDetector import PoseDetector, utils
 from tqdm import tqdm
 from os import listdir
 from os.path import isfile, join
@@ -44,6 +43,12 @@ class Test:
                               num_output_layers=num_output_layers, output_len=self.output_len)
         if weight_fname is not None:
             model.load_weights(weight_fname)
+        # model.save('ds_cofw_stu_340.h5')
+        # model.save('ds_300w_mnbase.h5')
+        # model.save('ds_wflw_ef100.h5')
+        model.save('ds_wflw_mnbase_1.h5')
+        # model.save('ds_300w_ef100.h5')
+        # model.save('ds_300w_ef90.h5')
 
         if dataset_name == DatasetName.ibug_test:
             print(dataset_name + " _ " + arch + " _ " + str(customLoss) + ": \r\n" + str(self._test_on_W300(detect, model)))
@@ -376,8 +381,8 @@ class Test:
 
         # return 0, 0, 0, 0, 0, 0
 
-        # normalizing_distance = self.__calculate_interpupil_distance(labels_true_transformed)
-        normalizing_distance = self.__calculate_interoccular_distance(labels_true_transformed)
+        # normalizing_distance = self.calculate_interpupil_distance(labels_true_transformed)
+        normalizing_distance = self.calculate_interoccular_distance(labels_true_transformed)
 
         # return 1, 1, 1, 1, 1, 1
 
@@ -494,18 +499,18 @@ class Test:
                 pr += 1
         return pr/len(arr)
 
-    def __calculate_interoccular_distance(self, labels_true):
+    def calculate_interoccular_distance(self, labels_true):
         if self.dataset_name == DatasetName.ibug or self.dataset_name == DatasetName.ibug_test:
             left_oc_x = labels_true[72]
             left_oc_y = labels_true[73]
             right_oc_x = labels_true[90]
             right_oc_y = labels_true[91]
-        elif self.dataset_name == DatasetName.cofw_test or self.dataset_name == DatasetName.cofw:
+        elif self.dataset_name == DatasetName.cofw or self.dataset_name == DatasetName.cofw_test:
             left_oc_x = labels_true[16]
             left_oc_y = labels_true[17]
             right_oc_x = labels_true[18]
             right_oc_y = labels_true[19]
-        elif self.dataset_name == DatasetName.wflw_test or self.dataset_name == DatasetName.wflw:
+        elif self.dataset_name == DatasetName.wflw or self.dataset_name == DatasetName.wflw_test :
             left_oc_x = labels_true[192]
             left_oc_y = labels_true[193]
             right_oc_x = labels_true[194]
@@ -514,7 +519,7 @@ class Test:
         distance = math.sqrt(((left_oc_x - right_oc_x) ** 2) + ((left_oc_y - right_oc_y) ** 2))
         return distance
 
-    def __calculate_interpupil_distance(self, labels_true):
+    def calculate_interpupil_distance(self, labels_true):
         # points: x,y 36--> 41 point for left, and 42->47 for right
 
         left_pupil_x = (labels_true[72] + labels_true[74] + labels_true[76] + labels_true[78] + labels_true[80] +

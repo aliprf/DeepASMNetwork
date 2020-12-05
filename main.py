@@ -4,8 +4,9 @@ from cnn_model import CNNModel
 from pca_utility import PCAUtility
 from image_utility import ImageUtility
 import numpy as np
-from train import Train
-from test import Test
+# from train import Train
+from train_asm_fw import Train
+# from test import Test
 
 # from Train_Gan import TrainGan
 
@@ -13,32 +14,36 @@ import img_printer as imgp
 
 if __name__ == '__main__':
 
+    '''train new method: '''
+    trainer = Train(dataset_name=DatasetName.cofw, asm_accuracy=90)
+    trainer.train(arch='mobileNetV2_nopose', weight_path=None)
+
     # x = np.random.normal(size=100)
     # imgp.print_histogram(x)
     # imgp.print_histogram2d(data[0], data[1])
     # imgp.print_histogram1()
 
 
-    pca_utility = PCAUtility()
-    cnn_model = CNNModel()
-    image_utility = ImageUtility()
-
-    tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks*2)
-    tf_record_util._create_face_graph(dataset_name=DatasetName.wflw, dataset_type=None)
+    # pca_utility = PCAUtility()
+    # cnn_model = CNNModel()
+    # image_utility = ImageUtility()
+    #
+    # tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks*2)
+    # tf_record_util._create_face_graph(dataset_name=DatasetName.wflw, dataset_type=None)
 
     # tf_record_util.test_hm_accuracy()
     # tf_record_util.create_adv_att_img_hm()
 
     '''--> Preparing Test Data process:'''
-    # tf_record_util.crop_and_save(dataset_name=DatasetName.ibug, dataset_type=DatasetType.wflw_full)
-    # tf_record_util.normalize_points_and_save(dataset_name=DatasetName.ibug)
-    # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.ibug_test)
-    # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug_test, dataset_type=DatasetType.ibug_full,
+    # tf_record_util.crop_and_save(dataset_name=DatasetName.cofw_test, dataset_type=DatasetType.ibug_challenging)
+    # tf_record_util.normalize_points_and_save(dataset_name=DatasetName.cofw_test)
+    # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.cofw_test)
+    # tf_record_util.create_tf_record(dataset_name=DatasetName.cofw_test, dataset_type=DatasetType.ibug_challenging,
     #                                 heatmap=False, accuracy=100, isTest=True)
 
     '''--> Preparing Train Data process:'''
     '''     augment, normalize, and save pts'''
-    tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks*2)
+    # tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks*2)
     # tf_record_util.rotaate_and_save(dataset_name=DatasetName.ibug)
     # we dont need to use this now# tf_record_util.random_augment_from_rotated(dataset_name=DatasetName.ibug)
     '''     normalize the points and save'''
@@ -72,7 +77,7 @@ if __name__ == '__main__':
 
     '''--> retrive and test tfRecords'''
     # tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks*2)
-    tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks*2)
+    # tf_record_util = TFRecordUtility(IbugConf.num_of_landmarks*2)
     # tf_record_util.test_tf_record()
     # tf_record_util.test_tf_record_hm()
 
@@ -98,6 +103,9 @@ if __name__ == '__main__':
     # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/ibug_mn_.h5', has_pose=True, customLoss=False)
     # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2', num_output_layers=2, weight_fname='./final_weights/ibug_mn_asm.h5', has_pose=True, customLoss=True)
 
+    # test = Test(dataset_name=DatasetName.wflw_test, arch='mobileNetV2',
+    #             num_output_layers=2, weight_fname='./ds_wflw_ac_100_weights-81-0.00772.h5', has_pose=True, customLoss=True)
+
     '''cofw'''
     # test = Test(dataset_name=DatasetName.cofw_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/cofw_ds_.h5', has_pose=True, customLoss=False)
     # test = Test(dataset_name=DatasetName.cofw_test, arch='ASMNet', num_output_layers=2, weight_fname='./final_weights/cofw_ds_asm.h5', has_pose=True, customLoss=True)
@@ -119,16 +127,16 @@ if __name__ == '__main__':
 
     '''for testing KT''' #nme_ch:  6.22    6.76
     # test = Test(dataset_name=DatasetName.ibug_test, arch='efficientNet', num_output_layers=1,
-    #             weight_fname='ds_ibug_ac_100_teacher.h5', has_pose=True, customLoss=False)
+    #             weight_fname='ds_ibug_ac_90_weights-38-10.79170.h5', has_pose=True, customLoss=False)
 
     # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2_nopose', num_output_layers=1,
-    #                 weight_fname='ds_ibug_ac_100_stu.h5', has_pose=True, customLoss=False)
+    #                 weight_fname='last_ds_300w.h5', has_pose=True, customLoss=False)
 
     # test = Test(dataset_name=DatasetName.cofw_test, arch='mobileNetV2_nopose', num_output_layers=1,
-    #             weight_fname='ds_cofw_ac_100_stu.h5', has_pose=True, customLoss=False)
+    #             weight_fname='weights-340-0.06181.h5', has_pose=True, customLoss=False)
 
     # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2_nopose', num_output_layers=2,
-    #             weight_fname='weights-94--0.01342.h5', has_pose=True, customLoss=False)
+    #             weight_fname='ds_ibug_ac_100_weights-362-8.03336.h5', has_pose=True, customLoss=False)
 
 
     '''--> Train Model'''
