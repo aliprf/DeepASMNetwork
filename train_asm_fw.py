@@ -53,6 +53,7 @@ class Train:
             "./train_logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
         '''making models'''
+        _lr = 1e-2
         model = self.make_model(arch=arch, w_path=weight_path)
         '''create optimizer'''
         optimizer = self._get_optimizer(lr=1e-2)
@@ -87,6 +88,9 @@ class Train:
             '''save weights'''
             model.save('./models/asm_fw_model_' + str(epoch) + '_' + self.dataset_name + '_.h5')
             model.save_weights('./models/asm_fw_weight_' + '_' + str(epoch) + self.dataset_name + '_.h5')
+            if epoch != 0 and epoch % 100 == 0:
+                _lr -= _lr * 0.4
+                optimizer = self._get_optimizer(lr=_lr)
 
     def train_step(self, epoch, step, total_steps, images, model, annotation_gr,
                    annotation_asm, annotation_asm_prime,
