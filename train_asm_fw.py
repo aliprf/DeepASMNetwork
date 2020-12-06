@@ -120,6 +120,7 @@ class Train:
             tf.summary.scalar('LOSS', loss_total, step=epoch)
             tf.summary.scalar('loss_main', loss_main, step=epoch)
             tf.summary.scalar('loss_asm', loss_asm, step=epoch)
+            tf.summary.scalar('loss_fw', loss_fw, step=epoch)
 
     def create_FL_highligted_points_map(self, ds_name, batch_size, num_of_landmark):
         # todo
