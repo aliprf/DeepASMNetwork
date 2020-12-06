@@ -55,7 +55,7 @@ class Train:
         '''making models'''
         model = self.make_model(arch=arch, w_path=weight_path)
         '''create optimizer'''
-        optimizer = self._get_optimizer(lr=1e-1)
+        optimizer = self._get_optimizer(lr=1e-2)
 
         '''create sample generator'''
         x_train_filenames, x_val_filenames, y_train_filenames, y_val_filenames = self._create_generators()
