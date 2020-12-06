@@ -55,7 +55,7 @@ class Train:
         '''making models'''
         model = self.make_model(arch=arch, w_path=weight_path)
         '''create optimizer'''
-        optimizer = self._get_optimizer(lr=1e-2)
+        optimizer = self._get_optimizer(lr=1e-1)
 
         '''create sample generator'''
         x_train_filenames, x_val_filenames, y_train_filenames, y_val_filenames = self._create_generators()
@@ -104,10 +104,10 @@ class Train:
                                                                                 fw_loss_weight=0.9,
                                                                                 ds_name=self.dataset_name,
                                                                                 bold_landmarks_point_map=bold_landmarks_point_map)
-            '''calculate gradient'''
-            gradients_of_model = tape.gradient(loss_main, model.trainable_variables)
-            '''apply Gradients:'''
-            optimizer.apply_gradients(zip(gradients_of_model, model.trainable_variables))
+        '''calculate gradient'''
+        gradients_of_model = tape.gradient(loss_main, model.trainable_variables)
+        '''apply Gradients:'''
+        optimizer.apply_gradients(zip(gradients_of_model, model.trainable_variables))
         '''printing loss Values: '''
         tf.print("->EPOCH: ", str(epoch), "->STEP: ", str(step) + '/' + str(total_steps), ' -> : LOSS: ', loss_total,
                  ' -> : loss_main: ', loss_main, ' -> : loss_asm: ', loss_asm, ' -> : loss_fw: ', loss_fw)
