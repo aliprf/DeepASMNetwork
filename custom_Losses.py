@@ -24,7 +24,7 @@ class Custom_losses:
         self.dataset_name = dataset_name
         self.accuracy = accuracy
 
-    def asm_assisted_loss(self, epoch, x_pr, x_gt, x_asm, x_asm_prime, main_loss_weight, asm_loss_weight, fw_loss_weight,
+    def asm_assisted_loss(self, x_pr, x_gt, x_asm, x_asm_prime, main_loss_weight, asm_loss_weight, fw_loss_weight,
                           ds_name, bold_landmarks_point_map):
 
         # loss_main = 50 * main_loss_weight * tf.reduce_mean(
