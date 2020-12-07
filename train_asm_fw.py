@@ -97,8 +97,8 @@ class Train:
                    optimizer, summary_writer, c_loss, bold_landmarks_point_map):
         with tf.GradientTape() as tape:
             '''create annotation_predicted'''
-            # annotation_predicted = model(images)
-            annotation_predicted = model.predict_on_batch(images)
+            annotation_predicted = model(images)
+            # annotation_predicted = model.predict_on_batch(images)
             '''calculate loss'''
             loss_total, loss_main, loss_asm, loss_fw = c_loss.asm_assisted_loss(x_pr=annotation_predicted,
                                                                                 x_gt=annotation_gr,
