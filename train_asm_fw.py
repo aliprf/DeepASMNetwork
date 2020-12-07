@@ -91,14 +91,15 @@ class Train:
             if epoch != 0 and epoch % 100 == 0:
                 _lr -= _lr * 0.4
                 optimizer = self._get_optimizer(lr=_lr)
-    @tf.function
+
+    # @tf.function
     def train_step(self, epoch, step, total_steps, images, model, annotation_gr,
                    annotation_asm, annotation_asm_prime,
                    optimizer, summary_writer, c_loss, bold_landmarks_point_map):
         with tf.GradientTape() as tape:
             '''create annotation_predicted'''
-            annotation_predicted = model(images)
-            # annotation_predicted = model.predict_on_batch(images)
+            # annotation_predicted = model(images)
+            annotation_predicted = model.predict_on_batch(images)
             '''calculate loss'''
             loss_total, loss_main, loss_asm, loss_fw = c_loss.asm_assisted_loss(x_pr=annotation_predicted,
                                                                                 x_gt=annotation_gr,
