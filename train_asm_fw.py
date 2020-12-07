@@ -53,7 +53,7 @@ class Train:
             "./train_logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
         '''making models'''
-        _lr = 1e-3
+        _lr = 1e-2
         model = self.make_model(arch=arch, w_path=weight_path)
         '''create optimizer'''
         optimizer = self._get_optimizer(lr=_lr, beta_1=0.5, beta_2=0.999, decay=1e-6)
@@ -91,13 +91,14 @@ class Train:
             if epoch != 0 and epoch % 100 == 0:
                 _lr -= _lr * 0.4
                 optimizer = self._get_optimizer(lr=_lr)
-
+    @tf.function
     def train_step(self, epoch, step, total_steps, images, model, annotation_gr,
                    annotation_asm, annotation_asm_prime,
                    optimizer, summary_writer, c_loss, bold_landmarks_point_map):
         with tf.GradientTape() as tape:
             '''create annotation_predicted'''
-            annotation_predicted = model(images)
+            # annotation_predicted = model(images)
+            annotation_predicted = model.predict_on_batch(images)
             '''calculate loss'''
             loss_total, loss_main, loss_asm, loss_fw = c_loss.asm_assisted_loss(x_pr=annotation_predicted,
                                                                                 x_gt=annotation_gr,
@@ -109,7 +110,7 @@ class Train:
                                                                                 ds_name=self.dataset_name,
                                                                                 bold_landmarks_point_map=bold_landmarks_point_map)
         '''calculate gradient'''
-        gradients_of_model = tape.gradient(loss_main, model.trainable_variables)
+        gradients_of_model = tape.gradient(loss_total, model.trainable_variables)
         '''apply Gradients:'''
         optimizer.apply_gradients(zip(gradients_of_model, model.trainable_variables))
         '''printing loss Values: '''
@@ -149,8 +150,8 @@ class Train:
         return model
 
     def _get_optimizer(self, lr=1e-2, beta_1=0.9, beta_2=0.999, decay=1e-4):
-        # return tf.keras.optimizers.Adam(lr=lr, beta_1=beta_1, beta_2=beta_2, decay=decay)
-        return tf.keras.optimizers.SGD(lr=lr)
+        return tf.keras.optimizers.Adam(lr=lr, beta_1=beta_1, beta_2=beta_2, decay=decay)
+        # return tf.keras.optimizers.SGD(lr=lr)
 
     def _create_generators(self):
         fn_prefix = './file_names/' + self.dataset_name + '_'
