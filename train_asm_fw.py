@@ -187,18 +187,18 @@ class Train:
                   batch_index * LearningConfig.batch_size:(batch_index + 1) * LearningConfig.batch_size]
         '''create img and annotations'''
         img_batch = np.array([imread(img_path + file_name) for file_name in batch_x]) / 255.0
-        # if self.dataset_name == DatasetName.cofw:  # this ds is not normalized
-        #     pn_batch = np.array([load(pn_tr_path + file_name) for file_name in batch_y])
-        #     '''creating y_asm'''
-        #     pn_batch_asm = np.array([tf_utils.get_asm(input=load(pn_tr_path + file_name),
-        #                                               dataset_name=self.dataset_name, accuracy=self.asm_accuracy)
-        #                              for file_name in batch_y])
-        # else:
-        pn_batch = np.array([self._load_and_normalize(pn_tr_path + file_name) for file_name in batch_y])
-        '''creating y_asm'''
-        pn_batch_asm = np.array([tf_utils.get_asm(input=self._load_and_normalize(pn_tr_path + file_name),
-                                                  dataset_name=self.dataset_name, accuracy=self.asm_accuracy)
+        if self.dataset_name == DatasetName.cofw:  # this ds is not normalized
+            pn_batch = np.array([load(pn_tr_path + file_name) for file_name in batch_y])
+            '''creating y_asm'''
+            pn_batch_asm = np.array([tf_utils.get_asm(input=load(pn_tr_path + file_name),
+                                                      dataset_name=self.dataset_name, accuracy=self.asm_accuracy)
                                      for file_name in batch_y])
+        else:
+            pn_batch = np.array([self._load_and_normalize(pn_tr_path + file_name) for file_name in batch_y])
+            '''creating y_asm'''
+            pn_batch_asm = np.array([tf_utils.get_asm(input=self._load_and_normalize(pn_tr_path + file_name),
+                                                      dataset_name=self.dataset_name, accuracy=self.asm_accuracy)
+                                         for file_name in batch_y])
 
         pn_batch_asm_prim = np.array(
             [pn_batch[i] - np.sign(pn_batch_asm[i] - pn_batch[i]) * abs(pn_batch_asm[i] - pn_batch[i]) for i in
