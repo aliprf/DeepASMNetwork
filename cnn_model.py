@@ -76,7 +76,7 @@ class CNNModel:
             return flops.total_float_ops, params.total_parameters
 
     def create_MobileNet_nopose(self, inp_shape, output_len):
-        initializer = tf.random_uniform_initializer
+        initializer = tf.keras.initializers.RandomUniform(minval=-0.05, maxval=0.05, seed=None)
 
         mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=inp_shape,
                                                    alpha=1.0,
