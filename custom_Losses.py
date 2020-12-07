@@ -28,7 +28,7 @@ class Custom_losses:
                           ds_name, bold_landmarks_point_map):
 
         loss_main = tf.reduce_mean(
-            tf.math.multiply(bold_landmarks_point_map, tf.square(x_gt - x_pr)))
+            tf.math.multiply(bold_landmarks_point_map, tf.abs(x_gt - x_pr)))
         # loss_asm = 20 * asm_loss_weight * tf.abs(tf.reduce_mean(tf.math.multiply(bold_landmarks_point_map, tf.square(x_asm - x_pr))) -
         #                                       tf.reduce_mean(tf.math.multiply(bold_landmarks_point_map, tf.square(x_asm_prime - x_pr))))
 
