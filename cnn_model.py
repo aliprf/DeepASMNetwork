@@ -3,20 +3,16 @@ from configuration import DatasetName, DatasetType, \
 # from hg_Class import HourglassNet
 
 import tensorflow as tf
-import keras
+from tensorflow import keras
 from skimage.transform import resize
 
 from keras.regularizers import l2, l1
-
-# tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 from keras.models import Model
 from keras.applications import mobilenet_v2, mobilenet, resnet50, densenet
 from keras.layers import Dense, MaxPooling2D, Conv2D, Flatten, \
     BatchNormalization, Activation, GlobalAveragePooling2D, DepthwiseConv2D, Dropout, ReLU, Concatenate, Input, GlobalMaxPool2D
-
-from keras import backend as K
-import efficientnet.keras as efn
+import efficientnet.tfkeras as efn
 
 
 class CNNModel:
@@ -97,7 +93,11 @@ class CNNModel:
 
         x = mobilenet_model.get_layer('global_average_pooling2d').output  # 1280
         x = Dropout(0.5)(x)
-        out_landmarks = Dense(output_len, name='O_L')(x)
+        x = Dense(output_len)(x)
+        x = BatchNormalization(x)
+        x = keras.layers.LeakyReLU(x)
+        x = Dropout(0.5)(x)
+        out_landmarks = Dense(output_len, activation=keras.activations.linear, name='O_L')(x)
         inp = mobilenet_model.input
 
         revised_model = Model(inp, [out_landmarks])
@@ -106,7 +106,7 @@ class CNNModel:
         # plot_model(revised_model, to_file='mobileNet_v2_main.png', show_shapes=True, show_layer_names=True)
         model_json = revised_model.to_json()
 
-        with open("mobileNet_v2_main_multi_out.json", "w") as json_file:
+        with open("mobileNet_v2_main.json", "w") as json_file:
             json_file.write(model_json)
 
         return revised_model

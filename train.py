@@ -6,13 +6,12 @@ from cnn_model import CNNModel
 from custom_Losses import Custom_losses
 from Data_custom_generator import CustomHeatmapGenerator
 import tensorflow as tf
-import keras
+from tensorflow import keras
 
 
-tf.logging.set_verbosity(tf.logging.ERROR)
 from keras.callbacks import ModelCheckpoint
 
-from keras.optimizers import adam
+from keras.optimizers import Adam
 import numpy as np
 import matplotlib.pyplot as plt
 import math
