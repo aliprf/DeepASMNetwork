@@ -208,7 +208,7 @@ def print_image_arr(k, image, landmarks_x, landmarks_y):
     plt.scatter(x=landmarks_x[:], y=landmarks_y[:], c='#000000', s=15)
     plt.scatter(x=landmarks_x[:], y=landmarks_y[:], c='#fddb3a', s=8)
     plt.axis('off')
-    plt.savefig('name_' + str(k) + '.png', bbox_inches='tight')
+    plt.savefig('zzz_name_' + str(k) + '.png', bbox_inches='tight')
     # plt.show()
     plt.clf()
 

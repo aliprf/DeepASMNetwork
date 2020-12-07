@@ -44,6 +44,21 @@ class Train:
             self.img_path = WflwConf.augmented_train_image
             self.annotation_path = WflwConf.augmented_train_annotation
 
+    # def train_on_batch(self, arch, weight_path):
+    #     _lr = 1e-2
+    #     model = self.make_model(arch=arch, w_path=weight_path)
+    #     '''create optimizer'''
+    #     optimizer = self._get_optimizer(lr=_lr, beta_1=0.5, beta_2=0.999, decay=1e-6)
+    #
+    #     '''create sample generator'''
+    #     x_train_filenames, x_val_filenames, y_train_filenames, y_val_filenames = self._create_generators()
+    #
+    #     '''create train configuration'''
+    #     step_per_epoch = len(x_train_filenames) // LearningConfig.batch_size
+    #
+    #     for epoch in range(LearningConfig.epochs):
+    #         for batch_index in range(step_per_epoch):
+
     def train(self, arch, weight_path):
         '''create loss'''
         c_loss = Custom_losses(dataset_name=self.dataset_name, accuracy=90)
@@ -59,7 +74,7 @@ class Train:
         optimizer = self._get_optimizer(lr=_lr, beta_1=0.5, beta_2=0.999, decay=1e-6)
 
         '''create sample generator'''
-        x_train_filenames, x_val_filenames, y_train_filenames, y_val_filenames = self._create_generators()
+        x_train_filenames, y_train_filenames = self._create_generators()
 
         '''create train configuration'''
         step_per_epoch = len(x_train_filenames) // LearningConfig.batch_size
@@ -98,8 +113,7 @@ class Train:
                    optimizer, summary_writer, c_loss, bold_landmarks_point_map):
         with tf.GradientTape() as tape:
             '''create annotation_predicted'''
-            annotation_predicted = model(images)
-            # annotation_predicted = model.predict_on_batch(images)
+            annotation_predicted = model(images,  training=True)
             '''calculate loss'''
             loss_total, loss_main, loss_asm, loss_fw = c_loss.asm_assisted_loss(x_pr=annotation_predicted,
                                                                                 x_gt=annotation_gr,
@@ -166,15 +180,19 @@ class Train:
         filenames, labels = tf_utils.create_image_and_labels_name(img_path=self.img_path,
                                                                   annotation_path=self.annotation_path)
         filenames_shuffled, y_labels_shuffled = shuffle(filenames, labels)
-        x_train_filenames, x_val_filenames, y_train, y_val = train_test_split(
-            filenames_shuffled, y_labels_shuffled, test_size=0.01, random_state=1)
+        # x_train_filenames, x_val_filenames, y_train, y_val = train_test_split(
+        #     filenames_shuffled, y_labels_shuffled, test_size=0.01, random_state=1)
 
-        save(x_trains_path, x_train_filenames)
-        save(x_validations_path, x_val_filenames)
-        save(y_trains_path, y_train)
-        save(y_validations_path, y_val)
+        save(x_trains_path, filenames_shuffled)
+        save(x_validations_path, y_labels_shuffled)
 
-        return x_train_filenames, x_val_filenames, y_train, y_val
+        # save(x_trains_path, x_train_filenames)
+        # save(x_validations_path, x_val_filenames)
+        # save(y_trains_path, y_train)
+        # save(y_validations_path, y_val)
+
+        return filenames_shuffled, y_labels_shuffled
+        # return x_train_filenames, x_val_filenames, y_train, y_val
 
     def _get_batch_sample(self, batch_index, x_train_filenames, y_train_filenames):
         img_path = self.img_path
@@ -187,36 +205,37 @@ class Train:
                   batch_index * LearningConfig.batch_size:(batch_index + 1) * LearningConfig.batch_size]
         '''create img and annotations'''
         img_batch = np.array([imread(img_path + file_name) for file_name in batch_x]) / 255.0
-        if self.dataset_name == DatasetName.cofw:  # this ds is not normalized
-            pn_batch = np.array([load(pn_tr_path + file_name) for file_name in batch_y])
-            '''creating y_asm'''
-            pn_batch_asm = np.array([tf_utils.get_asm(input=load(pn_tr_path + file_name),
-                                                      dataset_name=self.dataset_name, accuracy=self.asm_accuracy)
+        # if self.dataset_name == DatasetName.cofw:  # this ds is not normalized
+        #     pn_batch = np.array([load(pn_tr_path + file_name) for file_name in batch_y])
+        #     '''creating y_asm'''
+        #     pn_batch_asm = np.array([tf_utils.get_asm(input=load(pn_tr_path + file_name),
+        #                                               dataset_name=self.dataset_name, accuracy=self.asm_accuracy)
+        #                              for file_name in batch_y])
+        # else:
+        pn_batch = np.array([self._load_and_normalize(pn_tr_path + file_name) for file_name in batch_y])
+        '''creating y_asm'''
+        pn_batch_asm = np.array([tf_utils.get_asm(input=self._load_and_normalize(pn_tr_path + file_name),
+                                                  dataset_name=self.dataset_name, accuracy=self.asm_accuracy)
                                      for file_name in batch_y])
-        else:
-            pn_batch = np.array([self._load_and_normalize(pn_tr_path + file_name) for file_name in batch_y])
-            '''creating y_asm'''
-            pn_batch_asm = np.array([tf_utils.get_asm(input=self._load_and_normalize(pn_tr_path + file_name),
-                                                      dataset_name=self.dataset_name, accuracy=self.asm_accuracy)
-                                         for file_name in batch_y])
 
         pn_batch_asm_prim = np.array(
             [pn_batch[i] - np.sign(pn_batch_asm[i] - pn_batch[i]) * abs(pn_batch_asm[i] - pn_batch[i]) for i in
              range(len(pn_batch_asm))])
         '''test: print'''
         # image_utility = ImageUtility()
-        # for i in range(10):
+        # for i in range(LearningConfig.batch_size):
         #     gr_s, gr_px_1, gr_Py_1 = image_utility.create_landmarks_from_normalized(pn_batch[i], 224, 224, 112, 112)
         #     asm_p_s, asm_px_1, asm_Py_1 = image_utility.create_landmarks_from_normalized(pn_batch_asm[i], 224, 224, 112,
         #                                                                                  112)
         #     asm_p_s, asm_p_px_00, asm_p_Py_00 = image_utility.create_landmarks_from_normalized(pn_batch_asm_prim[i],
         #                                                                                        224, 224, 112, 112)
-        #     imgpr.print_image_arr_multi(str(batch_index+1*(i+1))+'pts_gt', img_batch[i],
-        #                               [gr_px_1, asm_px_1, asm_p_px_00], [gr_Py_1, asm_Py_1, asm_p_Py_00])
+        #     # imgpr.print_image_arr_multi(str(batch_index+1*(i+1))+'pts_gt', img_batch[i],
+        #     #                           [gr_px_1, asm_px_1, asm_p_px_00], [gr_Py_1, asm_Py_1, asm_p_Py_00])
         #     imgpr.print_image_arr(str(batch_index + 1 * (i + 1)) + 'pts_gt', img_batch[i], gr_px_1, gr_Py_1)
-        #     imgpr.print_image_arr(str(batch_index + 1 * (i + 1)) + 'pts_asm', img_batch[i], asm_px_1, asm_Py_1)
-        #     imgpr.print_image_arr(str(batch_index + 1 * (i + 1)) + 'pts_asm_prim', img_batch[i], asm_p_px_00,
-        #                           asm_p_Py_00)
+        #     print(str(batch_index + 1 * (i + 1)))
+        #     # imgpr.print_image_arr(str(batch_index + 1 * (i + 1)) + 'pts_asm', img_batch[i], asm_px_1, asm_Py_1)
+        #     # imgpr.print_image_arr(str(batch_index + 1 * (i + 1)) + 'pts_asm_prim', img_batch[i], asm_p_px_00,
+        #     #                       asm_p_Py_00)
 
         return img_batch, pn_batch, pn_batch_asm, pn_batch_asm_prim
 
