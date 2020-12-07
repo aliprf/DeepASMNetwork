@@ -86,6 +86,7 @@ class Train:
                                                                         ds_name=self.dataset_name)
         '''start train:'''
         for epoch in range(LearningConfig.epochs):
+            x_train_filenames, y_train_filenames = self._create_generators()
             for batch_index in range(step_per_epoch):
                 '''load annotation and images'''
                 images, annotation_gr, annotation_asm, annotation_asm_prime = self._get_batch_sample(
@@ -172,8 +173,6 @@ class Train:
         fn_prefix = './file_names/' + self.dataset_name + '_'
         x_trains_path = fn_prefix + 'x_train_fns.npy'
         x_validations_path = fn_prefix + 'x_val_fns.npy'
-        y_trains_path = fn_prefix + 'y_train_fns.npy'
-        y_validations_path = fn_prefix + 'y_val_fns.npy'
 
         tf_utils = TFRecordUtility(number_of_landmark=self.num_landmark)
 
@@ -183,8 +182,8 @@ class Train:
         # x_train_filenames, x_val_filenames, y_train, y_val = train_test_split(
         #     filenames_shuffled, y_labels_shuffled, test_size=0.01, random_state=1)
 
-        save(x_trains_path, filenames_shuffled)
-        save(x_validations_path, y_labels_shuffled)
+        # save(x_trains_path, filenames_shuffled)
+        # save(x_validations_path, y_labels_shuffled)
 
         # save(x_trains_path, x_train_filenames)
         # save(x_validations_path, x_val_filenames)

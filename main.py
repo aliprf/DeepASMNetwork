@@ -17,7 +17,7 @@ if __name__ == '__main__':
     '''train new method: '''
     trainer = Train(dataset_name=DatasetName.ibug, asm_accuracy=90)
     # trainer.train(arch='efficientNet', weight_path=None)
-    trainer.train(arch='mobileNetV2_nopose', weight_path=None)
+    trainer.train(arch='mobileNetV2_nopose', weight_path='./models/last.h5')
 
     # x = np.random.normal(size=100)
     # imgp.print_histogram(x)
