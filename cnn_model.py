@@ -30,7 +30,7 @@ class CNNModel:
             model = self.create_MobileNet_nopose(inp_shape=[224,224,3], output_len=output_len)
 
         elif arch == 'efficientNet':
-            model = self.create_efficientNet(inp_shape=[224,224,3], input_tensor=train_images, output_len=output_len)
+            model = self.create_efficientNet(inp_shape=[224,224,3], input_tensor=None, output_len=output_len)
 
         return model
 
