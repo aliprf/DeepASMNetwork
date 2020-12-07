@@ -76,7 +76,7 @@ class CNNModel:
             return flops.total_float_ops, params.total_parameters
 
     def create_MobileNet_nopose(self, inp_shape, output_len):
-        initializer = tf.keras.initializers.RandomUniform(minval=-0.05, maxval=0.05, seed=None)
+        initializer = tf.keras.initializers.RandomUniform(minval=0.0, maxval=0.05, seed=None)
 
         mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=inp_shape,
                                                    alpha=1.0,
@@ -136,7 +136,7 @@ class CNNModel:
         x = eff_net.get_layer('top_activation').output
         x = GlobalAveragePooling2D()(x)
         x = keras.layers.Dropout(rate=0.3)(x)
-        output = Dense(output_len, activation='linear', name='out')(x)
+        output = Dense(output_len, activation='linear', use_bias=False, name='out')(x)
 
         eff_net = Model(inp, output)
 
