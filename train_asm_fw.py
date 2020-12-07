@@ -68,10 +68,10 @@ class Train:
             "./train_logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
         '''making models'''
-        _lr = 1e-2
+        _lr=0.05
         model = self.make_model(arch=arch, w_path=weight_path)
         '''create optimizer'''
-        optimizer = self._get_optimizer(lr=_lr, beta_1=0.5, beta_2=0.999, decay=1e-6)
+        optimizer = self._get_optimizer(lr=_lr)
 
         '''create sample generator'''
         x_train_filenames, y_train_filenames = self._create_generators()
