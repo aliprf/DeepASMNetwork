@@ -3,8 +3,8 @@ from configuration import DatasetName, DatasetType, \
 # from hg_Class import HourglassNet
 
 import tensorflow as tf
-# from tensorflow import keras
-import keras
+from tensorflow import keras
+# import keras
 from skimage.transform import resize
 
 from keras.regularizers import l2, l1
