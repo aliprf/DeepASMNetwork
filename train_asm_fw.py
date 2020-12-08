@@ -105,11 +105,12 @@ class Train:
                                 optimizer=optimizer, summary_writer=summary_writer, c_loss=c_loss,
                                 bold_landmarks_point_map=bold_landmarks_point_map)
             '''evaluating part'''
-            self._create_evaluation_batch()
+            img_batch_eval, pn_batch_eval = self._create_evaluation_batch(x_val_filenames, y_val_filenames)
+            loss_eval = self._eval_model(img_batch_eval, pn_batch_eval, model)
             '''save weights'''
-            model.save('./models/asm_fw_model_' + str(epoch) + '_' + self.dataset_name + '_' + str(loss_total) + '.h5')
+            model.save('./models/asm_fw_model_' + str(epoch) + '_' + self.dataset_name + '_' + str(loss_eval) + '.h5')
             model.save_weights(
-                './models/asm_fw_weight_' + '_' + str(epoch) + self.dataset_name + '_' + str(loss_total) + '.h5')
+                './models/asm_fw_weight_' + '_' + str(epoch) + self.dataset_name + '_' + str(loss_eval) + '.h5')
             if epoch != 0 and epoch % 100 == 0:
                 _lr -= _lr * 0.4
                 optimizer = self._get_optimizer(lr=_lr)
@@ -144,6 +145,11 @@ class Train:
             tf.summary.scalar('loss_main', loss_main, step=epoch)
             tf.summary.scalar('loss_asm', loss_asm, step=epoch)
             tf.summary.scalar('loss_fw', loss_fw, step=epoch)
+
+    def _eval_model(self, img_batch_eval, pn_batch_eval, model):
+        annotation_predicted = model(img_batch_eval)
+        los_eval = tf.reduce_mean(tf.abs(pn_batch_eval - annotation_predicted))
+        return los_eval
 
     def create_FL_highligted_points_map(self, ds_name, batch_size, num_of_landmark):
         # todo
