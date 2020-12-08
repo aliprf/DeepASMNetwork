@@ -68,7 +68,7 @@ class Train:
             "./train_logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
         '''making models'''
-        _lr = 0.01
+        _lr = 0.0005
         model = self.make_model(arch=arch, w_path=weight_path)
         '''create optimizer'''
         optimizer = self._get_optimizer(lr=_lr)
@@ -107,6 +107,8 @@ class Train:
             '''evaluating part'''
             img_batch_eval, pn_batch_eval = self._create_evaluation_batch(x_val_filenames, y_val_filenames)
             loss_eval = self._eval_model(img_batch_eval, pn_batch_eval, model)
+            with summary_writer.as_default():
+                tf.summary.scalar('Eval-LOSS', loss_eval, step=epoch)
             '''save weights'''
             model.save('./models/asm_fw_model_' + str(epoch) + '_' + self.dataset_name + '_' + str(loss_eval) + '.h5')
             model.save_weights(
