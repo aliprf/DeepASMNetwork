@@ -68,13 +68,14 @@ class Train:
             "./train_logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
         '''making models'''
-        _lr=0.1
+        _lr = 0.005
         model = self.make_model(arch=arch, w_path=weight_path)
         '''create optimizer'''
         optimizer = self._get_optimizer(lr=_lr)
 
         '''create sample generator'''
-        x_train_filenames, y_train_filenames = self._create_generators()
+        x_train_filenames, x_val_filenames, y_train_filenames, y_val_filenames = self._create_generators()
+        # x_train_filenames, y_train_filenames = self._create_generators()
 
         '''create train configuration'''
         step_per_epoch = len(x_train_filenames) // LearningConfig.batch_size
@@ -84,9 +85,10 @@ class Train:
         bold_landmarks_point_map = self.create_FL_highligted_points_map(batch_size=LearningConfig.batch_size,
                                                                         num_of_landmark=self.num_landmark,
                                                                         ds_name=self.dataset_name)
+        '''loss array to figure out '''
         '''start train:'''
         for epoch in range(LearningConfig.epochs):
-            x_train_filenames, y_train_filenames = self._create_generators()
+            x_train_filenames, y_train_filenames = self._shuffle_data(x_train_filenames, y_train_filenames)
             for batch_index in range(step_per_epoch):
                 '''load annotation and images'''
                 images, annotation_gr, annotation_asm, annotation_asm_prime = self._get_batch_sample(
@@ -96,14 +98,18 @@ class Train:
                 images = tf.cast(images, tf.float32)
                 annotation_gr = tf.cast(annotation_gr, tf.float32)
                 '''train step'''
-                self.train_step(epoch=epoch, step=batch_index, total_steps=step_per_epoch, images=images, model=model,
+                self.train_step(epoch=epoch, step=batch_index, total_steps=step_per_epoch, images=images,
+                                model=model,
                                 annotation_gr=annotation_gr, annotation_asm=annotation_asm,
                                 annotation_asm_prime=annotation_asm_prime,
                                 optimizer=optimizer, summary_writer=summary_writer, c_loss=c_loss,
                                 bold_landmarks_point_map=bold_landmarks_point_map)
+            '''evaluating part'''
+            self._create_evaluation_batch()
             '''save weights'''
-            model.save('./models/asm_fw_model_' + str(epoch) + '_' + self.dataset_name + '_.h5')
-            model.save_weights('./models/asm_fw_weight_' + '_' + str(epoch) + self.dataset_name + '_.h5')
+            model.save('./models/asm_fw_model_' + str(epoch) + '_' + self.dataset_name + '_' + str(loss_total) + '.h5')
+            model.save_weights(
+                './models/asm_fw_weight_' + '_' + str(epoch) + self.dataset_name + '_' + str(loss_total) + '.h5')
             if epoch != 0 and epoch % 100 == 0:
                 _lr -= _lr * 0.4
                 optimizer = self._get_optimizer(lr=_lr)
@@ -114,7 +120,7 @@ class Train:
                    optimizer, summary_writer, c_loss, bold_landmarks_point_map):
         with tf.GradientTape() as tape:
             '''create annotation_predicted'''
-            annotation_predicted = model(images,  training=True)
+            annotation_predicted = model(images, training=True)
             '''calculate loss'''
             loss_total, loss_main, loss_asm, loss_fw = c_loss.asm_assisted_loss(x_pr=annotation_predicted,
                                                                                 x_gt=annotation_gr,
@@ -169,18 +175,22 @@ class Train:
         return tf.keras.optimizers.Adam(lr=lr, beta_1=beta_1, beta_2=beta_2, decay=decay)
         # return tf.keras.optimizers.SGD(lr=lr)
 
+    def _shuffle_data(self, filenames, labels):
+        filenames_shuffled, y_labels_shuffled = shuffle(filenames, labels)
+        return filenames_shuffled, y_labels_shuffled
+
     def _create_generators(self):
         fn_prefix = './file_names/' + self.dataset_name + '_'
-        x_trains_path = fn_prefix + 'x_train_fns.npy'
-        x_validations_path = fn_prefix + 'x_val_fns.npy'
+        # x_trains_path = fn_prefix + 'x_train_fns.npy'
+        # x_validations_path = fn_prefix + 'x_val_fns.npy'
 
         tf_utils = TFRecordUtility(number_of_landmark=self.num_landmark)
 
         filenames, labels = tf_utils.create_image_and_labels_name(img_path=self.img_path,
                                                                   annotation_path=self.annotation_path)
         filenames_shuffled, y_labels_shuffled = shuffle(filenames, labels)
-        # x_train_filenames, x_val_filenames, y_train, y_val = train_test_split(
-        #     filenames_shuffled, y_labels_shuffled, test_size=0.01, random_state=1)
+        x_train_filenames, x_val_filenames, y_train, y_val = train_test_split(
+            filenames_shuffled, y_labels_shuffled, test_size=LearningConfig.batch_size, random_state=1)
 
         # save(x_trains_path, filenames_shuffled)
         # save(x_validations_path, y_labels_shuffled)
@@ -190,8 +200,19 @@ class Train:
         # save(y_trains_path, y_train)
         # save(y_validations_path, y_val)
 
-        return filenames_shuffled, y_labels_shuffled
-        # return x_train_filenames, x_val_filenames, y_train, y_val
+        # return filenames_shuffled, y_labels_shuffled
+        return x_train_filenames, x_val_filenames, y_train, y_val
+
+    def _create_evaluation_batch(self, x_eval_filenames, y_eval_filenames):
+        img_path = self.img_path
+        pn_tr_path = self.annotation_path
+        '''create batch data and normalize images'''
+        batch_x = x_eval_filenames[0:LearningConfig.batch_size]
+        batch_y = y_eval_filenames[0:LearningConfig.batch_size]
+        '''create img and annotations'''
+        img_batch = np.array([imread(img_path + file_name) for file_name in batch_x]) / 255.0
+        pn_batch = np.array([self._load_and_normalize(pn_tr_path + file_name) for file_name in batch_y])
+        return img_batch, pn_batch
 
     def _get_batch_sample(self, batch_index, x_train_filenames, y_train_filenames):
         img_path = self.img_path
@@ -215,7 +236,7 @@ class Train:
         '''creating y_asm'''
         pn_batch_asm = np.array([tf_utils.get_asm(input=self._load_and_normalize(pn_tr_path + file_name),
                                                   dataset_name=self.dataset_name, accuracy=self.asm_accuracy)
-                                     for file_name in batch_y])
+                                 for file_name in batch_y])
 
         pn_batch_asm_prim = np.array(
             [pn_batch[i] - np.sign(pn_batch_asm[i] - pn_batch[i]) * abs(pn_batch_asm[i] - pn_batch[i]) for i in
