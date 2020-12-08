@@ -27,7 +27,8 @@ class Custom_losses:
     def asm_assisted_loss(self, x_pr, x_gt, x_asm, x_asm_prime, main_loss_weight, asm_loss_weight, fw_loss_weight,
                           ds_name, bold_landmarks_point_map):
 
-        loss_main = 50 * main_loss_weight * tf.reduce_mean(tf.math.multiply(bold_landmarks_point_map, tf.abs(x_gt - x_pr)))
+        # loss_main = 50 * main_loss_weight * tf.reduce_mean(tf.math.multiply(bold_landmarks_point_map, tf.abs(x_gt - x_pr)))
+        loss_main = 100 * main_loss_weight * tf.reduce_mean(tf.abs(x_gt - x_pr))
         loss_asm = 20 * asm_loss_weight * tf.abs(
             tf.reduce_mean(tf.abs(x_asm - x_pr)) - tf.reduce_mean(tf.abs(x_asm_prime - x_pr)))
         loss_fw = fw_loss_weight * self.calculate_fw_loss(x_pr=x_pr, x_gt=x_gt, ds_name=ds_name)

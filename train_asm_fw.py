@@ -148,7 +148,7 @@ class Train:
 
     def _eval_model(self, img_batch_eval, pn_batch_eval, model):
         annotation_predicted = model(img_batch_eval)
-        los_eval = tf.reduce_mean(tf.abs(pn_batch_eval - annotation_predicted))
+        los_eval = np.array(tf.reduce_mean(tf.abs(pn_batch_eval - annotation_predicted)))
         return los_eval
 
     def create_FL_highligted_points_map(self, ds_name, batch_size, num_of_landmark):
