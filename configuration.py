@@ -8,7 +8,6 @@ class DatasetName:
     wflw = 'wflw'
 
 
-
 class DatasetType:
     data_type_train = 0
     data_type_validation = 1
@@ -56,8 +55,8 @@ class LearningConfig:
     MIN_LR = 1e-5
     MAX_LR = 1e-2
     STEP_SIZE = 10
-    # batch_size = 10
-    batch_size = 85
+    batch_size = 20
+    # batch_size = 90
     # steps_per_validation_epochs = 5
 
     epochs = 1500
@@ -66,7 +65,6 @@ class LearningConfig:
     pose_len = 3
 
     reg_term_ASM = 0.8
-
 
 
 class InputDataSize:
@@ -154,10 +152,11 @@ class WflwConf:
     augmentation_factor_rotate = 15  # create . image from 1
     num_of_landmarks = 98
 
+
 class CofwConf:
     # Cofw_prefix_path = '/media/data3/ali/FL/new_data/cofw/'  # --> zeus
-    Cofw_prefix_path = '/media/data2/alip/FL/new_data/cofw/'  # --> atlas
-    # Cofw_prefix_path = '/media/ali/data/new_data/cofw/'  # --> local
+    # Cofw_prefix_path = '/media/data2/alip/FL/new_data/cofw/'  # --> atlas
+    Cofw_prefix_path = '/media/ali/data/new_data/cofw/'  # --> local
 
     augmented_train_pose = Cofw_prefix_path + 'training_set/augmented/pose/'
     augmented_train_annotation = Cofw_prefix_path + 'training_set/augmented/annotations/'
@@ -185,8 +184,8 @@ class CofwConf:
 
 
 class IbugConf:
-    w300w_prefix_path = '/media/data3/ali/FL/new_data/300W/'  # --> zeus
-    # w300w_prefix_path = '/media/data2/alip/FL/new_data/300W/'  # --> atlas
+    # w300w_prefix_path = '/media/data3/ali/FL/new_data/300W/'  # --> zeus
+    w300w_prefix_path = '/media/data2/alip/FL/new_data/300W/'  # --> atlas
     # w300w_prefix_path = '/media/ali/data/new_data/300W/'  # --> local
 
     orig_300W_train = w300w_prefix_path + 'orig_300W_train/'
@@ -206,11 +205,10 @@ class IbugConf:
     orig_number_of_test_challenging = 135
 
     '''after augmentation'''
-    number_of_all_sample = 134688   # afw, train_helen, train_lfpw
+    number_of_all_sample = 134688  # afw, train_helen, train_lfpw
     number_of_train_sample = number_of_all_sample * 0.95  # 95 % for train
     number_of_evaluation_sample = number_of_all_sample * 0.05  # 5% for evaluation
 
     augmentation_factor = 4  # create . image from 1
     augmentation_factor_rotate = 20  # create . image from 1
     num_of_landmarks = 68
-

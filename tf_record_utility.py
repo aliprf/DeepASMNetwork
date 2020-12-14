@@ -1561,7 +1561,7 @@ class TFRecordUtility:
         print("random_augment_from_rotated DONE.")
         return number_of_samples
 
-    def get_asm(self, input, dataset_name, accuracy):
+    def get_asm(self, input, dataset_name, accuracy, alpha=1.0):
         pca_utils = PCAUtility()
 
         eigenvalues = load('pca_obj/' + dataset_name + pca_utils.eigenvalues_prefix + str(accuracy) + ".npy")
@@ -1569,7 +1569,7 @@ class TFRecordUtility:
         meanvector = load('pca_obj/' + dataset_name + pca_utils.meanvector_prefix + str(accuracy) + ".npy")
 
         b_vector_p = pca_utils.calculate_b_vector(input, True, eigenvalues, eigenvectors, meanvector)
-        out = meanvector + np.dot(eigenvectors, b_vector_p)
+        out = alpha*meanvector + np.dot(eigenvectors, b_vector_p)
         return out
 
     def create_point_imgpath_map_tf_record(self, dataset_name):

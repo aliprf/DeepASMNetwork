@@ -24,16 +24,13 @@ class Custom_losses:
         self.dataset_name = dataset_name
         self.accuracy = accuracy
 
-    def asm_assisted_loss(self, x_pr, x_gt, x_asm, x_asm_prime, main_loss_weight, asm_loss_weight, fw_loss_weight,
-                          ds_name, bold_landmarks_point_map):
+    def asm_assisted_loss(self, x_pr, x_gt, adoptive_weight, ds_name):
 
-        # loss_main = 50 * main_loss_weight * tf.reduce_mean(tf.math.multiply(bold_landmarks_point_map, tf.abs(x_gt - x_pr)))
-        loss_main = 100 * main_loss_weight * tf.reduce_mean(tf.abs(x_gt - x_pr))
-        loss_asm = 20 * asm_loss_weight * tf.abs(
-            tf.reduce_mean(tf.abs(x_asm - x_pr)) - tf.reduce_mean(tf.abs(x_asm_prime - x_pr)))
-        loss_fw = fw_loss_weight * self.calculate_fw_loss(x_pr=x_pr, x_gt=x_gt, ds_name=ds_name)
+        # loss_main = 100 * tf.reduce_mean(tf.square(x_gt - x_pr))
+        loss_main = 100*tf.reduce_mean(tf.math.multiply(adoptive_weight, tf.square(x_gt - x_pr)))
+        loss_fw = self.calculate_fw_loss(x_pr=x_pr, x_gt=x_gt, ds_name=ds_name)
 
-        loss_total = loss_main + loss_asm + loss_fw
+        loss_total = loss_main + loss_fw
 
         # loss_main = tf.reduce_mean(tf.math.multiply(bold_landmarks_point_map, tf.square(x_gt - x_pr)))
         # loss_main = tf.reduce_mean(tf.math.multiply(bold_landmarks_point_map, tf.sqrt(tf.abs(x_gt - x_pr))))
@@ -48,7 +45,7 @@ class Custom_losses:
         #
         # loss_total = loss_main # + loss_asm + loss_fw
         # loss_total = loss_main + loss_asm + loss_fw
-        return loss_total, loss_main, loss_asm, loss_fw
+        return loss_total, loss_main, loss_fw
 
     def calculate_fw_loss(self, x_pr, x_gt, ds_name):
         # inter_ocular_dist = np.array(

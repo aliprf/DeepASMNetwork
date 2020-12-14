@@ -191,7 +191,7 @@ def print_image_arr_multi(k, image, landmarks_x_arr, landmarks_y_arr):
         plt.scatter(x=landmarks_x_arr[i][:], y=landmarks_y_arr[i][:], c=c[i][0], s=15)
         plt.scatter(x=landmarks_x_arr[i][:], y=landmarks_y_arr[i][:], c=c[i][1], s=8)
     plt.axis('off')
-    plt.savefig('name_' + str(k) + '.png', bbox_inches='tight')
+    plt.savefig('zzzname_' + str(k) + '.png', bbox_inches='tight')
     # plt.show()
     plt.clf()
 

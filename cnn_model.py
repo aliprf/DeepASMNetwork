@@ -21,11 +21,11 @@ class CNNModel:
 
         if arch == 'ASMNet':
             # self.calculate_flops(arch, output_len)
-            model = self.create_ASMNet(inp_tensor=train_images, inp_shape=None, output_len=output_len)
+            model = self.create_ASMNet(inp_shape=[224,224,3], output_len=output_len)
 
         elif arch == 'mobileNetV2':
             # self.calculate_flops(arch, output_len)
-            model = self.create_MobileNet(inp_tensor=train_images, output_len=output_len, inp_shape=None)
+            model = self.create_MobileNet(inp_shape=[224,224,3], output_len=output_len)
 
         elif arch == 'mobileNetV2_nopose':
             model = self.create_MobileNet_nopose(inp_shape=[224,224,3], output_len=output_len)
@@ -98,8 +98,7 @@ class CNNModel:
 
         x = mobilenet_model.get_layer('global_average_pooling2d').output  # 1280
         x = Dropout(0.5)(x)
-        out_landmarks = Dense(output_len, activation=keras.activations.linear,
-                              use_bias=False, kernel_initializer=initializer, name='O_L')(x)
+        out_landmarks = Dense(output_len, activation=keras.activations.linear, kernel_initializer=initializer, name='O_L')(x)
         inp = mobilenet_model.input
 
         revised_model = Model(inp, [out_landmarks])
@@ -135,7 +134,7 @@ class CNNModel:
 
         x = eff_net.get_layer('top_activation').output
         x = GlobalAveragePooling2D()(x)
-        x = keras.layers.Dropout(rate=0.3)(x)
+        x = keras.layers.Dropout(rate=0.5)(x)
         output = Dense(output_len, activation='linear', use_bias=False, name='out')(x)
 
         eff_net = Model(inp, output)
@@ -157,12 +156,11 @@ class CNNModel:
         #     json_file.write(model_json)
         return eff_net
 
-    def create_MobileNet(self, inp_tensor, output_len, inp_shape):
+    def create_MobileNet(self, output_len, inp_shape):
         mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=inp_shape,
                                                    alpha=1.0,
                                                    include_top=True,
                                                    weights=None,
-                                                   input_tensor=inp_tensor,
                                                    pooling=None)
         # model_json = mobilenet_model.to_json()
         #

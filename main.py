@@ -13,19 +13,16 @@ from train_asm_fw import Train
 import img_printer as imgp
 
 if __name__ == '__main__':
-
     '''train new method: '''
-    trainer = Train(dataset_name=DatasetName.ibug, asm_accuracy=90)
-    # trainer.train(arch='efficientNet', weight_path=None)
-    trainer.train(arch='mobileNetV2_nopose', weight_path='./models/last.h5')
+    trainer = Train(dataset_name=DatasetName.ibug)
+    trainer.train(arch='mobileNetV2_nopose', weight_path=None)
+    # trainer.train(arch='mobileNetV2_nopose', weight_path='./models/last.h5')
 
     # x = np.random.normal(size=100)
     # imgp.print_histogram(x)
     # imgp.print_histogram2d(data[0], data[1])
     # imgp.print_histogram1()
 
-
-    # pca_utility = PCAUtility()
     # cnn_model = CNNModel()
     # image_utility = ImageUtility()
     #
@@ -54,10 +51,14 @@ if __name__ == '__main__':
     # tf_record_util.detect_pose_and_save(dataset_name=DatasetName.cofw)
 
     '''     create and save PCA objects'''
-    # pca_utility.create_pca_from_points(DatasetName.wflw, 80)
-    # pca_utility.create_pca_from_npy(DatasetName.cofw, 90)
+    pca_utility = PCAUtility()
+    pca_utility.create_pca_from_npy(DatasetName.ibug, [80, 85, 90, 95, 97, 99])  # normalized
+    pca_utility.create_pca_from_npy(DatasetName.cofw, [80, 85, 90, 95, 97, 99])  # NOT-normalized
+    pca_utility.create_pca_from_npy(DatasetName.wflw, [80, 85, 90, 95, 97, 99])  # normalized
+
     # pca_utility.create_pca_from_npy(DatasetName.ibug, 90)
     # pca_utility.create_pca_from_npy(DatasetName.wflw, 90)
+    # pca_utility.create_pca_from_points(DatasetName.wflw, 80)
     # pca_utility.test_pca_validity(DatasetName.wflw, 80)
 
     '''     create tfRecord:'''
@@ -126,7 +127,7 @@ if __name__ == '__main__':
     # test = Test(dataset_name=None, arch=None, num_output_layers=2, weight_fname=None, has_pose=True)
     # test.test_all_results('./final_weights', num_output_layers=2)
 
-    '''for testing KT''' #nme_ch:  6.22    6.76
+    '''for testing KT'''  # nme_ch:  6.22    6.76
     # test = Test(dataset_name=DatasetName.ibug_test, arch='efficientNet', num_output_layers=1,
     #             weight_fname='ds_ibug_ac_90_weights-38-10.79170.h5', has_pose=True, customLoss=False)
 
@@ -138,7 +139,6 @@ if __name__ == '__main__':
 
     # test = Test(dataset_name=DatasetName.ibug_test, arch='mobileNetV2_nopose', num_output_layers=2,
     #             weight_fname='ds_ibug_ac_100_weights-362-8.03336.h5', has_pose=True, customLoss=False)
-
 
     '''--> Train Model'''
     # trainer = Train(use_tf_record=True,
@@ -152,7 +152,6 @@ if __name__ == '__main__':
     #                 weight=None,
     #                 train_on_batch=False,
     #                 accuracy=95)
-
 
 # FLOPS: 604,444,425 --- Params: 2,436,043
 # FLOPS: 604,034,745 --- Params: 2,333,563

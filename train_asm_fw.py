@@ -25,7 +25,6 @@ import img_printer as imgpr
 class Train:
     def __init__(self, dataset_name, asm_accuracy=90):
         self.dataset_name = dataset_name
-        self.asm_accuracy = asm_accuracy
 
         if dataset_name == DatasetName.ibug or dataset_name == DatasetName.w300:
             self.num_landmark = IbugConf.num_of_landmarks * 2
@@ -44,21 +43,6 @@ class Train:
             self.img_path = WflwConf.augmented_train_image
             self.annotation_path = WflwConf.augmented_train_annotation
 
-    # def train_on_batch(self, arch, weight_path):
-    #     _lr = 1e-2
-    #     model = self.make_model(arch=arch, w_path=weight_path)
-    #     '''create optimizer'''
-    #     optimizer = self._get_optimizer(lr=_lr, beta_1=0.5, beta_2=0.999, decay=1e-6)
-    #
-    #     '''create sample generator'''
-    #     x_train_filenames, x_val_filenames, y_train_filenames, y_val_filenames = self._create_generators()
-    #
-    #     '''create train configuration'''
-    #     step_per_epoch = len(x_train_filenames) // LearningConfig.batch_size
-    #
-    #     for epoch in range(LearningConfig.epochs):
-    #         for batch_index in range(step_per_epoch):
-
     def train(self, arch, weight_path):
         '''create loss'''
         c_loss = Custom_losses(dataset_name=self.dataset_name, accuracy=90)
@@ -68,13 +52,15 @@ class Train:
             "./train_logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
         '''making models'''
-        _lr = 0.0005
+        _lr = 0.09
         model = self.make_model(arch=arch, w_path=weight_path)
         '''create optimizer'''
         optimizer = self._get_optimizer(lr=_lr)
 
         '''create sample generator'''
         x_train_filenames, x_val_filenames, y_train_filenames, y_val_filenames = self._create_generators()
+        # adoptive_weight = self.calculate_adoptive_weight(epoch=0, y_train_filenames=y_train_filenames, weight_value=3)
+
         # x_train_filenames, y_train_filenames = self._create_generators()
 
         '''create train configuration'''
@@ -82,16 +68,18 @@ class Train:
 
         '''create highlighted points'''
         # todo: need to complete this:
-        bold_landmarks_point_map = self.create_FL_highligted_points_map(batch_size=LearningConfig.batch_size,
-                                                                        num_of_landmark=self.num_landmark,
-                                                                        ds_name=self.dataset_name)
+        # bold_landmarks_point_map = self.create_FL_highligted_points_map(batch_size=LearningConfig.batch_size,
+        #                                                                 num_of_landmark=self.num_landmark,
+        #                                                                 ds_name=self.dataset_name)
         '''loss array to figure out '''
         '''start train:'''
+        adoptive_weight = np.ones(shape=[self.num_landmark])
+
         for epoch in range(LearningConfig.epochs):
             x_train_filenames, y_train_filenames = self._shuffle_data(x_train_filenames, y_train_filenames)
             for batch_index in range(step_per_epoch):
                 '''load annotation and images'''
-                images, annotation_gr, annotation_asm, annotation_asm_prime = self._get_batch_sample(
+                images, annotation_gr = self._get_batch_sample(
                     batch_index=batch_index, x_train_filenames=x_train_filenames,
                     y_train_filenames=y_train_filenames)
                 '''convert to tensor'''
@@ -100,10 +88,8 @@ class Train:
                 '''train step'''
                 self.train_step(epoch=epoch, step=batch_index, total_steps=step_per_epoch, images=images,
                                 model=model,
-                                annotation_gr=annotation_gr, annotation_asm=annotation_asm,
-                                annotation_asm_prime=annotation_asm_prime,
-                                optimizer=optimizer, summary_writer=summary_writer, c_loss=c_loss,
-                                bold_landmarks_point_map=bold_landmarks_point_map)
+                                annotation_gr=annotation_gr, adoptive_weight=adoptive_weight,
+                                optimizer=optimizer, summary_writer=summary_writer, c_loss=c_loss)
             '''evaluating part'''
             img_batch_eval, pn_batch_eval = self._create_evaluation_batch(x_val_filenames, y_val_filenames)
             loss_eval = self._eval_model(img_batch_eval, pn_batch_eval, model)
@@ -113,40 +99,71 @@ class Train:
             model.save('./models/asm_fw_model_' + str(epoch) + '_' + self.dataset_name + '_' + str(loss_eval) + '.h5')
             model.save_weights(
                 './models/asm_fw_weight_' + '_' + str(epoch) + self.dataset_name + '_' + str(loss_eval) + '.h5')
-            if epoch != 0 and epoch % 100 == 0:
-                _lr -= _lr * 0.4
+            if epoch != 0 and epoch % 20 == 0:
+                adoptive_weight = self.calculate_adoptive_weight(epoch=epoch, y_train_filenames=y_train_filenames,
+                                                                 weight_value=5)
+            if epoch != 0 and epoch % 50 == 0:
+                _lr -= _lr * 0.2
                 optimizer = self._get_optimizer(lr=_lr)
 
     # @tf.function
-    def train_step(self, epoch, step, total_steps, images, model, annotation_gr,
-                   annotation_asm, annotation_asm_prime,
-                   optimizer, summary_writer, c_loss, bold_landmarks_point_map):
+    def train_step(self, epoch, step, total_steps, images, model, annotation_gr, adoptive_weight,
+                   optimizer, summary_writer, c_loss):
         with tf.GradientTape() as tape:
             '''create annotation_predicted'''
             annotation_predicted = model(images, training=True)
             '''calculate loss'''
-            loss_total, loss_main, loss_asm, loss_fw = c_loss.asm_assisted_loss(x_pr=annotation_predicted,
-                                                                                x_gt=annotation_gr,
-                                                                                x_asm=annotation_asm,
-                                                                                x_asm_prime=annotation_asm_prime,
-                                                                                main_loss_weight=1.5,
-                                                                                asm_loss_weight=0.9,
-                                                                                fw_loss_weight=0.9,
-                                                                                ds_name=self.dataset_name,
-                                                                                bold_landmarks_point_map=bold_landmarks_point_map)
+            loss_total, loss_main, loss_fw = c_loss.asm_assisted_loss(x_pr=annotation_predicted,
+                                                                      x_gt=annotation_gr,
+                                                                      adoptive_weight=adoptive_weight,
+                                                                      ds_name=self.dataset_name)
         '''calculate gradient'''
         gradients_of_model = tape.gradient(loss_total, model.trainable_variables)
         '''apply Gradients:'''
         optimizer.apply_gradients(zip(gradients_of_model, model.trainable_variables))
         '''printing loss Values: '''
         tf.print("->EPOCH: ", str(epoch), "->STEP: ", str(step) + '/' + str(total_steps), ' -> : LOSS: ', loss_total,
-                 ' -> : loss_main: ', loss_main, ' -> : loss_asm: ', loss_asm, ' -> : loss_fw: ', loss_fw)
+                 ' -> : loss_main: ', loss_main, ' -> : loss_fw: ', loss_fw)
         # print('==--==--==--==--==--==--==--==--==--')
         with summary_writer.as_default():
             tf.summary.scalar('LOSS', loss_total, step=epoch)
             tf.summary.scalar('loss_main', loss_main, step=epoch)
-            tf.summary.scalar('loss_asm', loss_asm, step=epoch)
             tf.summary.scalar('loss_fw', loss_fw, step=epoch)
+
+    def calculate_adoptive_weight(self, epoch, y_train_filenames, weight_value):
+        tf_utils = TFRecordUtility(self.num_landmark)
+        if 0 <= epoch <= 30:
+            asm_acc = 80
+        elif 30 < epoch <= 60:
+            asm_acc = 85
+        elif 60 < epoch <= 100:
+            asm_acc = 90
+        elif 100 < epoch <= 150:
+            asm_acc = 95
+        else:
+            asm_acc = 97
+        '''for each point in training set, calc delta_i = ASM(gt_i)-pr_i: '''
+        if self.dataset_name == DatasetName.cofw:  # this ds is not normalized
+            pn_batch = np.array([load(self.annotation_path + file_name) for file_name in y_train_filenames])
+            pn_batch_asm = np.array([tf_utils.get_asm(input=load(self.annotation_path + file_name),
+                                                      dataset_name=self.dataset_name, accuracy=asm_acc)
+                                     for file_name in y_train_filenames])
+        else:
+            pn_batch = np.array(
+                [self._load_and_normalize(self.annotation_path + file_name) for file_name in y_train_filenames])
+            pn_batch_asm = np.array([tf_utils.get_asm(input=self._load_and_normalize(self.annotation_path + file_name),
+                                                      dataset_name=self.dataset_name, accuracy=asm_acc)
+                                     for file_name in y_train_filenames])
+        '''phi = mean(delta_i s)'''
+        delta = np.array([abs(pn_batch[i] - pn_batch_asm[i]) for i in range(len(pn_batch))])
+        phi = np.mean(delta, axis=0)
+        '''get index on 10% of max items in phi'''
+        max_indices = phi.argsort()[-int(0.2*self.num_landmark):][::-1]
+        '''create adoptive weight: alpha: if in max else: 1'''
+        adaptive_weight = np.ones_like(phi)
+        for i in range(len(max_indices)): adaptive_weight[max_indices[i]] = weight_value
+
+        return adaptive_weight
 
     def _eval_model(self, img_batch_eval, pn_batch_eval, model):
         annotation_predicted = model(img_batch_eval)
@@ -225,7 +242,7 @@ class Train:
     def _get_batch_sample(self, batch_index, x_train_filenames, y_train_filenames):
         img_path = self.img_path
         pn_tr_path = self.annotation_path
-        tf_utils = TFRecordUtility(self.num_landmark)
+        # tf_utils = TFRecordUtility(self.num_landmark)
         '''create batch data and normalize images'''
         batch_x = x_train_filenames[
                   batch_index * LearningConfig.batch_size:(batch_index + 1) * LearningConfig.batch_size]
@@ -233,39 +250,65 @@ class Train:
                   batch_index * LearningConfig.batch_size:(batch_index + 1) * LearningConfig.batch_size]
         '''create img and annotations'''
         img_batch = np.array([imread(img_path + file_name) for file_name in batch_x]) / 255.0
-        # if self.dataset_name == DatasetName.cofw:  # this ds is not normalized
-        #     pn_batch = np.array([load(pn_tr_path + file_name) for file_name in batch_y])
-        #     '''creating y_asm'''
-        #     pn_batch_asm = np.array([tf_utils.get_asm(input=load(pn_tr_path + file_name),
-        #                                               dataset_name=self.dataset_name, accuracy=self.asm_accuracy)
-        #                              for file_name in batch_y])
-        # else:
-        pn_batch = np.array([self._load_and_normalize(pn_tr_path + file_name) for file_name in batch_y])
-        '''creating y_asm'''
-        pn_batch_asm = np.array([tf_utils.get_asm(input=self._load_and_normalize(pn_tr_path + file_name),
-                                                  dataset_name=self.dataset_name, accuracy=self.asm_accuracy)
-                                 for file_name in batch_y])
+        if self.dataset_name == DatasetName.cofw:  # this ds is not normalized
+            pn_batch = np.array([load(pn_tr_path + file_name) for file_name in batch_y])
+        else:
+            pn_batch = np.array([self._load_and_normalize(pn_tr_path + file_name) for file_name in batch_y])
+        return img_batch, pn_batch
 
-        pn_batch_asm_prim = np.array(
-            [pn_batch[i] - np.sign(pn_batch_asm[i] - pn_batch[i]) * abs(pn_batch_asm[i] - pn_batch[i]) for i in
-             range(len(pn_batch_asm))])
-        '''test: print'''
-        # image_utility = ImageUtility()
-        # for i in range(LearningConfig.batch_size):
-        #     gr_s, gr_px_1, gr_Py_1 = image_utility.create_landmarks_from_normalized(pn_batch[i], 224, 224, 112, 112)
-        #     asm_p_s, asm_px_1, asm_Py_1 = image_utility.create_landmarks_from_normalized(pn_batch_asm[i], 224, 224, 112,
-        #                                                                                  112)
-        #     asm_p_s, asm_p_px_00, asm_p_Py_00 = image_utility.create_landmarks_from_normalized(pn_batch_asm_prim[i],
-        #                                                                                        224, 224, 112, 112)
-        #     # imgpr.print_image_arr_multi(str(batch_index+1*(i+1))+'pts_gt', img_batch[i],
-        #     #                           [gr_px_1, asm_px_1, asm_p_px_00], [gr_Py_1, asm_Py_1, asm_p_Py_00])
-        #     imgpr.print_image_arr(str(batch_index + 1 * (i + 1)) + 'pts_gt', img_batch[i], gr_px_1, gr_Py_1)
-        #     print(str(batch_index + 1 * (i + 1)))
-        #     # imgpr.print_image_arr(str(batch_index + 1 * (i + 1)) + 'pts_asm', img_batch[i], asm_px_1, asm_Py_1)
-        #     # imgpr.print_image_arr(str(batch_index + 1 * (i + 1)) + 'pts_asm_prim', img_batch[i], asm_p_px_00,
-        #     #                       asm_p_Py_00)
-
-        return img_batch, pn_batch, pn_batch_asm, pn_batch_asm_prim
+    # def _get_batch_sample(self, batch_index, x_train_filenames, y_train_filenames, model):
+    #     img_path = self.img_path
+    #     pn_tr_path = self.annotation_path
+    #     tf_utils = TFRecordUtility(self.num_landmark)
+    #     '''create batch data and normalize images'''
+    #     batch_x = x_train_filenames[
+    #               batch_index * LearningConfig.batch_size:(batch_index + 1) * LearningConfig.batch_size]
+    #     batch_y = y_train_filenames[
+    #               batch_index * LearningConfig.batch_size:(batch_index + 1) * LearningConfig.batch_size]
+    #     '''create img and annotations'''
+    #     img_batch = np.array([imread(img_path + file_name) for file_name in batch_x]) / 255.0
+    #     # if self.dataset_name == DatasetName.cofw:  # this ds is not normalized
+    #     #     pn_batch = np.array([load(pn_tr_path + file_name) for file_name in batch_y])
+    #     #     '''creating y_asm'''
+    #     #     pn_batch_asm = np.array([tf_utils.get_asm(input=load(pn_tr_path + file_name),
+    #     #                                               dataset_name=self.dataset_name, accuracy=self.asm_accuracy)
+    #     #                              for file_name in batch_y])
+    #     # else:
+    #     pn_batch = np.array([self._load_and_normalize(pn_tr_path + file_name) for file_name in batch_y])
+    #     '''creating y_asm'''
+    #     # pn_batch_asm = np.array([tf_utils.get_asm(input=self._load_and_normalize(pn_tr_path + file_name),
+    #     #                                           dataset_name=self.dataset_name, accuracy=self.asm_accuracy)
+    #     #                          for file_name in batch_y])
+    #     batch_y_pre = np.array(model(img_batch))
+    #     pn_batch_asm = np.array([tf_utils.get_asm(input=lnd,
+    #                                                    dataset_name=self.dataset_name, accuracy=self.asm_accuracy,
+    #                                                    alpha=1.0)
+    #                                   for lnd in batch_y_pre])
+    #
+    #     # pn_batch_asm_prim = np.array([tf_utils.get_asm(input=self._load_and_normalize(pn_tr_path + file_name),
+    #     #                                                dataset_name=self.dataset_name, accuracy=self.asm_accuracy,
+    #     #                                                alpha=0.0)
+    #     #                               for file_name in batch_y])
+    #
+    #     # pn_batch_asm_prim = np.array(
+    #     #     [pn_batch[i] - np.sign(pn_batch_asm[i] - pn_batch[i]) * abs(pn_batch_asm[i] - pn_batch[i]) for i in
+    #     #      range(len(pn_batch_asm))])
+    #     '''test: print'''
+    #     image_utility = ImageUtility()
+    #     for i in range(LearningConfig.batch_size):
+    #         gr_s, gr_px_1, gr_Py_1 = image_utility.create_landmarks_from_normalized(pn_batch[i], 224, 224, 112, 112)
+    #         asm_p_s, asm_px_1, asm_Py_1 = image_utility.create_landmarks_from_normalized(pn_batch_asm[i], 224, 224, 112,
+    #                                                                                      112)
+    #         # asm_p_s, asm_p_px_00, asm_p_Py_00 = image_utility.create_landmarks_from_normalized(pn_batch_asm_prim[i],
+    #         #                                                                                    224, 224, 112, 112)
+    #         imgpr.print_image_arr_multi(str(batch_index+1*(i+1))+'pts_gt', img_batch[i],
+    #                                   [gr_px_1, asm_px_1], [gr_Py_1, asm_Py_1])
+    #         imgpr.print_image_arr(str(batch_index + 1 * (i + 1)) + 'pts_gt', img_batch[i], gr_px_1, gr_Py_1)
+    #         imgpr.print_image_arr(str(batch_index + 1 * (i + 1)) + 'pts_asm', img_batch[i], asm_px_1, asm_Py_1)
+    #         # imgpr.print_image_arr(str(batch_index + 1 * (i + 1)) + 'pts_asm_prim', img_batch[i], asm_p_px_00,
+    #         #                       asm_p_Py_00)
+    #
+    #     return img_batch, pn_batch, pn_batch_asm, pn_batch_asm_prim
 
     def _load_and_normalize(self, point_path):
         annotation = load(point_path)
