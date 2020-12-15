@@ -70,6 +70,50 @@ class Custom_losses:
 
         # elif ds_name == DatasetName.wflw:
 
+        inter_fwd_pnt
+        sum_dis_gt = np.zeros(shape=[LearningConfig.batch_size], dtype=np.float32)
+        sum_dis_pr = np.zeros(shape=[LearningConfig.batch_size], dtype=np.float32)
+        for item in t_fw_pnts:
+            x_1_gt = x_gt[:, item[0] * 2]
+            y_1_gt = x_gt[:, item[0] * 2 + 1]
+            x_2_gt = x_gt[:, item[1] * 2]
+            y_2_gt = x_gt[:, item[1] * 2 + 1]
+            dis_gt = np.sqrt((x_2_gt - x_1_gt) ** 2 + (y_2_gt - y_1_gt) ** 2)
+            sum_dis_gt += dis_gt
+            '''pr'''
+            x_1_pr = x_pr[:, item[0] * 2]
+            y_1_pr = x_pr[:, item[0] * 2 + 1]
+            x_2_pr = x_pr[:, item[1] * 2]
+            y_2_pr = x_pr[:, item[1] * 2 + 1]
+            dis_pr = np.sqrt((x_2_pr - x_1_pr) ** 2 + (y_2_pr - y_1_pr) ** 2)
+            sum_dis_pr += dis_pr
+        return np.mean(np.square(sum_dis_gt - sum_dis_pr))
+
+    def _calculate_fw_loss(self, x_pr, x_gt, ds_name):
+        # inter_ocular_dist = np.array(
+        #     [np.float64(self.calculate_inter_occular_distance(anno_GT=x_gt[i], ds_name=ds_name))
+        #      for i in range(LearningConfig.batch_size)])
+
+        if ds_name == DatasetName.cofw:
+            inter_fwd_pnt = [(0, 8), (1, 9), (2, 10), (3, 11), (2, 3), (10, 11), (10, 21), (11, 21), (21, 24), (27, 28),
+                             (8, 22), (9, 23), (22, 28), (23, 28)]
+            intra_fwd_pnt = [(4, 5), (6, 7), (12, 13), (14, 15), (24, 25), (26, 27), (20, 21), (8, 10), (11, 9),
+                             (18, 21), (19, 21), (22, 24), (25, 26), (23, 24), (22, 27), (23, 27)]
+
+        elif ds_name == DatasetName.ibug:
+            inter_fwd_pnt = [(0, 3), (0, 17), (0, 36), (3, 36), (3, 48), (3, 8), (8, 57), (8, 13), (13, 54),
+                             (13, 16),
+                             (13, 45), (16, 45), (16, 26), (51, 33), (39, 33), (42, 33), (39, 42), (21, 39),
+                             (22, 42),
+                             (21, 22), (26, 45), (17, 36)]
+            intra_fwd_pnt = [(37, 41), (38, 40,), (43, 47), (44, 46), (30, 33), (31, 33), (35, 33), (57, 66),
+                             (51, 62), (62, 66), (27, 31), (27, 35), (36, 39), (42, 45), (17, 21), (22, 26),
+                             (19, 17), (19, 21),
+                             (24, 22), (24, 26), (0, 1), (0, 2), (4, 3), (4, 5), (8, 6), (8, 7), (8, 9), (8, 10),
+                             (12, 11), (12, 13), (16, 15), (16, 14), (48, 57), (48, 51), (54, 51), (54, 57)]
+
+        # elif ds_name == DatasetName.wflw:
+
         t_fw_pnts = inter_fwd_pnt + intra_fwd_pnt
         sum_dis_gt = np.zeros(shape=[LearningConfig.batch_size], dtype=np.float32)
         sum_dis_pr = np.zeros(shape=[LearningConfig.batch_size], dtype=np.float32)
