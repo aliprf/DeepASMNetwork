@@ -52,7 +52,7 @@ class Train:
             "./train_logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
         '''making models'''
-        _lr = 0.09
+        _lr = 0.1
         model = self.make_model(arch=arch, w_path=weight_path)
         '''create optimizer'''
         optimizer = self._get_optimizer(lr=_lr)
@@ -99,7 +99,7 @@ class Train:
             model.save('./models/asm_fw_model_' + str(epoch) + '_' + self.dataset_name + '_' + str(loss_eval) + '.h5')
             model.save_weights(
                 './models/asm_fw_weight_' + '_' + str(epoch) + self.dataset_name + '_' + str(loss_eval) + '.h5')
-            if epoch != 0 and epoch % 10 == 0:
+            if epoch % 10 == 0:
                 adoptive_weight = self.calculate_adoptive_weight(epoch=epoch, y_train_filenames=y_train_filenames,
                                                                  weight_value=5)
             if epoch != 0 and epoch % 50 == 0:

@@ -28,7 +28,7 @@ class Custom_losses:
 
         # loss_main = 100 * tf.reduce_mean(tf.square(x_gt - x_pr))
         loss_main = tf.reduce_mean(tf.math.multiply(adoptive_weight, tf.square(x_gt - x_pr)))
-        loss_fw = 0 # 0.0001 * self.calculate_fw_loss(x_pr=x_pr, x_gt=x_gt, ds_name=ds_name)
+        loss_fw = 0.001 * self.calculate_fw_loss(x_pr=x_pr, x_gt=x_gt, ds_name=ds_name)
 
         loss_total = loss_main + loss_fw
 
