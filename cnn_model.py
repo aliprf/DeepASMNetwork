@@ -78,8 +78,8 @@ class CNNModel:
 
     def create_MobileNet_nopose(self, inp_shape, output_len):
         # initializer = tf.keras.initializers.RandomUniform(minval=0.0, maxval=0.0, seed=None)
-        # initializer = tf.keras.initializers.HeUniform()
-        initializer = tf.keras.initializers.glorot_uniform()
+        initializer = tf.keras.initializers.HeUniform()
+        # initializer = tf.keras.initializers.glorot_uniform()
 
         mobilenet_model = mobilenet_v2.MobileNetV2(input_shape=inp_shape,
                                                    alpha=1.0,
@@ -99,7 +99,7 @@ class CNNModel:
         x = mobilenet_model.get_layer('global_average_pooling2d').output  # 1280
         x = Dropout(0.5)(x)
         out_landmarks = Dense(output_len, activation=keras.activations.linear, kernel_initializer=initializer,
-                              use_bias=False, name='O_L')(x)
+                              use_bias=True, name='O_L')(x)
         inp = mobilenet_model.input
 
         revised_model = Model(inp, [out_landmarks])
