@@ -25,8 +25,8 @@ class Custom_losses:
         self.accuracy = accuracy
 
     def asm_assisted_loss(self, x_pr, x_gt, adoptive_weight, ds_name):
-        loss_main = tf.reduce_mean(tf.math.multiply(adoptive_weight, tf.abs(x_gt - x_pr)))
-        loss_fw = 1e-5 * self.calculate_fw_loss(x_pr=x_pr, x_gt=x_gt, ds_name=ds_name)
+        loss_main = tf.reduce_mean(tf.math.multiply(adoptive_weight, tf.square(x_gt - x_pr)))
+        loss_fw = 1e-10 * self.calculate_fw_loss(x_pr=x_pr, x_gt=x_gt, ds_name=ds_name)
 
         loss_total = loss_main + loss_fw
 
