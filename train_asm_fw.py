@@ -201,7 +201,7 @@ class Train:
             model.load_weights(w_path)
         return model
 
-    def _get_optimizer(self, lr=1e-2, beta_1=0.9, beta_2=0.999, decay=1e-4):
+    def _get_optimizer(self, lr=1e-1, beta_1=0.5, beta_2=0.999, decay=1e-5):
         return tf.keras.optimizers.Adam(lr=lr, beta_1=beta_1, beta_2=beta_2, decay=decay)
         # return tf.keras.optimizers.SGD(lr=lr)
 
