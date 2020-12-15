@@ -87,7 +87,7 @@ class Custom_losses:
             y_2_pr = x_pr[:, item[1] * 2 + 1]
             dis_pr = np.sqrt((x_2_pr - x_1_pr) ** 2 + (y_2_pr - y_1_pr) ** 2)
             sum_dis_pr += dis_pr
-        return np.log(np.mean(np.abs(sum_dis_gt - sum_dis_pr)))
+        return np.mean(np.square(sum_dis_gt - sum_dis_pr))
 
     def calculate_inter_occular_distance(self, anno_GT, ds_name):
         if ds_name == DatasetName.ibug:
