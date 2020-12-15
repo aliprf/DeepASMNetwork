@@ -55,7 +55,7 @@ class LearningConfig:
     MIN_LR = 1e-5
     MAX_LR = 1e-2
     STEP_SIZE = 10
-    batch_size = 90
+    batch_size = 100
     # batch_size = 90
     # steps_per_validation_epochs = 5
 
