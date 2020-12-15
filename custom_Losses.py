@@ -26,9 +26,10 @@ class Custom_losses:
 
     def asm_assisted_loss(self, x_pr, x_gt, adoptive_weight, ds_name):
         loss_main = tf.reduce_mean(tf.math.multiply(adoptive_weight, tf.square(x_gt - x_pr)))
-        loss_fw = 0#1e-10 * self.calculate_fw_loss(x_pr=x_pr, x_gt=x_gt, ds_name=ds_name)
-
-        loss_total = loss_main + loss_fw
+        inner_dist, intra_dist = self.calculate_fw_loss(x_pr=x_pr, x_gt=x_gt, ds_name=ds_name)
+        inner_dist = 1e-1 * inner_dist
+        intra_dist = 1e-1 * intra_dist
+        loss_total = loss_main + inner_dist + intra_dist
 
         # loss_main = tf.reduce_mean(tf.math.multiply(bold_landmarks_point_map, tf.square(x_gt - x_pr)))
         # loss_main = tf.reduce_mean(tf.math.multiply(bold_landmarks_point_map, tf.sqrt(tf.abs(x_gt - x_pr))))
@@ -43,7 +44,7 @@ class Custom_losses:
         #
         # loss_total = loss_main # + loss_asm + loss_fw
         # loss_total = loss_main + loss_asm + loss_fw
-        return loss_total, loss_main, loss_fw
+        return loss_total, loss_main,  inner_dist, intra_dist
 
     def calculate_fw_loss(self, x_pr, x_gt, ds_name):
         # inter_ocular_dist = np.array(
@@ -69,25 +70,53 @@ class Custom_losses:
                              (12, 11), (12, 13), (16, 15), (16, 14), (48, 57), (48, 51), (54, 51), (54, 57)]
 
         # elif ds_name == DatasetName.wflw:
-
-        inter_fwd_pnt
-        sum_dis_gt = np.zeros(shape=[LearningConfig.batch_size], dtype=np.float32)
-        sum_dis_pr = np.zeros(shape=[LearningConfig.batch_size], dtype=np.float32)
-        for item in t_fw_pnts:
-            x_1_gt = x_gt[:, item[0] * 2]
-            y_1_gt = x_gt[:, item[0] * 2 + 1]
-            x_2_gt = x_gt[:, item[1] * 2]
-            y_2_gt = x_gt[:, item[1] * 2 + 1]
-            dis_gt = np.sqrt((x_2_gt - x_1_gt) ** 2 + (y_2_gt - y_1_gt) ** 2)
-            sum_dis_gt += dis_gt
+        '''calculate inter matrix:'''
+        inter_vector_gt = []
+        inter_vector_pr = []
+        for item in inter_fwd_pnt:
+            x_1_gt = np.array(x_gt[:, item[0] * 2])
+            y_1_gt = np.array(x_gt[:, item[0] * 2 + 1])
+            x_2_gt = np.array(x_gt[:, item[1] * 2])
+            y_2_gt = np.array(x_gt[:, item[1] * 2 + 1])
+            dis_gt_x = [np.abs(x_2_gt[i] - x_1_gt[i]) for i in range(LearningConfig.batch_size)]
+            dis_gt_y = [np.abs(y_2_gt[i] - y_1_gt[i]) for i in range(LearningConfig.batch_size)]
+            inter_vector_gt.append(dis_gt_x)
+            inter_vector_gt.append(dis_gt_y)
             '''pr'''
             x_1_pr = x_pr[:, item[0] * 2]
             y_1_pr = x_pr[:, item[0] * 2 + 1]
             x_2_pr = x_pr[:, item[1] * 2]
             y_2_pr = x_pr[:, item[1] * 2 + 1]
-            dis_pr = np.sqrt((x_2_pr - x_1_pr) ** 2 + (y_2_pr - y_1_pr) ** 2)
-            sum_dis_pr += dis_pr
-        return np.mean(np.square(sum_dis_gt - sum_dis_pr))
+            dis_pr_x = [np.abs(x_2_pr[i] - x_1_pr[i]) for i in range(LearningConfig.batch_size)]
+            dis_pr_y = [np.abs(y_2_pr[i] - y_1_pr[i]) for i in range(LearningConfig.batch_size)]
+            inter_vector_pr.append(dis_pr_x)
+            inter_vector_pr.append(dis_pr_y)
+        '''calculate intera matrix:'''
+        intra_vector_gt = []
+        intra_vector_pr = []
+        for item in intra_fwd_pnt:
+            x_1_gt = np.array(x_gt[:, item[0] * 2])
+            y_1_gt = np.array(x_gt[:, item[0] * 2 + 1])
+            x_2_gt = np.array(x_gt[:, item[1] * 2])
+            y_2_gt = np.array(x_gt[:, item[1] * 2 + 1])
+            dis_gt_x = [np.abs(x_2_gt[i] - x_1_gt[i]) for i in range(LearningConfig.batch_size)]
+            dis_gt_y = [np.abs(y_2_gt[i] - y_1_gt[i]) for i in range(LearningConfig.batch_size)]
+            intra_vector_gt.append(dis_gt_x)
+            intra_vector_gt.append(dis_gt_y)
+            '''pr'''
+            x_1_pr = x_pr[:, item[0] * 2]
+            y_1_pr = x_pr[:, item[0] * 2 + 1]
+            x_2_pr = x_pr[:, item[1] * 2]
+            y_2_pr = x_pr[:, item[1] * 2 + 1]
+            dis_pr_x = [np.abs(x_2_pr[i] - x_1_pr[i]) for i in range(LearningConfig.batch_size)]
+            dis_pr_y = [np.abs(y_2_pr[i] - y_1_pr[i]) for i in range(LearningConfig.batch_size)]
+            intra_vector_pr.append(dis_pr_x)
+            intra_vector_pr.append(dis_pr_y)
+
+        inner_dist = tf.reduce_mean(tf.square(np.array(inter_vector_gt) - np.array(inter_vector_pr)))
+        intra_dist = tf.reduce_mean(tf.square(np.array(intra_vector_gt) - np.array(intra_vector_pr)))
+
+        return inner_dist, intra_dist
 
     def _calculate_fw_loss(self, x_pr, x_gt, ds_name):
         # inter_ocular_dist = np.array(
