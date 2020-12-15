@@ -134,14 +134,19 @@ class Train:
         tf_utils = TFRecordUtility(self.num_landmark)
         if 0 <= epoch <= 30:
             asm_acc = 80
+            weight_value = 2
         elif 30 < epoch <= 60:
             asm_acc = 85
+            weight_value = 4
         elif 60 < epoch <= 100:
             asm_acc = 90
+            weight_value = 6
         elif 100 < epoch <= 150:
             asm_acc = 95
+            weight_value = 8
         else:
             asm_acc = 97
+            weight_value = 10
         '''for each point in training set, calc delta_i = ASM(gt_i)-pr_i: '''
         if self.dataset_name == DatasetName.cofw:  # this ds is not normalized
             pn_batch = np.array([load(self.annotation_path + file_name) for file_name in y_train_filenames])
