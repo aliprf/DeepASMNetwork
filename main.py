@@ -14,7 +14,7 @@ import img_printer as imgp
 
 if __name__ == '__main__':
     '''train new method: '''
-    trainer = Train(dataset_name=DatasetName.ibug)
+    trainer = Train(dataset_name=DatasetName.cofw)
     trainer.train(arch='mobileNetV2_nopose', weight_path=None)
     # trainer.train(arch='mobileNetV2_nopose', weight_path='./models/last.h5')
 

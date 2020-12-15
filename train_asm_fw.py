@@ -126,7 +126,7 @@ class Train:
             '''create annotation_predicted'''
             annotation_predicted = model(images, training=True)
             '''calculate loss'''
-            loss_total, loss_main, loss_fw = c_loss.asm_assisted_loss(x_pr=annotation_predicted,
+            loss_total, loss_main, inner_dist, intra_dist = c_loss.asm_assisted_loss(x_pr=annotation_predicted,
                                                                       x_gt=annotation_gr,
                                                                       adoptive_weight=adoptive_weight,
                                                                       ds_name=self.dataset_name)
@@ -136,12 +136,13 @@ class Train:
         optimizer.apply_gradients(zip(gradients_of_model, model.trainable_variables))
         '''printing loss Values: '''
         tf.print("->EPOCH: ", str(epoch), "->STEP: ", str(step) + '/' + str(total_steps), ' -> : LOSS: ', loss_total,
-                 ' -> : loss_main: ', loss_main, ' -> : loss_fw: ', loss_fw)
+                 ' -> : loss_main: ', loss_main, ' -> : inner_dist: ', intra_dist, ' -> : intra_dist: ', inner_dist)
         # print('==--==--==--==--==--==--==--==--==--')
         with summary_writer.as_default():
             tf.summary.scalar('LOSS', loss_total, step=epoch)
             tf.summary.scalar('loss_main', loss_main, step=epoch)
-            tf.summary.scalar('loss_fw', loss_fw, step=epoch)
+            tf.summary.scalar('inner_dist', inner_dist, step=epoch)
+            tf.summary.scalar('intra_dist', intra_dist, step=epoch)
 
     def calculate_adoptive_weight(self, epoch, y_train_filenames, weight_value):
         tf_utils = TFRecordUtility(self.num_landmark)
