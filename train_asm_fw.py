@@ -52,7 +52,7 @@ class Train:
             "./train_logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
         '''making models'''
-        _lr = 9e-1
+        _lr = 1e-4
         model = self.make_model(arch=arch, w_path=weight_path)
         '''create optimizer'''
         optimizer = self._get_optimizer(lr=_lr)
@@ -97,8 +97,8 @@ class Train:
                 tf.summary.scalar('Eval-LOSS', loss_eval, step=epoch)
             '''save weights'''
             model.save('./models/asm_fw_model_' + str(epoch) + '_' + self.dataset_name + '_' + str(loss_eval) + '.h5')
-            model.save_weights(
-                './models/asm_fw_weight_' + '_' + str(epoch) + self.dataset_name + '_' + str(loss_eval) + '.h5')
+            # model.save_weights(
+            #     './models/asm_fw_weight_' + '_' + str(epoch) + self.dataset_name + '_' + str(loss_eval) + '.h5')
             if epoch != 0 and epoch % 10 == 0:
                 adoptive_weight = self.calculate_adoptive_weight(epoch=epoch, y_train_filenames=y_train_filenames,
                                                                  weight_value=5)
@@ -106,10 +106,16 @@ class Train:
             _lr = self.calc_learning_rate(iterations=epoch, step_size=10, base_lr=1e-4, max_lr=1e-1)
             optimizer = self._get_optimizer(lr=_lr)
 
-    def calc_learning_rate(self, iterations, step_size, base_lr, max_lr):
+    def calc_learning_rate(self, iterations, step_size, base_lr, max_lr, gamma=0.99994):
+        '''reducing triangle'''
+        # cycle = np.floor(1 + iterations / (2 * step_size))
+        # x = np.abs(iterations / step_size - 2 * cycle + 1)
+        # lr = base_lr + (max_lr - base_lr) * np.maximum(0, (1 - x)) / float(2 ** (cycle - 1))
+        '''exp'''
         cycle = np.floor(1 + iterations / (2 * step_size))
         x = np.abs(iterations / step_size - 2 * cycle + 1)
-        lr = base_lr + (max_lr - base_lr) * np.maximum(0, (1 - x)) / float(2 ** (cycle - 1))
+        lr = base_lr + (max_lr - base_lr) * np.maximum(0, (1 - x)) * gamma ** (iterations)
+
         print('LR is: ' + str(lr))
         return lr
 
