@@ -59,7 +59,7 @@ class Train:
 
         '''create sample generator'''
         x_train_filenames, x_val_filenames, y_train_filenames, y_val_filenames = self._create_generators()
-        adoptive_weight = self.calculate_adoptive_weight(epoch=0, y_train_filenames=y_train_filenames, weight_value=3)
+        # adoptive_weight = self.calculate_adoptive_weight(epoch=0, y_train_filenames=y_train_filenames, weight_value=3)
 
         # x_train_filenames, y_train_filenames = self._create_generators()
 
@@ -73,7 +73,7 @@ class Train:
         #                                                                 ds_name=self.dataset_name)
         '''loss array to figure out '''
         '''start train:'''
-        # adoptive_weight = np.ones(shape=[self.num_landmark])
+        adoptive_weight = np.ones(shape=[self.num_landmark])
 
         for epoch in range(LearningConfig.epochs):
             x_train_filenames, y_train_filenames = self._shuffle_data(x_train_filenames, y_train_filenames)
@@ -99,7 +99,7 @@ class Train:
             model.save('./models/asm_fw_model_' + str(epoch) + '_' + self.dataset_name + '_' + str(loss_eval) + '.h5')
             model.save_weights(
                 './models/asm_fw_weight_' + '_' + str(epoch) + self.dataset_name + '_' + str(loss_eval) + '.h5')
-            if epoch % 10 == 0:
+            if epoch != 0 and epoch % 10 == 0:
                 adoptive_weight = self.calculate_adoptive_weight(epoch=epoch, y_train_filenames=y_train_filenames,
                                                                  weight_value=5)
             if epoch != 0 and epoch % 50 == 0:
