@@ -52,7 +52,7 @@ class Train:
             "./train_logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
         '''making models'''
-        _lr = 1e-4
+        _lr = 1e-5
         model = self.make_model(arch=arch, w_path=weight_path)
         '''create optimizer'''
         optimizer = self._get_optimizer(lr=_lr)
@@ -103,7 +103,7 @@ class Train:
                 adoptive_weight = self.calculate_adoptive_weight(epoch=epoch, y_train_filenames=y_train_filenames,
                                                                  weight_value=5)
             '''calculate Learning rate'''
-            _lr = self.calc_learning_rate(iterations=epoch, step_size=10, base_lr=1e-4, max_lr=1e-1)
+            _lr = self.calc_learning_rate(iterations=epoch, step_size=50, base_lr=1e-5, max_lr=1e-2)
             optimizer = self._get_optimizer(lr=_lr)
 
     def calc_learning_rate(self, iterations, step_size, base_lr, max_lr, gamma=0.99994):
