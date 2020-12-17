@@ -14,9 +14,9 @@ import img_printer as imgp
 
 if __name__ == '__main__':
     '''train new method: '''
-    trainer = Train(dataset_name=DatasetName.cofw)
+    trainer = Train(dataset_name=DatasetName.wflw)
     # trainer.train(arch='mobileNetV2_nopose', weight_path=None)
-    trainer.train(arch='mobileNetV2_nopose', weight_path='./models/last.h5')
+    trainer.train(arch='mobileNetV2_nopose', weight_path='./models/last_asm.h5')
 
     # x = np.random.normal(size=100)
     # imgp.print_histogram(x)
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     # cnn_model = CNNModel()
     # image_utility = ImageUtility()
     #
-    # tf_record_util = TFRecordUtility(CofwConf.num_of_landmarks*2)
+    # tf_record_util = TFRecordUtility(WflwConf.num_of_landmarks*2)
     # tf_record_util._create_face_graph(dataset_name=DatasetName.wflw, dataset_type=None)
 
     # tf_record_util.test_hm_accuracy()
@@ -52,9 +52,9 @@ if __name__ == '__main__':
 
     '''     create and save PCA objects'''
     pca_utility = PCAUtility()
-    pca_utility.create_pca_from_npy(DatasetName.ibug, [80, 85, 90, 95, 97, 99])  # normalized
-    pca_utility.create_pca_from_npy(DatasetName.cofw, [80, 85, 90, 95, 97, 99])  # NOT-normalized
-    pca_utility.create_pca_from_npy(DatasetName.wflw, [80, 85, 90, 95, 97, 99])  # normalized
+    # pca_utility.create_pca_from_npy(DatasetName.ibug, [80, 85, 90, 95, 97, 99])  # normalized
+    # pca_utility.create_pca_from_npy(DatasetName.cofw, [80, 85, 90, 95, 97, 99])  # NOT-normalized
+    # pca_utility.create_pca_from_npy(DatasetName.wflw, [80, 85, 90, 95, 97, 99])  # normalized
 
     # pca_utility.create_pca_from_npy(DatasetName.ibug, 90)
     # pca_utility.create_pca_from_npy(DatasetName.wflw, 90)

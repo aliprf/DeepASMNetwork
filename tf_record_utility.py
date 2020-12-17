@@ -1859,7 +1859,7 @@ class TFRecordUtility:
             landmarks_dir = CofwConf.no_aug_train_annotation
             num_train_samples = CofwConf.number_of_train_sample
 
-        counter= 0
+        counter = 0
         for file in os.listdir(img_dir):
             if file.endswith(".jpg") or file.endswith(".png"):
                 img_file_name = os.path.join(img_dir, file)

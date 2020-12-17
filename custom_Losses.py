@@ -24,12 +24,12 @@ class Custom_losses:
         self.dataset_name = dataset_name
         self.accuracy = accuracy
 
-    def asm_assisted_loss(self, x_pr, x_gt, adoptive_weight, ds_name):
+    def asm_assisted_loss(self, x_pr, x_gt, adoptive_weight, ds_name, phase_rate):
         loss_main = tf.reduce_mean(tf.math.multiply(adoptive_weight, tf.abs(x_gt - x_pr)))
         # inner_dist, intra_dist = self.calculate_fw_loss(x_pr=x_pr, x_gt=x_gt, ds_name=ds_name)
         inner_dist = 0#1e-1 * inner_dist
         intra_dist = 0#1e-1 * intra_dist
-        loss_total = loss_main + inner_dist + intra_dist
+        loss_total = phase_rate*(loss_main + inner_dist + intra_dist)
 
         # loss_main = tf.reduce_mean(tf.math.multiply(bold_landmarks_point_map, tf.square(x_gt - x_pr)))
         # loss_main = tf.reduce_mean(tf.math.multiply(bold_landmarks_point_map, tf.sqrt(tf.abs(x_gt - x_pr))))
@@ -68,6 +68,16 @@ class Custom_losses:
                              (19, 17), (19, 21),
                              (24, 22), (24, 26), (0, 1), (0, 2), (4, 3), (4, 5), (8, 6), (8, 7), (8, 9), (8, 10),
                              (12, 11), (12, 13), (16, 15), (16, 14), (48, 57), (48, 51), (54, 51), (54, 57)]
+        elif ds_name == DatasetName.wflw:
+            inter_fwd_pnt = [(6, 7), (0, 1), (32, 31), (7, 8), (0, 2), (32, 30), (25, 24), (25, 26), (16, 15),
+                                  (16, 17), (85, 94), (79, 90), (90, 94), (76, 79), (79, 82), (82, 85), (76, 85),
+                                  (55, 57),
+                                  (57, 59), (57, 54), (51, 55), (51, 59), (61, 67), (63, 65), (60, 64), (68, 72),
+                                  (69, 75),
+                                  (71, 73), (35, 40), (44, 48), (37, 38), (42, 50)]
+            intra_fwd_pnt = [(0, 7), (7, 16), (16, 85), (79, 57), (16, 25), (64, 57), (25, 32), (68, 57), (7, 60),
+                                  (25, 72), (0, 33), (32, 46), (64, 68), (64, 38), (68, 50), (38, 50), (7, 76),
+                                  (25, 82)]
 
         # elif ds_name == DatasetName.wflw:
         '''calculate inter matrix:'''
