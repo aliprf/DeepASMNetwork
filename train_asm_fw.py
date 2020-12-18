@@ -52,7 +52,7 @@ class Train:
             "./train_logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
         '''making models'''
-        _lr = 1e-9
+        _lr = 1e-6
         model = self.make_model(arch=arch, w_path=weight_path)
         '''create optimizer'''
         optimizer = self._get_optimizer(lr=_lr)
@@ -101,10 +101,11 @@ class Train:
             # model.save_weights(
             #     './models/asm_fw_weight_' + '_' + str(epoch) + self.dataset_name + '_' + str(loss_eval) + '.h5')
             if epoch != 0 and epoch % 10 == 0:
-                adoptive_weight = self.calculate_adoptive_weight(epoch=epoch, y_train_filenames=y_train_filenames,
-                                                                 phase_rate=phase_rate)
+                adoptive_weight, phase_rate = self.calculate_adoptive_weight(epoch=epoch,
+                                                                             y_train_filenames=y_train_filenames,
+                                                                             phase_rate=phase_rate)
             '''calculate Learning rate'''
-            _lr = self.calc_learning_rate(iterations=epoch, step_size=20, base_lr=1e-9, max_lr=1e-4)
+            _lr = self.calc_learning_rate(iterations=epoch, step_size=50, base_lr=1e-6, max_lr=1e-2)
             optimizer = self._get_optimizer(lr=_lr)
 
     def calc_learning_rate(self, iterations, step_size, base_lr, max_lr, gamma=0.99994):
@@ -159,15 +160,15 @@ class Train:
         elif 60 < epoch <= 100:
             asm_acc = 90
             weight_value = 6
-            phase_rate = 0.1 * phase_rate
+            phase_rate = 0.5 * phase_rate
         elif 100 < epoch <= 150:
             asm_acc = 95
             weight_value = 8
-            phase_rate = 0.1 * phase_rate
+            phase_rate = 0.5 * phase_rate
         else:
             asm_acc = 97
             weight_value = 10
-            phase_rate = 0.1 * phase_rate
+            phase_rate = 0.8 * phase_rate
 
         '''for each point in training set, calc delta_i = ASM(gt_i)-pr_i: '''
         if self.dataset_name == DatasetName.cofw:  # this ds is not normalized
@@ -190,7 +191,7 @@ class Train:
         adaptive_weight = np.ones_like(phi)
         for i in range(len(max_indices)): adaptive_weight[max_indices[i]] = weight_value
 
-        return adaptive_weight
+        return adaptive_weight, phase_rate
 
     def _eval_model(self, img_batch_eval, pn_batch_eval, model):
         annotation_predicted = model(img_batch_eval)
