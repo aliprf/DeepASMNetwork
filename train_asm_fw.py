@@ -105,7 +105,7 @@ class Train:
                                                                              y_train_filenames=y_train_filenames,
                                                                              phase_rate=phase_rate)
             '''calculate Learning rate'''
-            _lr = self.calc_learning_rate(iterations=epoch, step_size=50, base_lr=1e-6, max_lr=1e-2)
+            _lr = self.calc_learning_rate(iterations=epoch, step_size=20, base_lr=1e-6, max_lr=1e-2)
             optimizer = self._get_optimizer(lr=_lr)
 
     def calc_learning_rate(self, iterations, step_size, base_lr, max_lr, gamma=0.99994):
