@@ -52,14 +52,13 @@ class Train:
             "./train_logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
         '''making models'''
-        _lr = 1e-6
+        _lr = 1e-7
         model = self.make_model(arch=arch, w_path=weight_path)
         '''create optimizer'''
         optimizer = self._get_optimizer(lr=_lr)
 
         '''create sample generator'''
         x_train_filenames, x_val_filenames, y_train_filenames, y_val_filenames = self._create_generators()
-        # adoptive_weight = self.calculate_adoptive_weight(epoch=0, y_train_filenames=y_train_filenames, weight_value=3)
 
         # x_train_filenames, y_train_filenames = self._create_generators()
 
@@ -73,8 +72,6 @@ class Train:
         #                                                                 ds_name=self.dataset_name)
         '''loss array to figure out '''
         '''start train:'''
-        adoptive_weight = np.ones(shape=[self.num_landmark])
-        phase_rate = 1e5
         for epoch in range(LearningConfig.epochs):
             x_train_filenames, y_train_filenames = self._shuffle_data(x_train_filenames, y_train_filenames)
             for batch_index in range(step_per_epoch):
@@ -82,6 +79,9 @@ class Train:
                 images, annotation_gr = self._get_batch_sample(
                     batch_index=batch_index, x_train_filenames=x_train_filenames,
                     y_train_filenames=y_train_filenames)
+                adoptive_weight = self.calculate_adoptive_weight(epoch=epoch, batch_index=batch_index,
+                                                                 y_train_filenames=y_train_filenames)
+
                 '''convert to tensor'''
                 images = tf.cast(images, tf.float32)
                 annotation_gr = tf.cast(annotation_gr, tf.float32)
@@ -89,8 +89,7 @@ class Train:
                 self.train_step(epoch=epoch, step=batch_index, total_steps=step_per_epoch, images=images,
                                 model=model,
                                 annotation_gr=annotation_gr, adoptive_weight=adoptive_weight,
-                                optimizer=optimizer, summary_writer=summary_writer, c_loss=c_loss,
-                                phase_rate=phase_rate)
+                                optimizer=optimizer, summary_writer=summary_writer, c_loss=c_loss)
             '''evaluating part'''
             img_batch_eval, pn_batch_eval = self._create_evaluation_batch(x_val_filenames, y_val_filenames)
             loss_eval = self._eval_model(img_batch_eval, pn_batch_eval, model)
@@ -100,12 +99,8 @@ class Train:
             model.save('./models/asm_fw_model_' + str(epoch) + '_' + self.dataset_name + '_' + str(loss_eval) + '.h5')
             # model.save_weights(
             #     './models/asm_fw_weight_' + '_' + str(epoch) + self.dataset_name + '_' + str(loss_eval) + '.h5')
-            if epoch != 0 and epoch % 10 == 0:
-                adoptive_weight, phase_rate = self.calculate_adoptive_weight(epoch=epoch,
-                                                                             y_train_filenames=y_train_filenames,
-                                                                             phase_rate=phase_rate)
             '''calculate Learning rate'''
-            _lr = self.calc_learning_rate(iterations=epoch, step_size=20, base_lr=1e-6, max_lr=1e-2)
+            _lr = self.calc_learning_rate(iterations=epoch, step_size=40, base_lr=1e-7, max_lr=1e-1)
             optimizer = self._get_optimizer(lr=_lr)
 
     def calc_learning_rate(self, iterations, step_size, base_lr, max_lr, gamma=0.99994):
@@ -123,7 +118,7 @@ class Train:
 
     # @tf.function
     def train_step(self, epoch, step, total_steps, images, model, annotation_gr, adoptive_weight,
-                   optimizer, summary_writer, c_loss, phase_rate):
+                   optimizer, summary_writer, c_loss):
         with tf.GradientTape() as tape:
             '''create annotation_predicted'''
             annotation_predicted = model(images, training=True)
@@ -131,8 +126,7 @@ class Train:
             loss_total, loss_main, inner_dist, intra_dist = c_loss.asm_assisted_loss(x_pr=annotation_predicted,
                                                                                      x_gt=annotation_gr,
                                                                                      adoptive_weight=adoptive_weight,
-                                                                                     ds_name=self.dataset_name,
-                                                                                     phase_rate=phase_rate)
+                                                                                     ds_name=self.dataset_name)
         '''calculate gradient'''
         gradients_of_model = tape.gradient(loss_total, model.trainable_variables)
         '''apply Gradients:'''
@@ -147,51 +141,45 @@ class Train:
             tf.summary.scalar('inner_dist', inner_dist, step=epoch)
             tf.summary.scalar('intra_dist', intra_dist, step=epoch)
 
-    def calculate_adoptive_weight(self, epoch, y_train_filenames, phase_rate):
+    def calculate_adoptive_weight(self, epoch, batch_index, y_train_filenames):
         tf_utils = TFRecordUtility(self.num_landmark)
+        batch_y = y_train_filenames[batch_index * LearningConfig.batch_size:(batch_index + 1) * LearningConfig.batch_size]
         if 0 <= epoch <= 30:
             asm_acc = 80
-            weight_value = 2
-            phase_rate = 0.1 * phase_rate
         elif 30 < epoch <= 60:
             asm_acc = 85
-            weight_value = 4
-            phase_rate = 0.1 * phase_rate
         elif 60 < epoch <= 100:
             asm_acc = 90
-            weight_value = 6
-            phase_rate = 0.5 * phase_rate
-        elif 100 < epoch <= 150:
+        elif 100 < epoch <= 160:
             asm_acc = 95
-            weight_value = 8
-            phase_rate = 0.5 * phase_rate
         else:
             asm_acc = 97
-            weight_value = 10
-            phase_rate = 0.8 * phase_rate
 
         '''for each point in training set, calc delta_i = ASM(gt_i)-pr_i: '''
         if self.dataset_name == DatasetName.cofw:  # this ds is not normalized
-            pn_batch = np.array([load(self.annotation_path + file_name) for file_name in y_train_filenames])
+            pn_batch = np.array([load(self.annotation_path + file_name) for file_name in batch_y])
             pn_batch_asm = np.array([tf_utils.get_asm(input=load(self.annotation_path + file_name),
                                                       dataset_name=self.dataset_name, accuracy=asm_acc)
-                                     for file_name in y_train_filenames])
+                                     for file_name in batch_y])
         else:
             pn_batch = np.array(
-                [self._load_and_normalize(self.annotation_path + file_name) for file_name in y_train_filenames])
+                [self._load_and_normalize(self.annotation_path + file_name) for file_name in batch_y])
             pn_batch_asm = np.array([tf_utils.get_asm(input=self._load_and_normalize(self.annotation_path + file_name),
                                                       dataset_name=self.dataset_name, accuracy=asm_acc)
-                                     for file_name in y_train_filenames])
+                                     for file_name in batch_y])
         '''phi = mean(delta_i s)'''
         delta = np.array([abs(pn_batch[i] - pn_batch_asm[i]) for i in range(len(pn_batch))])
-        phi = np.mean(delta, axis=0)
-        '''get index on 10% of max items in phi'''
-        max_indices = phi.argsort()[-int(0.2 * self.num_landmark):][::-1]
-        '''create adoptive weight: alpha: if in max else: 1'''
-        adaptive_weight = np.ones_like(phi)
-        for i in range(len(max_indices)): adaptive_weight[max_indices[i]] = weight_value
+        omega = np.zeros_like(delta)
+        for i in range(len(delta)):
+            omega[i] = np.array([1/(0.2 + math.exp(-50 * delta[i][j])) for j in range(len(delta[i]))])
 
-        return adaptive_weight, phase_rate
+        # '''get index on 10% of max items in phi'''
+        # max_indices = phi.argsort()[-int(0.2 * self.num_landmark):][::-1]
+        # '''create adoptive weight: alpha: if in max else: 1'''
+        # adaptive_weight = np.ones_like(phi)
+        # for i in range(len(max_indices)): adaptive_weight[max_indices[i]] = weight_value
+
+        return omega
 
     def _eval_model(self, img_batch_eval, pn_batch_eval, model):
         annotation_predicted = model(img_batch_eval)

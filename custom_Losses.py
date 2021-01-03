@@ -24,12 +24,12 @@ class Custom_losses:
         self.dataset_name = dataset_name
         self.accuracy = accuracy
 
-    def asm_assisted_loss(self, x_pr, x_gt, adoptive_weight, ds_name, phase_rate):
+    def asm_assisted_loss(self, x_pr, x_gt, adoptive_weight, ds_name):
         loss_main = tf.reduce_mean(tf.math.multiply(adoptive_weight, tf.abs(x_gt - x_pr)))
         # inner_dist, intra_dist = self.calculate_fw_loss(x_pr=x_pr, x_gt=x_gt, ds_name=ds_name)
         inner_dist = 0#1e-1 * inner_dist
         intra_dist = 0#1e-1 * intra_dist
-        loss_total = phase_rate*(loss_main + inner_dist + intra_dist)
+        loss_total = (loss_main + inner_dist + intra_dist)
 
         # loss_main = tf.reduce_mean(tf.math.multiply(bold_landmarks_point_map, tf.square(x_gt - x_pr)))
         # loss_main = tf.reduce_mean(tf.math.multiply(bold_landmarks_point_map, tf.sqrt(tf.abs(x_gt - x_pr))))
