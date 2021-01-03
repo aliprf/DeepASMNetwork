@@ -100,7 +100,7 @@ class Train:
             # model.save_weights(
             #     './models/asm_fw_weight_' + '_' + str(epoch) + self.dataset_name + '_' + str(loss_eval) + '.h5')
             '''calculate Learning rate'''
-            _lr = self.calc_learning_rate(iterations=epoch, step_size=30, base_lr=1e-8, max_lr=1e-4)
+            _lr = self.calc_learning_rate(iterations=epoch, step_size=10, base_lr=1e-8, max_lr=1e-4)
             optimizer = self._get_optimizer(lr=_lr)
 
     def calc_learning_rate(self, iterations, step_size, base_lr, max_lr, gamma=0.99994):
