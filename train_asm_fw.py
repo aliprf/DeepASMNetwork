@@ -144,16 +144,18 @@ class Train:
     def calculate_adoptive_weight(self, epoch, batch_index, y_train_filenames):
         tf_utils = TFRecordUtility(self.num_landmark)
         batch_y = y_train_filenames[batch_index * LearningConfig.batch_size:(batch_index + 1) * LearningConfig.batch_size]
-        if 0 <= epoch <= 30:
-            asm_acc = 80
-        elif 30 < epoch <= 60:
-            asm_acc = 85
-        elif 60 < epoch <= 100:
-            asm_acc = 90
-        elif 100 < epoch <= 160:
-            asm_acc = 95
-        else:
-            asm_acc = 97
+        # if 0 <= epoch <= 30:
+        #     asm_acc = 80
+        # elif 30 < epoch <= 60:
+        #     asm_acc = 85
+        # elif 60 < epoch <= 100:
+        #     asm_acc = 90
+        # elif 100 < epoch <= 160:
+        #     asm_acc = 95
+        # else:
+        #     asm_acc = 97
+        #
+        asm_acc = 97
 
         '''for each point in training set, calc delta_i = ASM(gt_i)-pr_i: '''
         if self.dataset_name == DatasetName.cofw:  # this ds is not normalized
