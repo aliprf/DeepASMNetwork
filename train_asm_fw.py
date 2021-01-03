@@ -52,7 +52,7 @@ class Train:
             "./train_logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S"))
 
         '''making models'''
-        _lr = 1e-7
+        _lr = 1e-8
         model = self.make_model(arch=arch, w_path=weight_path)
         '''create optimizer'''
         optimizer = self._get_optimizer(lr=_lr)
@@ -100,7 +100,7 @@ class Train:
             # model.save_weights(
             #     './models/asm_fw_weight_' + '_' + str(epoch) + self.dataset_name + '_' + str(loss_eval) + '.h5')
             '''calculate Learning rate'''
-            _lr = self.calc_learning_rate(iterations=epoch, step_size=40, base_lr=1e-7, max_lr=1e-1)
+            _lr = self.calc_learning_rate(iterations=epoch, step_size=30, base_lr=1e-8, max_lr=1e-4)
             optimizer = self._get_optimizer(lr=_lr)
 
     def calc_learning_rate(self, iterations, step_size, base_lr, max_lr, gamma=0.99994):
@@ -270,6 +270,24 @@ class Train:
             pn_batch = np.array([load(pn_tr_path + file_name) for file_name in batch_y])
         else:
             pn_batch = np.array([self._load_and_normalize(pn_tr_path + file_name) for file_name in batch_y])
+
+        '''asm'''
+        # tf_utils = TFRecordUtility(self.num_landmark)
+        # '''test: print'''
+        # image_utility = ImageUtility()
+        # for i in range(LearningConfig.batch_size):
+        #     gr_s, gr_px_1, gr_Py_1 = image_utility.create_landmarks_from_normalized(pn_batch[i], 224, 224, 112, 112)
+        #     imgpr.print_image_arr(str(batch_index + 1 * (i + 1)) + 'pts_gt', img_batch[i], gr_px_1, gr_Py_1)
+        #
+        #     for ac in [80, 85,90, 95, 97]:
+        #         pn_batch_asm = np.array([tf_utils.get_asm(input=self._load_and_normalize(pn_tr_path + file_name),
+        #                                                   dataset_name=self.dataset_name, accuracy=ac)
+        #                                  for file_name in batch_y])
+        #
+        #         asm_p_s, asm_px_1, asm_Py_1 = image_utility.create_landmarks_from_normalized(pn_batch_asm[i], 224, 224, 112,
+        #                                                                                      112)
+        #         imgpr.print_image_arr(str(batch_index + 1 * (i + 1)) + 'pts_asm' + str(ac), img_batch[i], asm_px_1, asm_Py_1)
+
         return img_batch, pn_batch
 
     # def _get_batch_sample(self, batch_index, x_train_filenames, y_train_filenames, model):

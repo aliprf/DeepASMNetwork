@@ -97,7 +97,7 @@ class CNNModel:
         mobilenet_model.layers.pop()
 
         x = mobilenet_model.get_layer('global_average_pooling2d').output  # 1280
-        x = Dropout(0.3)(x)
+        x = Dropout(0.5)(x)
         out_landmarks = Dense(output_len, activation=keras.activations.linear, kernel_initializer=initializer,
                               use_bias=True, name='O_L')(x)
         inp = mobilenet_model.input

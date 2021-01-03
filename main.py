@@ -16,7 +16,7 @@ if __name__ == '__main__':
     '''train new method: '''
     trainer = Train(dataset_name=DatasetName.wflw)
     # trainer.train(arch='mobileNetV2_nopose', weight_path=None)
-    trainer.train(arch='mobileNetV2_nopose', weight_path='./models/last_asm.h5')
+    trainer.train(arch='mobileNetV2_nopose', weight_path='./models/last.h5')
 
     # x = np.random.normal(size=100)
     # imgp.print_histogram(x)
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     # pca_utility.create_pca_from_npy(DatasetName.ibug, 90)
     # pca_utility.create_pca_from_npy(DatasetName.wflw, 90)
     # pca_utility.create_pca_from_points(DatasetName.wflw, 80)
-    # pca_utility.test_pca_validity(DatasetName.wflw, 80)
+    # pca_utility.test_pca_validity(DatasetName.w300, 80)
 
     '''     create tfRecord:'''
     # tf_record_util.create_tf_record(dataset_name=DatasetName.ibug_test, dataset_type=None, heatmap=False, accuracy=100)
