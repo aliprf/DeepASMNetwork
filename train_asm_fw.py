@@ -109,6 +109,7 @@ class Train:
         x = np.abs(iterations / step_size - 2 * cycle + 1)
         lr = base_lr + (max_lr - base_lr) * np.maximum(0, (1 - x)) / float(2 ** (cycle - 1))
         '''exp'''
+
         # cycle = np.floor(1 + iterations / (2 * step_size))
         # x = np.abs(iterations / step_size - 2 * cycle + 1)
         # lr = base_lr + (max_lr - base_lr) * np.maximum(0, (1 - x)) * gamma ** (iterations)
@@ -273,7 +274,7 @@ class Train:
         else:
             pn_batch = np.array([self._load_and_normalize(pn_tr_path + file_name) for file_name in batch_y])
 
-        '''asm'''
+        # '''asm'''
         # tf_utils = TFRecordUtility(self.num_landmark)
         # '''test: print'''
         # image_utility = ImageUtility()
@@ -281,7 +282,7 @@ class Train:
         #     gr_s, gr_px_1, gr_Py_1 = image_utility.create_landmarks_from_normalized(pn_batch[i], 224, 224, 112, 112)
         #     imgpr.print_image_arr(str(batch_index + 1 * (i + 1)) + 'pts_gt', img_batch[i], gr_px_1, gr_Py_1)
         #
-        #     for ac in [80, 85,90, 95, 97]:
+        #     for ac in [80, 85, 90, 95, 97]:
         #         pn_batch_asm = np.array([tf_utils.get_asm(input=self._load_and_normalize(pn_tr_path + file_name),
         #                                                   dataset_name=self.dataset_name, accuracy=ac)
         #                                  for file_name in batch_y])
